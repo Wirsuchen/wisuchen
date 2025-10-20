@@ -11,9 +11,27 @@ const geist = Geist({
 })
 
 export const metadata: Metadata = {
+    metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
   title: "WIRsuchen - Jobs & Deals Portal",
   description: "Find jobs, compare deals, and manage your career with WIRsuchen",
   generator: "WIRsuchen",
+  openGraph: {
+    title: 'WIRsuchen - Jobs & Deals Portal',
+    description: 'Find jobs, compare deals, and manage your career with WIRsuchen',
+    url: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+    siteName: 'WIRsuchen',
+    images: [
+      { url: '/logo.png', width: 1200, height: 630, alt: 'WIRsuchen' },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'WIRsuchen - Jobs & Deals Portal',
+    description: 'Find jobs, compare deals, and manage your career with WIRsuchen',
+    images: ['/logo.png'],
+  },
   icons: {
     icon: "/favicon.ico", // public folder ka path
   },

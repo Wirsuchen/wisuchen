@@ -38,33 +38,45 @@ export default function RotatingText({
   className,
   shuffle = true,
 }: RotatingTextProps) {
-  const sequence = useMemo(() => (shuffle ? shuffleArray(words) : words), [words, shuffle])
+  const [mounted, setMounted] = useState(false)
   const [idx, setIdx] = useState(0)
+  
+  // Use a stable sequence that doesn't change on re-render
+  const sequence = useMemo(() => (shuffle ? shuffleArray(words) : words), [])
+  
+  // Only start animations after component is mounted to avoid hydration mismatch
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
-    if (sequence.length <= 1) return
+    if (!mounted || sequence.length <= 1) return
     const id = setInterval(() => {
       setIdx((i) => (i + 1) % sequence.length)
     }, intervalMs)
     return () => clearInterval(id)
-  }, [sequence, intervalMs])
+  }, [mounted, sequence, intervalMs])
 
-  const current = sequence[idx] ?? ''
+  const current = sequence[idx] ?? words[0]
 
   return (
     <span className={className} aria-live="polite">
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.span
-          key={current}
-          initial={{ opacity: 0, y: 8, filter: 'blur(2px)' }}
-          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-          exit={{ opacity: 0, y: -8, filter: 'blur(2px)' }}
-          transition={{ type: 'spring', stiffness: 260, damping: 22, mass: 0.6 }}
-          className="inline-block"
-        >
-          {current}
-        </motion.span>
-      </AnimatePresence>
+      {mounted ? (
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.span
+            key={current}
+            initial={{ opacity: 0, y: 8, filter: 'blur(2px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, y: -8, filter: 'blur(2px)' }}
+            transition={{ type: 'spring', stiffness: 260, damping: 22, mass: 0.6 }}
+            className="inline-block"
+          >
+            {current}
+          </motion.span>
+        </AnimatePresence>
+      ) : (
+        <span className="inline-block">{words[0]}</span>
+      )}
     </span>
   )
 }

@@ -89,27 +89,30 @@ export function RegisterForm() {
       }
 
       if (authData.user) {
-        // Create profile record
+        // Profile is automatically created by database trigger
+        // Wait for trigger to complete, then update profile with additional information
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        
         const { error: profileError } = await supabase
           .from('profiles')
-          .insert({
-            user_id: authData.user.id,
-            email: formData.email,
+          .update({
             full_name: formData.fullName,
             role: formData.role,
           })
+          .eq('user_id', authData.user.id)
 
         if (profileError) {
-          console.error('Profile creation error:', profileError)
+          console.error('Profile update error:', profileError)
           // Don't show this error to user as auth was successful
         }
 
-        setMessage('Registration successful! Please check your email to verify your account.')
+        setMessage('Registration successful! Redirecting to dashboard...')
         
-        // Redirect after a delay
+        // Redirect to dashboard immediately
         setTimeout(() => {
-          router.push('/login')
-        }, 3000)
+          router.push('/dashboard')
+          router.refresh()
+        }, 1500)
       }
     } catch (err) {
       setError('An unexpected error occurred. Please try again.')

@@ -407,6 +407,9 @@ CREATE INDEX idx_offers_source_external ON offers(source, external_id);
 CREATE INDEX idx_offers_search ON offers USING GIN (to_tsvector('english', title || ' ' || COALESCE(description, '')));
 CREATE INDEX idx_blog_posts_search ON blog_posts USING GIN (to_tsvector('english', title || ' ' || COALESCE(content, '')));
 
+-- Cleanup duplicate index if existed from prior migrations
+DROP INDEX IF EXISTS idx_offers_title_description; -- or idx_offers_search, ensure only one remains
+
 CREATE INDEX idx_companies_slug ON companies(slug);
 CREATE INDEX idx_categories_type ON categories(type);
 CREATE INDEX idx_categories_parent_id ON categories(parent_id);
@@ -414,6 +417,16 @@ CREATE INDEX idx_categories_parent_id ON categories(parent_id);
 CREATE INDEX idx_impressions_offer_id ON impressions(offer_id);
 CREATE INDEX idx_impressions_created_at ON impressions(created_at DESC);
 CREATE INDEX idx_impressions_event_type ON impressions(event_type);
+
+-- Additional foreign key indexes for performance
+CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id ON audit_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_companies_created_by ON companies(created_by);
+CREATE INDEX IF NOT EXISTS idx_cookie_consents_user_id ON cookie_consents(user_id);
+CREATE INDEX IF NOT EXISTS idx_impressions_user_id ON impressions(user_id);
+CREATE INDEX IF NOT EXISTS idx_invoice_items_invoice_id ON invoice_items(invoice_id);
+CREATE INDEX IF NOT EXISTS idx_invoices_company_id ON invoices(company_id);
+CREATE INDEX IF NOT EXISTS idx_media_files_uploaded_by ON media_files(uploaded_by);
+CREATE INDEX IF NOT EXISTS idx_offers_source_id ON offers(source_id);
 
 -- TRIGGERS AND FUNCTIONS
 
@@ -555,3 +568,29 @@ COMMENT ON TABLE companies IS 'Company profiles for employers';
 COMMENT ON TABLE impressions IS 'Analytics tracking for views, clicks, and interactions';
 COMMENT ON TABLE invoices IS 'E-invoice compliant billing system';
 COMMENT ON TABLE audit_logs IS 'System audit trail for compliance and debugging';
+
+-- 19. SAVED OFFERS TABLE (Favorites)
+CREATE TABLE IF NOT EXISTS saved_offers (
+    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+    offer_id UUID REFERENCES offers(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    PRIMARY KEY (user_id, offer_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_saved_offers_user_id ON saved_offers(user_id);
+CREATE INDEX IF NOT EXISTS idx_saved_offers_offer_id ON saved_offers(offer_id);
+
+-- 20. APPLICATIONS TABLE (Job applications)
+CREATE TABLE IF NOT EXISTS applications (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    offer_id UUID REFERENCES offers(id) ON DELETE CASCADE,
+    applicant_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+    status VARCHAR(30) DEFAULT 'submitted', -- submitted, reviewing, accepted, rejected
+    notes TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_applications_offer_id ON applications(offer_id);
+CREATE INDEX IF NOT EXISTS idx_applications_applicant_id ON applications(applicant_id);
+CREATE TRIGGER update_applications_updated_at BEFORE UPDATE ON applications FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

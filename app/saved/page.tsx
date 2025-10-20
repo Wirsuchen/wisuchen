@@ -1,3 +1,5 @@
+"use client"
+
 import { Heart, Trash2, ExternalLink, Calendar } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -5,53 +7,48 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PageLayout } from "@/components/layout/page-layout"
 import Link from "next/link"
+import { useEffect, useState } from "react"
 
 export default function SavedPage() {
-  const savedJobs = [
-    {
-      id: 1,
-      title: "Senior Frontend Developer",
-      company: "TechCorp Inc.",
-      location: "San Francisco, CA",
-      salary: "$120,000 - $150,000",
-      type: "Full-time",
-      savedDate: "2024-01-15",
-      logo: "/abstract-tech-logo.png",
-    },
-    {
-      id: 2,
-      title: "Product Manager",
-      company: "StartupXYZ",
-      location: "Remote",
-      salary: "$100,000 - $130,000",
-      type: "Full-time",
-      savedDate: "2024-01-14",
-      logo: "/abstract-startup-logo.png",
-    },
-  ]
+  const [items, setItems] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const savedDeals = [
-    {
-      id: 1,
-      title: "MacBook Pro 14-inch M3",
-      originalPrice: 1999,
-      currentPrice: 1699,
-      discount: 15,
-      store: "Apple Store",
-      savedDate: "2024-01-16",
-      image: "/macbook-pro-deal.png",
-    },
-    {
-      id: 2,
-      title: "Sony WH-1000XM5 Headphones",
-      originalPrice: 399,
-      currentPrice: 299,
-      discount: 25,
-      store: "Best Buy",
-      savedDate: "2024-01-15",
-      image: "/sony-headphones-deal.png",
-    },
-  ]
+  useEffect(() => {
+    ;(async () => {
+      setLoading(true)
+      try {
+        const res = await fetch('/api/saved', { cache: 'no-store' })
+        if (res.ok) {
+          const data = await res.json()
+          setItems(data.items || [])
+        }
+      } finally {
+        setLoading(false)
+      }
+    })()
+  }, [])
+
+  const savedJobs = items.filter(i => i.offer?.type === 'job').map(i => ({
+    id: i.offer_id,
+    title: i.offer?.title,
+    company: i.offer?.company_name || i.offer?.company?.name,
+    location: i.offer?.location,
+    salary: i.offer?.salary_min && i.offer?.salary_max ? `${i.offer.salary_min}-${i.offer.salary_max}` : '',
+    type: i.offer?.employment_type,
+    savedDate: i.created_at,
+    logo: i.offer?.featured_image_url || '/placeholder.svg',
+  }))
+
+  const savedDeals = items.filter(i => i.offer?.type === 'affiliate').map(i => ({
+    id: i.offer_id,
+    title: i.offer?.title,
+    originalPrice: i.offer?.price,
+    currentPrice: i.offer?.price,
+    discount: i.offer?.discount || 0,
+    store: i.offer?.source,
+    savedDate: i.created_at,
+    image: i.offer?.featured_image_url || '/placeholder.svg',
+  }))
 
   return (
     <PageLayout containerClassName="container mx-auto px-4 py-8">
@@ -62,8 +59,8 @@ export default function SavedPage() {
 
       <Tabs defaultValue="jobs" className="w-full">
         <TabsList className="grid w-full grid-cols-2 max-w-md">
-          <TabsTrigger value="jobs">Saved Jobs ({savedJobs.length})</TabsTrigger>
-          <TabsTrigger value="deals">Saved Deals ({savedDeals.length})</TabsTrigger>
+          <TabsTrigger value="jobs">Saved Jobs ({savedJobs.length}{loading ? '…' : ''})</TabsTrigger>
+          <TabsTrigger value="deals">Saved Deals ({savedDeals.length}{loading ? '…' : ''})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="jobs" className="mt-6">
@@ -84,11 +81,11 @@ export default function SavedPage() {
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" onClick={async () => {
+                        await fetch(`/api/saved?offer_id=${job.id}`, { method: 'DELETE' })
+                        setItems(prev => prev.filter(i => i.offer_id !== job.id))
+                      }}>
                         <Trash2 className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm">
-                        <Heart className="h-4 w-4 fill-current text-red-500" />
                       </Button>
                     </div>
                   </div>
@@ -120,7 +117,7 @@ export default function SavedPage() {
               </Card>
             ))}
 
-            {savedJobs.length === 0 && (
+            {!loading && savedJobs.length === 0 && (
               <Card className="text-center py-12">
                 <CardContent>
                   <Heart className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
@@ -191,7 +188,7 @@ export default function SavedPage() {
               </Card>
             ))}
 
-            {savedDeals.length === 0 && (
+            {!loading && savedDeals.length === 0 && (
               <Card className="text-center py-12">
                 <CardContent>
                   <Heart className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />

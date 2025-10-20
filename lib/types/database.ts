@@ -1,18 +1,18 @@
 // Database types for TalentPlus - Import from generated Supabase types
 // NOTE: Do not re-export Database here to avoid conflicts with the local interface below.
 // Instead, import the generated enum helper and derive enum aliases for use in this file.
-import type { Enums as SupaEnums } from './supabase'
+import type { Enums as SupaEnums } from './database.generated'
 
 // Enum aliases from generated Supabase types
-type UserRole = SupaEnums<'user_role'>
-type OfferStatus = SupaEnums<'offer_status'>
-type OfferType = SupaEnums<'offer_type'>
-type EmploymentType = SupaEnums<'employment_type'>
-type ExperienceLevel = SupaEnums<'experience_level'>
-type PaymentStatus = SupaEnums<'payment_status'>
-type InvoiceStatus = SupaEnums<'invoice_status'>
-type ContentStatus = SupaEnums<'content_status'>
-type CategoryType = SupaEnums<'category_type'>
+export type UserRole = SupaEnums<'user_role'>
+export type OfferStatus = SupaEnums<'offer_status'>
+export type OfferType = SupaEnums<'offer_type'>
+export type EmploymentType = SupaEnums<'employment_type'>
+export type ExperienceLevel = SupaEnums<'experience_level'>
+export type PaymentStatus = SupaEnums<'payment_status'>
+export type InvoiceStatus = SupaEnums<'invoice_status'>
+export type ContentStatus = SupaEnums<'content_status'>
+export type CategoryType = SupaEnums<'category_type'>
 
 export interface Database {
   public: {

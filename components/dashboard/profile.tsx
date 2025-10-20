@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,19 +11,39 @@ import { Separator } from "@/components/ui/separator"
 import { Upload, Save, Camera } from "lucide-react"
 
 export function Profile() {
+  const [loading, setLoading] = useState(false)
   const [profileData, setProfileData] = useState({
-    firstName: "John",
-    lastName: "Doe",
-    email: "john@example.com",
-    phone: "+49 123 456 789",
-    company: "TechCorp GmbH",
-    position: "Senior Developer",
-    location: "Berlin, Germany",
-    bio: "Experienced software developer with 8+ years in web development. Passionate about creating innovative solutions and leading development teams.",
-    website: "https://johndoe.dev",
-    linkedin: "https://linkedin.com/in/johndoe",
-    github: "https://github.com/johndoe",
+    full_name: "",
+    email: "",
+    phone: "",
+    location: "",
+    bio: "",
+    website_url: "",
+    linkedin_url: "",
+    github_url: "",
+    avatar_url: "",
   })
+
+  useEffect(() => {
+    ;(async () => {
+      try {
+        const res = await fetch('/api/profile', { cache: 'no-store' })
+        if (!res.ok) return
+        const { profile } = await res.json()
+        setProfileData({
+          full_name: profile.full_name || '',
+          email: profile.email || '',
+          phone: profile.phone || '',
+          location: profile.location || '',
+          bio: profile.bio || '',
+          website_url: profile.website_url || '',
+          linkedin_url: profile.linkedin_url || '',
+          github_url: profile.github_url || '',
+          avatar_url: profile.avatar_url || '',
+        })
+      } catch {}
+    })()
+  }, [])
 
   const [accountSettings, setAccountSettings] = useState({
     language: "en",
@@ -34,9 +54,17 @@ export function Profile() {
     dealAlerts: true,
   })
 
-  const handleProfileUpdate = () => {
-    // Simulate profile update
-    console.log("Updating profile:", profileData)
+  const handleProfileUpdate = async () => {
+    setLoading(true)
+    try {
+      await fetch('/api/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(profileData),
+      })
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleAccountUpdate = () => {
@@ -60,14 +88,31 @@ export function Profile() {
           </CardHeader>
           <CardContent className="text-center">
             <div className="relative inline-block">
-              <div className="w-32 h-32 bg-primary rounded-full flex items-center justify-center text-primary-foreground text-4xl font-bold mx-auto mb-4">
-                JD
+              <div className="w-32 h-32 bg-primary rounded-full flex items-center justify-center text-primary-foreground text-4xl font-bold mx-auto mb-4 overflow-hidden">
+                {profileData.avatar_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={profileData.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  (profileData.full_name || 'U').substring(0,2).toUpperCase()
+                )}
               </div>
               <Button size="sm" className="absolute bottom-0 right-0 rounded-full w-10 h-10 p-0" variant="secondary">
                 <Camera className="h-4 w-4" />
               </Button>
             </div>
-            <Button variant="outline" className="w-full bg-transparent">
+            <Button variant="outline" className="w-full bg-transparent" onClick={async () => {
+              const input = document.createElement('input')
+              input.type = 'file'
+              input.accept = 'image/*'
+              input.onchange = async () => {
+                if (!input.files || input.files.length === 0) return
+                const form = new FormData()
+                form.append('file', input.files[0])
+                await fetch('/api/profile/avatar', { method: 'POST', body: form })
+                location.reload()
+              }
+              input.click()
+            }}>
               <Upload className="h-4 w-4 mr-2" />
               Upload New Photo
             </Button>
@@ -83,21 +128,14 @@ export function Profile() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="firstName">First Name</Label>
+                <Label htmlFor="full_name">Full Name</Label>
                 <Input
-                  id="firstName"
-                  value={profileData.firstName}
-                  onChange={(e) => setProfileData({ ...profileData, firstName: e.target.value })}
+                  id="full_name"
+                  value={profileData.full_name}
+                  onChange={(e) => setProfileData({ ...profileData, full_name: e.target.value })}
                 />
               </div>
-              <div>
-                <Label htmlFor="lastName">Last Name</Label>
-                <Input
-                  id="lastName"
-                  value={profileData.lastName}
-                  onChange={(e) => setProfileData({ ...profileData, lastName: e.target.value })}
-                />
-              </div>
+              <div></div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -125,16 +163,16 @@ export function Profile() {
                 <Label htmlFor="company">Company</Label>
                 <Input
                   id="company"
-                  value={profileData.company}
-                  onChange={(e) => setProfileData({ ...profileData, company: e.target.value })}
+                  value={profileData.website_url}
+                  onChange={(e) => setProfileData({ ...profileData, website_url: e.target.value })}
                 />
               </div>
               <div>
-                <Label htmlFor="position">Position</Label>
+                <Label htmlFor="linkedin">LinkedIn</Label>
                 <Input
-                  id="position"
-                  value={profileData.position}
-                  onChange={(e) => setProfileData({ ...profileData, position: e.target.value })}
+                  id="linkedin"
+                  value={profileData.linkedin_url}
+                  onChange={(e) => setProfileData({ ...profileData, linkedin_url: e.target.value })}
                 />
               </div>
             </div>
@@ -178,8 +216,8 @@ export function Profile() {
               <Label htmlFor="website">Website</Label>
               <Input
                 id="website"
-                value={profileData.website}
-                onChange={(e) => setProfileData({ ...profileData, website: e.target.value })}
+                value={profileData.website_url}
+                onChange={(e) => setProfileData({ ...profileData, website_url: e.target.value })}
                 placeholder="https://yourwebsite.com"
               />
             </div>
@@ -187,8 +225,8 @@ export function Profile() {
               <Label htmlFor="linkedin">LinkedIn</Label>
               <Input
                 id="linkedin"
-                value={profileData.linkedin}
-                onChange={(e) => setProfileData({ ...profileData, linkedin: e.target.value })}
+                value={profileData.linkedin_url}
+                onChange={(e) => setProfileData({ ...profileData, linkedin_url: e.target.value })}
                 placeholder="https://linkedin.com/in/username"
               />
             </div>
@@ -196,8 +234,8 @@ export function Profile() {
               <Label htmlFor="github">GitHub</Label>
               <Input
                 id="github"
-                value={profileData.github}
-                onChange={(e) => setProfileData({ ...profileData, github: e.target.value })}
+                value={profileData.github_url}
+                onChange={(e) => setProfileData({ ...profileData, github_url: e.target.value })}
                 placeholder="https://github.com/username"
               />
             </div>
@@ -305,9 +343,9 @@ export function Profile() {
             </div>
           </div>
 
-          <Button onClick={handleAccountUpdate} className="w-full">
+          <Button onClick={handleAccountUpdate} className="w-full" disabled={loading}>
             <Save className="h-4 w-4 mr-2" />
-            Save Settings
+            {loading ? 'Saving...' : 'Save Settings'}
           </Button>
         </CardContent>
       </Card>

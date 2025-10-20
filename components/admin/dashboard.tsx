@@ -107,21 +107,20 @@ export function AdminDashboard() {
   const fetchDashboardStats = async () => {
     setIsLoading(true)
     try {
-      // In a real app, you would fetch from multiple endpoints
-      // For now, we'll simulate with mock data
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
+      const res = await fetch('/api/admin/stats', { cache: 'no-store' })
+      if (!res.ok) throw new Error('Failed to load admin stats')
+      const data = await res.json()
       setStats({
-        totalJobs: 1247,
-        activeJobs: 892,
-        totalCompanies: 156,
-        totalUsers: 3421,
-        totalRevenue: 24580,
-        monthlyRevenue: 5600,
-        totalImports: 108,
-        successfulImports: 95,
-        totalViews: 45230,
-        totalClicks: 8940
+        totalJobs: data.totalJobs ?? 0,
+        activeJobs: data.activeJobs ?? 0,
+        totalCompanies: data.totalCompanies ?? 0,
+        totalUsers: data.totalUsers ?? 0,
+        totalRevenue: data.totalRevenue ?? 0,
+        monthlyRevenue: data.monthlyRevenue ?? 0,
+        totalImports: data.totalImports ?? 0,
+        successfulImports: data.successfulImports ?? 0,
+        totalViews: data.totalViews ?? 0,
+        totalClicks: data.totalClicks ?? 0,
       })
     } catch (error) {
       console.error('Error fetching dashboard stats:', error)

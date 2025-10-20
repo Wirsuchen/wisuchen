@@ -264,7 +264,15 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
                 <CardTitle>Apply for this position</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Button className="w-full" size="lg">
+                <Button className="w-full" size="lg" onClick={async () => {
+                  try {
+                    await fetch('/api/applications', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ offer_id: params.id }),
+                    })
+                  } catch {}
+                }}>
                   <ExternalLink className="h-4 w-4 mr-2" />
                   Apply Now
                 </Button>

@@ -1,42 +1,50 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Briefcase, ShoppingBag, FileText, TrendingUp, Eye, Users } from "lucide-react"
+import { Briefcase, ShoppingBag, FileText, TrendingUp, Eye, Users, TestTube } from "lucide-react"
 import Link from "next/link"
 import { formatEuroText } from "@/lib/utils"
 
 export function DashboardOverview() {
+  const [loading, setLoading] = useState(true)
+  const [userStats, setUserStats] = useState({
+    activeJobAds: 0,
+    savedDeals: 0,
+    totalInvoices: 0,
+    profileViews: 0,
+  })
+
+  useEffect(() => {
+    async function load() {
+      setLoading(true)
+      try {
+        const res = await fetch('/api/user/stats', { cache: 'no-store' })
+        if (!res.ok) throw new Error('Failed to load user stats')
+        const data = await res.json()
+        setUserStats({
+          activeJobAds: data.activeJobAds ?? 0,
+          savedDeals: data.savedDeals ?? 0,
+          totalInvoices: data.totalInvoices ?? 0,
+          profileViews: data.profileViews ?? 0,
+        })
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error(e)
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+  }, [])
+
   const stats = [
-    {
-      title: "Active Job Ads",
-      value: "3",
-      change: "+1 this month",
-      icon: Briefcase,
-      color: "text-blue-600",
-    },
-    {
-      title: "Saved Deals",
-      value: "12",
-      change: "+4 this week",
-      icon: ShoppingBag,
-      color: "text-green-600",
-    },
-    {
-      title: "Total Invoices",
-      value: "8",
-      change: "+2 this month",
-      icon: FileText,
-      color: "text-purple-600",
-    },
-    {
-      title: "Profile Views",
-      value: "156",
-      change: "+23 this week",
-      icon: Eye,
-      color: "text-orange-600",
-    },
+    { title: 'Active Job Ads', value: String(userStats.activeJobAds), change: '', icon: Briefcase, color: 'text-blue-600' },
+    { title: 'Saved Deals', value: String(userStats.savedDeals), change: '', icon: ShoppingBag, color: 'text-green-600' },
+    { title: 'Total Invoices', value: String(userStats.totalInvoices), change: '', icon: FileText, color: 'text-purple-600' },
+    { title: 'Profile Views', value: String(userStats.profileViews), change: '', icon: Eye, color: 'text-orange-600' },
   ]
 
   const recentAds = [
@@ -110,8 +118,10 @@ export function DashboardOverview() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
-                    <p className="text-2xl font-bold">{stat.value}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{stat.change}</p>
+                    <p className="text-2xl font-bold">{loading ? '—' : stat.value}</p>
+                    {stat.change ? (
+                      <p className="text-xs text-muted-foreground mt-1">{stat.change}</p>
+                    ) : null}
                   </div>
                   <Icon className={`h-8 w-8 ${stat.color}`} />
                 </div>
@@ -200,7 +210,7 @@ export function DashboardOverview() {
           <CardDescription>Common tasks and shortcuts</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Button asChild className="h-auto p-4 flex-col space-y-2">
               <Link href="/jobs/post">
                 <Briefcase className="h-6 w-6" />
@@ -217,6 +227,12 @@ export function DashboardOverview() {
               <Link href="/dashboard/stats">
                 <TrendingUp className="h-6 w-6" />
                 <span>View Analytics</span>
+              </Link>
+            </Button>
+            <Button variant="outline" asChild className="h-auto p-4 flex-col space-y-2 bg-transparent border-blue-500/50 hover:bg-blue-500/10">
+              <Link href="/api-test">
+                <TestTube className="h-6 w-6 text-blue-600" />
+                <span>API Testing</span>
               </Link>
             </Button>
           </div>

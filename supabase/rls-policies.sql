@@ -20,15 +20,19 @@ ALTER TABLE impressions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE cookie_consents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE saved_offers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE applications ENABLE ROW LEVEL SECURITY;
 
 -- Helper function to get current user's role
 CREATE OR REPLACE FUNCTION get_user_role()
 RETURNS user_role AS $$
+DECLARE
+    v_uid uuid := (SELECT auth.uid());
 BEGIN
     RETURN (
         SELECT role 
         FROM profiles 
-        WHERE user_id = auth.uid()
+        WHERE user_id = v_uid
     );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -56,7 +60,7 @@ CREATE POLICY "profiles_select_public" ON profiles
 
 -- Users can update their own profile
 CREATE POLICY "profiles_update_own" ON profiles
-    FOR UPDATE USING (user_id = auth.uid());
+    FOR UPDATE USING (user_id = (SELECT auth.uid()));
 
 -- Admins can manage all profiles
 CREATE POLICY "profiles_admin_all" ON profiles
@@ -69,7 +73,7 @@ CREATE POLICY "companies_select_public" ON companies
 
 -- Company creators and admins can update companies
 CREATE POLICY "companies_update_own" ON companies
-    FOR UPDATE USING (created_by = (SELECT id FROM profiles WHERE user_id = auth.uid()) OR is_admin());
+    FOR UPDATE USING (created_by = (SELECT id FROM profiles WHERE user_id = (SELECT auth.uid())) OR is_admin());
 
 -- Employers and above can create companies
 CREATE POLICY "companies_insert_employer" ON companies
@@ -93,7 +97,7 @@ CREATE POLICY "offers_select_public" ON offers
 
 -- Users can view their own offers (any status)
 CREATE POLICY "offers_select_own" ON offers
-    FOR SELECT USING (created_by = (SELECT id FROM profiles WHERE user_id = auth.uid()));
+    FOR SELECT USING (created_by = (SELECT id FROM profiles WHERE user_id = (SELECT auth.uid())));
 
 -- Moderators and above can view all offers
 CREATE POLICY "offers_select_moderator" ON offers
@@ -108,7 +112,7 @@ CREATE POLICY "offers_insert_publisher" ON offers
 -- Users can update their own offers, moderators can update any
 CREATE POLICY "offers_update_own_or_moderator" ON offers
     FOR UPDATE USING (
-        created_by = (SELECT id FROM profiles WHERE user_id = auth.uid()) OR 
+        created_by = (SELECT id FROM profiles WHERE user_id = (SELECT auth.uid())) OR 
         is_moderator_or_above()
     );
 
@@ -161,14 +165,14 @@ CREATE POLICY "point_packages_admin_manage" ON point_packages
 -- INVOICES TABLE POLICIES
 -- Users can view their own invoices
 CREATE POLICY "invoices_select_own" ON invoices
-    FOR SELECT USING (user_id = (SELECT id FROM profiles WHERE user_id = auth.uid()));
+    FOR SELECT USING (user_id = (SELECT id FROM profiles WHERE user_id = (SELECT auth.uid())));
 
 -- Company users can view their company's invoices
 CREATE POLICY "invoices_select_company" ON invoices
     FOR SELECT USING (
         company_id IN (
             SELECT id FROM companies 
-            WHERE created_by = (SELECT id FROM profiles WHERE user_id = auth.uid())
+            WHERE created_by = (SELECT id FROM profiles WHERE user_id = (SELECT auth.uid()))
         )
     );
 
@@ -190,7 +194,7 @@ CREATE POLICY "invoice_items_select_own" ON invoice_items
     FOR SELECT USING (
         invoice_id IN (
             SELECT id FROM invoices 
-            WHERE user_id = (SELECT id FROM profiles WHERE user_id = auth.uid())
+            WHERE user_id = (SELECT id FROM profiles WHERE user_id = (SELECT auth.uid()))
         )
     );
 
@@ -205,7 +209,7 @@ CREATE POLICY "invoice_items_insert_system" ON invoice_items
 -- PAYMENTS TABLE POLICIES
 -- Users can view their own payments
 CREATE POLICY "payments_select_own" ON payments
-    FOR SELECT USING (user_id = (SELECT id FROM profiles WHERE user_id = auth.uid()));
+    FOR SELECT USING (user_id = (SELECT id FROM profiles WHERE user_id = (SELECT auth.uid())));
 
 -- Admins can view all payments
 CREATE POLICY "payments_select_admin" ON payments
@@ -225,7 +229,7 @@ CREATE POLICY "blog_posts_select_public" ON blog_posts
 
 -- Authors can view their own posts (any status)
 CREATE POLICY "blog_posts_select_own" ON blog_posts
-    FOR SELECT USING (author_id = (SELECT id FROM profiles WHERE user_id = auth.uid()));
+    FOR SELECT USING (author_id = (SELECT id FROM profiles WHERE user_id = (SELECT auth.uid())));
 
 -- Moderators and above can view all posts
 CREATE POLICY "blog_posts_select_moderator" ON blog_posts
@@ -255,7 +259,7 @@ CREATE POLICY "media_files_select_public" ON media_files
 
 -- Users can view their own media files
 CREATE POLICY "media_files_select_own" ON media_files
-    FOR SELECT USING (uploaded_by = (SELECT id FROM profiles WHERE user_id = auth.uid()));
+    FOR SELECT USING (uploaded_by = (SELECT id FROM profiles WHERE user_id = (SELECT auth.uid())));
 
 -- Admins can view all media files
 CREATE POLICY "media_files_select_admin" ON media_files
@@ -267,7 +271,7 @@ CREATE POLICY "media_files_insert_auth" ON media_files
 
 -- Users can update their own media files
 CREATE POLICY "media_files_update_own" ON media_files
-    FOR UPDATE USING (uploaded_by = (SELECT id FROM profiles WHERE user_id = auth.uid()));
+    FOR UPDATE USING (uploaded_by = (SELECT id FROM profiles WHERE user_id = (SELECT auth.uid())));
 
 -- IMPRESSIONS TABLE POLICIES
 -- System can insert impressions (for analytics)
@@ -287,7 +291,7 @@ CREATE POLICY "cookie_consents_insert_system" ON cookie_consents
 
 -- Users can view their own consents
 CREATE POLICY "cookie_consents_select_own" ON cookie_consents
-    FOR SELECT USING (user_id = (SELECT id FROM profiles WHERE user_id = auth.uid()));
+    FOR SELECT USING (user_id = (SELECT id FROM profiles WHERE user_id = (SELECT auth.uid())));
 
 -- Admins can view all consents
 CREATE POLICY "cookie_consents_select_admin" ON cookie_consents
@@ -333,7 +337,7 @@ BEGIN
         TG_OP,
         CASE WHEN TG_OP = 'DELETE' THEN to_jsonb(OLD) ELSE NULL END,
         CASE WHEN TG_OP IN ('INSERT', 'UPDATE') THEN to_jsonb(NEW) ELSE NULL END,
-        (SELECT id FROM profiles WHERE user_id = auth.uid()),
+        (SELECT id FROM profiles WHERE user_id = (SELECT auth.uid())),
         inet_client_addr()
     );
     
@@ -356,6 +360,32 @@ CREATE TRIGGER audit_invoices AFTER INSERT OR UPDATE OR DELETE ON invoices
 
 CREATE TRIGGER audit_payments AFTER INSERT OR UPDATE OR DELETE ON payments
     FOR EACH ROW EXECUTE FUNCTION audit_trigger_function();
+
+-- SAVED OFFERS TABLE POLICIES
+-- Owners can view, insert and delete their saved offers
+CREATE POLICY "saved_offers_select_own" ON saved_offers
+    FOR SELECT USING (user_id = (SELECT id FROM profiles WHERE user_id = (SELECT auth.uid())));
+
+CREATE POLICY "saved_offers_insert_own" ON saved_offers
+    FOR INSERT WITH CHECK (user_id = (SELECT id FROM profiles WHERE user_id = (SELECT auth.uid())));
+
+CREATE POLICY "saved_offers_delete_own" ON saved_offers
+    FOR DELETE USING (user_id = (SELECT id FROM profiles WHERE user_id = (SELECT auth.uid())));
+
+-- APPLICATIONS TABLE POLICIES
+-- Applicants can view and update their own applications; moderators+ can view all
+CREATE POLICY "applications_select_own_or_moderator" ON applications
+    FOR SELECT USING (
+        applicant_id = (SELECT id FROM profiles WHERE user_id = (SELECT auth.uid())) OR is_moderator_or_above()
+    );
+
+CREATE POLICY "applications_insert_own" ON applications
+    FOR INSERT WITH CHECK (applicant_id = (SELECT id FROM profiles WHERE user_id = (SELECT auth.uid())));
+
+CREATE POLICY "applications_update_own_or_moderator" ON applications
+    FOR UPDATE USING (
+        applicant_id = (SELECT id FROM profiles WHERE user_id = (SELECT auth.uid())) OR is_moderator_or_above()
+    );
 
 -- Grant necessary permissions to authenticated users
 GRANT USAGE ON SCHEMA public TO authenticated;

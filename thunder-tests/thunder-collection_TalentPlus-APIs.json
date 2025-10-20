@@ -1,0 +1,449 @@
+{
+  "client": "Thunder Client",
+  "collectionName": "TalentPlus APIs",
+  "dateExported": "2025-10-11T01:58:00.000Z",
+  "version": "1.1",
+  "folders": [
+    {
+      "id": "folder-categories",
+      "name": "Categories",
+      "containerId": "",
+      "created": "2025-10-11T01:58:00.000Z",
+      "sortNum": 10000
+    },
+    {
+      "id": "folder-jobs",
+      "name": "Jobs",
+      "containerId": "",
+      "created": "2025-10-11T01:58:00.000Z",
+      "sortNum": 20000
+    },
+    {
+      "id": "folder-import",
+      "name": "Import APIs",
+      "containerId": "",
+      "created": "2025-10-11T01:58:00.000Z",
+      "sortNum": 30000
+    },
+    {
+      "id": "folder-payment",
+      "name": "Payment",
+      "containerId": "",
+      "created": "2025-10-11T01:58:00.000Z",
+      "sortNum": 40000
+    }
+  ],
+  "requests": [
+    {
+      "id": "req-get-all-categories",
+      "name": "Get All Categories",
+      "url": "http://localhost:3000/api/categories",
+      "method": "GET",
+      "sortNum": 10000,
+      "created": "2025-10-11T01:58:00.000Z",
+      "modified": "2025-10-11T01:58:00.000Z",
+      "headers": [],
+      "params": [],
+      "tests": [],
+      "containerId": "folder-categories"
+    },
+    {
+      "id": "req-get-job-categories",
+      "name": "Get Job Categories",
+      "url": "http://localhost:3000/api/categories?type=job",
+      "method": "GET",
+      "sortNum": 10001,
+      "created": "2025-10-11T01:58:00.000Z",
+      "modified": "2025-10-11T01:58:00.000Z",
+      "headers": [],
+      "params": [
+        {
+          "name": "type",
+          "value": "job",
+          "isPath": false
+        }
+      ],
+      "tests": [],
+      "containerId": "folder-categories"
+    },
+    {
+      "id": "req-get-affiliate-categories",
+      "name": "Get Affiliate Categories",
+      "url": "http://localhost:3000/api/categories?type=affiliate",
+      "method": "GET",
+      "sortNum": 10002,
+      "created": "2025-10-11T01:58:00.000Z",
+      "modified": "2025-10-11T01:58:00.000Z",
+      "headers": [],
+      "params": [
+        {
+          "name": "type",
+          "value": "affiliate",
+          "isPath": false
+        }
+      ],
+      "tests": [],
+      "containerId": "folder-categories"
+    },
+    {
+      "id": "req-search-categories",
+      "name": "Search Categories",
+      "url": "http://localhost:3000/api/categories?search=tech&limit=10",
+      "method": "GET",
+      "sortNum": 10003,
+      "created": "2025-10-11T01:58:00.000Z",
+      "modified": "2025-10-11T01:58:00.000Z",
+      "headers": [],
+      "params": [
+        {
+          "name": "search",
+          "value": "tech",
+          "isPath": false
+        },
+        {
+          "name": "limit",
+          "value": "10",
+          "isPath": false
+        }
+      ],
+      "tests": [],
+      "containerId": "folder-categories"
+    },
+    {
+      "id": "req-get-all-jobs",
+      "name": "Get All Jobs",
+      "url": "http://localhost:3000/api/jobs",
+      "method": "GET",
+      "sortNum": 20000,
+      "created": "2025-10-11T01:58:00.000Z",
+      "modified": "2025-10-11T01:58:00.000Z",
+      "headers": [],
+      "params": [],
+      "tests": [],
+      "containerId": "folder-jobs"
+    },
+    {
+      "id": "req-get-jobs-paginated",
+      "name": "Get Jobs (Paginated)",
+      "url": "http://localhost:3000/api/jobs?page=1&limit=20",
+      "method": "GET",
+      "sortNum": 20001,
+      "created": "2025-10-11T01:58:00.000Z",
+      "modified": "2025-10-11T01:58:00.000Z",
+      "headers": [],
+      "params": [
+        {
+          "name": "page",
+          "value": "1",
+          "isPath": false
+        },
+        {
+          "name": "limit",
+          "value": "20",
+          "isPath": false
+        }
+      ],
+      "tests": [],
+      "containerId": "folder-jobs"
+    },
+    {
+      "id": "req-get-jobs-filtered",
+      "name": "Get Jobs (Filtered)",
+      "url": "http://localhost:3000/api/jobs?category=technology&location=Berlin&employment_type=full-time",
+      "method": "GET",
+      "sortNum": 20002,
+      "created": "2025-10-11T01:58:00.000Z",
+      "modified": "2025-10-11T01:58:00.000Z",
+      "headers": [],
+      "params": [
+        {
+          "name": "category",
+          "value": "technology",
+          "isPath": false
+        },
+        {
+          "name": "location",
+          "value": "Berlin",
+          "isPath": false
+        },
+        {
+          "name": "employment_type",
+          "value": "full-time",
+          "isPath": false
+        }
+      ],
+      "tests": [],
+      "containerId": "folder-jobs"
+    },
+    {
+      "id": "req-search-jobs",
+      "name": "Search Jobs",
+      "url": "http://localhost:3000/api/jobs?search=developer",
+      "method": "GET",
+      "sortNum": 20003,
+      "created": "2025-10-11T01:58:00.000Z",
+      "modified": "2025-10-11T01:58:00.000Z",
+      "headers": [],
+      "params": [
+        {
+          "name": "search",
+          "value": "developer",
+          "isPath": false
+        }
+      ],
+      "tests": [],
+      "containerId": "folder-jobs"
+    },
+    {
+      "id": "req-get-job-by-id",
+      "name": "Get Job by ID",
+      "url": "http://localhost:3000/api/jobs/{job-id}",
+      "method": "GET",
+      "sortNum": 20004,
+      "created": "2025-10-11T01:58:00.000Z",
+      "modified": "2025-10-11T01:58:00.000Z",
+      "headers": [],
+      "params": [],
+      "tests": [],
+      "containerId": "folder-jobs",
+      "notes": "Replace {job-id} with actual job ID from database"
+    },
+    {
+      "id": "req-create-job",
+      "name": "Create Job (Auth Required)",
+      "url": "http://localhost:3000/api/jobs",
+      "method": "POST",
+      "sortNum": 20005,
+      "created": "2025-10-11T01:58:00.000Z",
+      "modified": "2025-10-11T01:58:00.000Z",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"title\": \"Senior Developer\",\n  \"company\": \"Test Company\",\n  \"description\": \"Test job description\",\n  \"location\": \"Berlin, Germany\",\n  \"employment_type\": \"full-time\",\n  \"salary_min\": 50000,\n  \"salary_max\": 80000,\n  \"category_id\": \"category-uuid-here\",\n  \"offer_type\": \"job\"\n}",
+        "form": []
+      },
+      "tests": [],
+      "containerId": "folder-jobs",
+      "notes": "Requires authentication. Login first to get auth token."
+    },
+    {
+      "id": "req-update-job",
+      "name": "Update Job (Auth Required)",
+      "url": "http://localhost:3000/api/jobs/{job-id}",
+      "method": "PUT",
+      "sortNum": 20006,
+      "created": "2025-10-11T01:58:00.000Z",
+      "modified": "2025-10-11T01:58:00.000Z",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"title\": \"Updated Job Title\",\n  \"description\": \"Updated description\"\n}",
+        "form": []
+      },
+      "tests": [],
+      "containerId": "folder-jobs",
+      "notes": "Requires authentication and job ownership"
+    },
+    {
+      "id": "req-delete-job",
+      "name": "Delete Job (Auth Required)",
+      "url": "http://localhost:3000/api/jobs/{job-id}",
+      "method": "DELETE",
+      "sortNum": 20007,
+      "created": "2025-10-11T01:58:00.000Z",
+      "modified": "2025-10-11T01:58:00.000Z",
+      "headers": [],
+      "tests": [],
+      "containerId": "folder-jobs",
+      "notes": "Requires authentication and job ownership"
+    },
+    {
+      "id": "req-import-jobs-adzuna",
+      "name": "Import Jobs - Adzuna (Admin)",
+      "url": "http://localhost:3000/api/import/jobs",
+      "method": "POST",
+      "sortNum": 30000,
+      "created": "2025-10-11T01:58:00.000Z",
+      "modified": "2025-10-11T01:58:00.000Z",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"source\": \"adzuna\",\n  \"query\": \"developer\",\n  \"location\": \"germany\",\n  \"limit\": 50\n}",
+        "form": []
+      },
+      "tests": [],
+      "containerId": "folder-import",
+      "notes": "Requires admin authentication"
+    },
+    {
+      "id": "req-import-jobs-rapidapi",
+      "name": "Import Jobs - RapidAPI (Admin)",
+      "url": "http://localhost:3000/api/import/jobs",
+      "method": "POST",
+      "sortNum": 30001,
+      "created": "2025-10-11T01:58:00.000Z",
+      "modified": "2025-10-11T01:58:00.000Z",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"source\": \"rapidapi\",\n  \"query\": \"software engineer\",\n  \"location\": \"Berlin\",\n  \"limit\": 30\n}",
+        "form": []
+      },
+      "tests": [],
+      "containerId": "folder-import",
+      "notes": "Requires admin authentication"
+    },
+    {
+      "id": "req-get-import-status",
+      "name": "Get Import Status",
+      "url": "http://localhost:3000/api/import/jobs?run_id={import-run-id}",
+      "method": "GET",
+      "sortNum": 30002,
+      "created": "2025-10-11T01:58:00.000Z",
+      "modified": "2025-10-11T01:58:00.000Z",
+      "headers": [],
+      "params": [
+        {
+          "name": "run_id",
+          "value": "{import-run-id}",
+          "isPath": false
+        }
+      ],
+      "tests": [],
+      "containerId": "folder-import",
+      "notes": "Replace {import-run-id} with actual import run ID"
+    },
+    {
+      "id": "req-import-affiliates-awin",
+      "name": "Import Affiliates - Awin (Admin)",
+      "url": "http://localhost:3000/api/import/affiliates",
+      "method": "POST",
+      "sortNum": 30003,
+      "created": "2025-10-11T01:58:00.000Z",
+      "modified": "2025-10-11T01:58:00.000Z",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"source\": \"awin\",\n  \"category\": \"electronics\",\n  \"limit\": 100\n}",
+        "form": []
+      },
+      "tests": [],
+      "containerId": "folder-import",
+      "notes": "Requires admin authentication"
+    },
+    {
+      "id": "req-import-affiliates-adcell",
+      "name": "Import Affiliates - Adcell (Admin)",
+      "url": "http://localhost:3000/api/import/affiliates",
+      "method": "POST",
+      "sortNum": 30004,
+      "created": "2025-10-11T01:58:00.000Z",
+      "modified": "2025-10-11T01:58:00.000Z",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"source\": \"adcell\",\n  \"program_id\": \"12345\"\n}",
+        "form": []
+      },
+      "tests": [],
+      "containerId": "folder-import",
+      "notes": "Requires admin authentication"
+    },
+    {
+      "id": "req-create-paypal-order",
+      "name": "Create PayPal Order (Auth)",
+      "url": "http://localhost:3000/api/payment/paypal",
+      "method": "POST",
+      "sortNum": 40000,
+      "created": "2025-10-11T01:58:00.000Z",
+      "modified": "2025-10-11T01:58:00.000Z",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"amount\": 29.99,\n  \"currency\": \"EUR\",\n  \"description\": \"Premium Plan\",\n  \"item_type\": \"pricing_plan\",\n  \"item_id\": \"plan-id-here\"\n}",
+        "form": []
+      },
+      "tests": [],
+      "containerId": "folder-payment",
+      "notes": "Requires authentication"
+    },
+    {
+      "id": "req-capture-paypal-payment",
+      "name": "Capture PayPal Payment (Auth)",
+      "url": "http://localhost:3000/api/payment/paypal",
+      "method": "PUT",
+      "sortNum": 40001,
+      "created": "2025-10-11T01:58:00.000Z",
+      "modified": "2025-10-11T01:58:00.000Z",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"orderId\": \"paypal-order-id-here\"\n}",
+        "form": []
+      },
+      "tests": [],
+      "containerId": "folder-payment",
+      "notes": "Requires authentication. Use orderId from Create Order response"
+    },
+    {
+      "id": "req-get-payment-status",
+      "name": "Get Payment Status",
+      "url": "http://localhost:3000/api/payment/paypal?payment_id={payment-id}",
+      "method": "GET",
+      "sortNum": 40002,
+      "created": "2025-10-11T01:58:00.000Z",
+      "modified": "2025-10-11T01:58:00.000Z",
+      "headers": [],
+      "params": [
+        {
+          "name": "payment_id",
+          "value": "{payment-id}",
+          "isPath": false
+        }
+      ],
+      "tests": [],
+      "containerId": "folder-payment",
+      "notes": "Replace {payment-id} with actual payment ID"
+    }
+  ]
+}

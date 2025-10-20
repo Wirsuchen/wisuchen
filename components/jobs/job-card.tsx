@@ -279,6 +279,21 @@ export function JobCard({ job, variant = 'default', showCompany = true }: JobCar
                 View Details
               </Link>
             </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={async () => {
+                try {
+                  await fetch('/api/saved', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ offer_id: job.id }),
+                  })
+                } catch {}
+              }}
+            >
+              Save
+            </Button>
             
             {job.application_url && (
               <Button size="sm" asChild>
