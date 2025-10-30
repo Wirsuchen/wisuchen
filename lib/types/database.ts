@@ -1,7 +1,7 @@
 // Database types for TalentPlus - Import from generated Supabase types
 // NOTE: Do not re-export Database here to avoid conflicts with the local interface below.
 // Instead, import the generated enum helper and derive enum aliases for use in this file.
-import type { Enums as SupaEnums } from './database.generated'
+import type { Enums as SupaEnums } from './supabase'
 
 // Enum aliases from generated Supabase types
 export type UserRole = SupaEnums<'user_role'>

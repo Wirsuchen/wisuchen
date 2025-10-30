@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import type { OfferInsert, OfferUpdate } from '@/lib/types/database'
+import { API_CONFIG } from '@/lib/config/api-keys'
+import { searchAdzunaJobs } from '@/lib/api/adzuna'
 
 // GET /api/jobs - Fetch jobs with filtering and pagination
 export async function GET(request: NextRequest) {
@@ -17,6 +19,7 @@ export async function GET(request: NextRequest) {
     const remote = searchParams.get('remote')
     const search = searchParams.get('search')
     const featured = searchParams.get('featured')
+    const includeExternal = (searchParams.get('include_external') ?? 'true') === 'true'
     
     const offset = (page - 1) * limit
 
@@ -73,20 +76,44 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch jobs' }, { status: 500 })
     }
 
-    // Get total count for pagination
+    // Get total count for pagination (DB only)
     const { count: totalCount } = await supabase
       .from('offers')
       .select('*', { count: 'exact', head: true })
       .eq('status', 'active')
       .eq('type', 'job')
 
+    // Optionally fetch Adzuna external jobs and merge
+    let externalJobs: any[] = []
+    if (includeExternal && API_CONFIG.adzuna.enabled) {
+      const country = 'de'
+      // Map location to postcode if a German postal code is detected
+      const postcode = location && /^\d{5}$/.test(location) ? location : undefined
+      externalJobs = await searchAdzunaJobs({
+        country: country as any,
+        what: search ?? undefined,
+        where: postcode ? undefined : location ?? undefined,
+        postcode,
+        radiusKm: 25,
+        page: 1,
+        resultsPerPage: Math.max(0, 20 - (jobs?.length ?? 0)),
+        remote: remote === 'true' ? true : false,
+        language: 'de',
+        currency: 'EUR',
+        isTest: false,
+      })
+    }
+
+    // Merge with external (append, keep DB first)
+    const combined = [...(jobs || []), ...externalJobs]
+
     return NextResponse.json({
-      jobs,
+      jobs: combined,
       pagination: {
         page,
         limit,
-        total: totalCount || 0,
-        pages: Math.ceil((totalCount || 0) / limit)
+        total: (totalCount || 0) + (externalJobs?.length || 0),
+        pages: Math.max(1, Math.ceil((totalCount || 0) / limit)),
       }
     })
   } catch (error) {

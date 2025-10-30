@@ -62,18 +62,18 @@ export default function RotatingText({
   return (
     <span className={className} aria-live="polite">
       {mounted ? (
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.span
-            key={current}
-            initial={{ opacity: 0, y: 8, filter: 'blur(2px)' }}
-            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-            exit={{ opacity: 0, y: -8, filter: 'blur(2px)' }}
-            transition={{ type: 'spring', stiffness: 260, damping: 22, mass: 0.6 }}
-            className="inline-block"
-          >
-            {current}
-          </motion.span>
-        </AnimatePresence>
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.span
+          key={current}
+          initial={{ opacity: 0, y: 8, filter: 'blur(2px)' }}
+          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+          exit={{ opacity: 0, y: -8, filter: 'blur(2px)' }}
+          transition={{ type: 'spring', stiffness: 260, damping: 22, mass: 0.6 }}
+          className="inline-block"
+        >
+          {current}
+        </motion.span>
+      </AnimatePresence>
       ) : (
         <span className="inline-block">{words[0]}</span>
       )}

@@ -16,7 +16,7 @@ export function PageLayout({
   children,
   showBackButton = true,
   mainClassName = "",
-  containerClassName = "container mx-auto px-4 sm:px-6 py-8"
+  containerClassName = ""
 }: PageLayoutProps) {
   const pathname = usePathname()
   const isHomePage = pathname === "/"
@@ -34,7 +34,7 @@ export function PageLayout({
         )}
 
         {/* Page Content */}
-        <div className={containerClassName}>
+        <div className={`container mx-auto px-4 sm:px-6 py-8 ${containerClassName}`}>
           {children}
         </div>
       </main>

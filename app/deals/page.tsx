@@ -1,8 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { Header } from "@/components/layout/header"
-import { Footer } from "@/components/layout/footer"
+import { useEffect, useState } from "react"
+import { PageLayout } from "@/components/layout/page-layout"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -22,6 +21,7 @@ export default function DealsPage() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [selectedBrands, setSelectedBrands] = useState<string[]>([])
   const [priceRange, setPriceRange] = useState("")
+  const [externalDeals, setExternalDeals] = useState<any[]>([])
 
   const categories = ["Electronics", "Fashion", "Home & Garden", "Sports", "Books", "Beauty", "Automotive", "Toys"]
 
@@ -169,6 +169,39 @@ export default function DealsPage() {
 
   const sortedDeals = sortDeals(filteredDeals, sortBy)
 
+  // Load external deals from API and map to our local shape
+  useEffect(() => {
+    const loadExternal = async () => {
+      try {
+        const res = await fetch('/api/deals?page=1&limit=12', { cache: 'no-store' })
+        if (!res.ok) return
+        const data = await res.json()
+        const mapped = (data.deals || []).map((d: any) => ({
+          id: d.id,
+          title: d.title,
+          brand: d.store || 'Partner',
+          category: 'External',
+          originalPrice: d.originalPrice ?? 0,
+          currentPrice: d.currentPrice ?? 0,
+          discount: d.discount ?? 0,
+          rating: d.rating ?? 0,
+          reviews: d.reviews ?? 0,
+          image: d.image || '/placeholder.jpg',
+          stores: [
+            { name: d.store || 'Partner', price: d.currentPrice ?? 0, shipping: '—', inStock: true },
+          ],
+          featured: false,
+          savings: d.originalPrice && d.currentPrice ? Math.max(0, Number(d.originalPrice) - Number(d.currentPrice)) : 0,
+          url: d.url || null,
+        }))
+        setExternalDeals(mapped)
+      } catch {}
+    }
+    loadExternal()
+  }, [])
+
+  const mergedDeals = [...sortedDeals, ...externalDeals]
+
   const clearAll = () => {
     setSearchQuery("")
     setSortBy("best-deal")
@@ -178,10 +211,8 @@ export default function DealsPage() {
   }
 
   return (
-    <div className="min-h-screen">
-      <Header />
-
-      <main className="pt-24 container mx-auto px-4 py-8">
+    <PageLayout showBackButton={false} containerClassName="container mx-auto px-4 sm:px-6 py-8">
+      <>
         {/* Search Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-4">Best Deals & Price Comparison</h1>
@@ -306,7 +337,7 @@ export default function DealsPage() {
           <div className="flex-1">
             <div className="flex items-center justify-between mb-6">
               <p className="text-muted-foreground">
-                Showing <span className="font-semibold">{sortedDeals.length}</span> deals
+                Showing <span className="font-semibold">{mergedDeals.length}</span> deals
               </p>
               <div className="flex items-center space-x-2">
                 <Button
@@ -330,7 +361,7 @@ export default function DealsPage() {
 
             {viewMode === "grid" ? (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {sortedDeals.map((deal) => (
+                {mergedDeals.map((deal) => (
                   <Card key={deal.id} className="hover:shadow-lg transition-shadow">
                     <CardContent className="p-0">
                       <div className="relative">
@@ -383,9 +414,9 @@ export default function DealsPage() {
                         </div>
 
                         <Button className="w-full mt-4" asChild>
-                          <Link href={`/deals/${deal.id}`}>
+                          <Link href={(deal as any).url ? (deal as any).url : `/deals/${deal.id}`} target={(deal as any).url ? '_blank' : undefined} rel={(deal as any).url ? 'noopener noreferrer' : undefined}>
                             <ShoppingBag className="h-4 w-4 mr-2" />
-                            Compare Prices
+                            {(deal as any).url ? 'View Deal' : 'Compare Prices'}
                           </Link>
                         </Button>
                       </div>
@@ -395,7 +426,7 @@ export default function DealsPage() {
               </div>
             ) : (
               <div className="space-y-4">
-                {sortedDeals.map((deal) => (
+                {mergedDeals.map((deal) => (
                   <Card key={deal.id} className="hover:shadow-lg transition-shadow">
                     <CardContent className="p-6">
                       <div className="flex items-start space-x-4">
@@ -439,9 +470,9 @@ export default function DealsPage() {
                             <div className="flex items-center space-x-4">
                               <span className="text-sm text-muted-foreground">{deal.stores.length} stores</span>
                               <Button asChild>
-                                <Link href={`/deals/${deal.id}`}>
+                                <Link href={(deal as any).url ? (deal as any).url : `/deals/${deal.id}`} target={(deal as any).url ? '_blank' : undefined} rel={(deal as any).url ? 'noopener noreferrer' : undefined}>
                                   <ShoppingBag className="h-4 w-4 mr-2" />
-                                  Compare Prices
+                                  {(deal as any).url ? 'View Deal' : 'Compare Prices'}
                                 </Link>
                               </Button>
                             </div>
@@ -474,9 +505,7 @@ export default function DealsPage() {
             </div>
           </div>
         </div>
-      </main>
-
-      <Footer />
-    </div>
+      </>
+    </PageLayout>
   )
 }

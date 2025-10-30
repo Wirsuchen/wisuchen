@@ -37,19 +37,63 @@ export class RapidAPIService {
       }
     })
 
-    const response = await fetch(url.toString(), {
-      method: 'GET',
-      headers: {
-        ...this.baseHeaders,
-        'X-RapidAPI-Host': host
-      }
+    console.log('🔵 [RapidAPI] Making request:', {
+      host,
+      endpoint,
+      fullUrl: url.toString(),
+      params,
+      apiKey: this.apiKey ? '✓ Present' : '✗ Missing'
     })
 
-    if (!response.ok) {
-      throw new Error(`RapidAPI error: ${response.status} ${response.statusText}`)
+    const headers = {
+      ...this.baseHeaders,
+      'X-RapidAPI-Host': host
     }
 
-    return response.json()
+    console.log('🔵 [RapidAPI] Request headers:', headers)
+
+    try {
+      const response = await fetch(url.toString(), {
+        method: 'GET',
+        headers
+      })
+
+      console.log('🔵 [RapidAPI] Response received:', {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok,
+        headers: Object.fromEntries(response.headers.entries())
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('❌ [RapidAPI] Error response:', {
+          status: response.status,
+          statusText: response.statusText,
+          body: errorText
+        })
+        throw new Error(`RapidAPI error: ${response.status} ${response.statusText} - ${errorText}`)
+      }
+
+      const data = await response.json()
+      console.log('✅ [RapidAPI] Success:', {
+        host,
+        dataKeys: Object.keys(data),
+        dataType: typeof data,
+        hasJobs: !!(data.jobs || data.data),
+        jobCount: (data.jobs || data.data || []).length
+      })
+
+      return data
+    } catch (error: any) {
+      console.error('❌ [RapidAPI] Request failed:', {
+        host,
+        endpoint,
+        error: error.message,
+        stack: error.stack
+      })
+      throw error
+    }
   }
 
   // Employment Agency API
@@ -199,7 +243,145 @@ export class RapidAPIService {
     }
   }
 
+  // Job Search API - Latest jobs from last 7 days (hourly refresh)
+  // This is the PRIMARY source for most recent job postings
+  async searchJobSearchAPI(params: {
+    keyword: string
+    location?: string
+    page?: number
+    limit?: number
+    category?: string
+  }): Promise<RapidAPIJob[]> {
+    console.log('🔥 [Job Search API] Starting search with params:', params)
+    
+    try {
+      const requestParams = {
+        keyword: params.keyword || 'developer',
+        location: params.location,
+        page: params.page || 1,
+        limit: Math.min(params.limit || 20, 50),
+        category: params.category
+      }
+      
+      console.log('🔥 [Job Search API] Request params:', requestParams)
+      
+      const data = await this.makeRequest(
+        'job-search-api2.p.rapidapi.com',
+        'jobs',
+        requestParams
+      )
+      
+      console.log('🔥 [Job Search API] Raw response:', {
+        keys: Object.keys(data),
+        type: typeof data,
+        sample: JSON.stringify(data).substring(0, 200)
+      })
+      
+      // Transform response to our format
+      const jobs = data.jobs || data.data || []
+      console.log('🔥 [Job Search API] Found jobs array:', {
+        count: jobs.length,
+        firstJob: jobs[0] ? Object.keys(jobs[0]) : 'none'
+      })
+      
+      const transformed = jobs.map((job: any) => {
+        const result = {
+          id: job.id || job.job_id || `job-search-${Date.now()}-${Math.random()}`,
+          title: job.title || job.job_title || '',
+          company: job.company || job.company_name || job.employer || 'Not specified',
+          location: job.location || job.job_location || 'Remote',
+          description: job.description || job.job_description || '',
+          salary: job.salary || job.salary_range || undefined,
+          employment_type: job.employment_type || job.job_type || undefined,
+          posted_date: job.posted_date || job.posting_date || job.date_posted || new Date().toISOString(),
+          apply_url: job.apply_url || job.application_url || job.url || undefined,
+          skills: job.skills || job.required_skills || [],
+          experience_level: job.experience_level || job.seniority_level || undefined
+        }
+        return result
+      })
+      
+      console.log('✅ [Job Search API] Transformed jobs:', transformed.length)
+      return transformed
+    } catch (error: any) {
+      console.error('❌ [Job Search API] Error:', {
+        message: error.message,
+        stack: error.stack
+      })
+      return [] // Return empty array instead of throwing to prevent cascade failure
+    }
+  }
+
+  // JSearch API - Google for Jobs aggregator (most comprehensive)
+  // Aggregates from LinkedIn, Indeed, Glassdoor, ZipRecruiter, etc.
+  async searchJSearchAPI(params: {
+    query: string
+    location?: string
+    date_posted?: 'all' | 'today' | '3days' | 'week' | 'month'
+    page?: number
+    num_pages?: number
+    employment_types?: string
+  }): Promise<RapidAPIJob[]> {
+    console.log('⚡ [JSearch API] Starting search with params:', params)
+    
+    try {
+      const requestParams = {
+        query: params.query || 'developer',
+        location: params.location,
+        date_posted: params.date_posted || 'week', // Default to last week for freshness
+        page: params.page || 1,
+        num_pages: Math.min(params.num_pages || 1, 5),
+        employment_types: params.employment_types
+      }
+      
+      console.log('⚡ [JSearch API] Request params:', requestParams)
+      
+      const data = await this.makeRequest(
+        'jsearch.p.rapidapi.com',
+        'search',
+        requestParams
+      )
+      
+      console.log('⚡ [JSearch API] Raw response:', {
+        keys: Object.keys(data),
+        type: typeof data,
+        sample: JSON.stringify(data).substring(0, 200)
+      })
+      
+      // Transform response to our format
+      const jobs = data.data || []
+      console.log('⚡ [JSearch API] Found jobs array:', {
+        count: jobs.length,
+        firstJob: jobs[0] ? Object.keys(jobs[0]) : 'none'
+      })
+      
+      const transformed = jobs.map((job: any) => ({
+        id: job.job_id || `jsearch-${Date.now()}-${Math.random()}`,
+        title: job.job_title || '',
+        company: job.employer_name || 'Not specified',
+        location: job.job_city || job.job_state || job.job_country || 'Remote',
+        description: job.job_description || '',
+        salary: job.job_salary || job.job_min_salary || job.job_max_salary || undefined,
+        employment_type: job.job_employment_type || undefined,
+        posted_date: job.job_posted_at_datetime_utc || job.job_posted_at_timestamp || new Date().toISOString(),
+        apply_url: job.job_apply_link || job.job_google_link || undefined,
+        skills: job.job_required_skills || [],
+        experience_level: job.job_experience_in_place_of_education || undefined
+      }))
+      
+      console.log('✅ [JSearch API] Transformed jobs:', transformed.length)
+      return transformed
+    } catch (error: any) {
+      console.error('❌ [JSearch API] Error:', {
+        message: error.message,
+        stack: error.stack
+      })
+      return [] // Return empty array instead of throwing
+    }
+  }
+
   // Aggregate search across multiple APIs
+  // Uses working RapidAPI endpoints (most free job APIs have been deprecated)
   async aggregateJobSearch(params: {
     query?: string
     location?: string
@@ -211,7 +393,19 @@ export class RapidAPIService {
     sources: Record<string, number>
     total: number
   }> {
-    const sources = params.sources || ['employment-agency', 'glassdoor', 'active-jobs', 'job-postings']
+    console.log('🌐 [Aggregate] Starting aggregate search:', params)
+    
+    // Use only WORKING RapidAPI job sources
+    // Most free job APIs on RapidAPI have been deprecated/removed (404 errors)
+    // These are the only ones that still work:
+    const sources = params.sources && params.sources.length > 0 
+      ? params.sources 
+      : [
+          'job-search-api',  // Latest jobs from last 7 days
+          'jsearch'          // Google for Jobs aggregator (LinkedIn, Indeed, etc.)
+        ]
+    console.log('🌐 [Aggregate] Using sources:', sources)
+    
     const results: RapidAPIJob[] = []
     const sourceCounts: Record<string, number> = {}
 
@@ -220,6 +414,25 @@ export class RapidAPIService {
         let jobs: RapidAPIJob[] = []
         
         switch (source) {
+          case 'job-search-api':
+            // PRIMARY: Latest jobs from last 7 days, hourly refresh
+            jobs = await this.searchJobSearchAPI({
+              keyword: params.query || 'developer',
+              location: params.location,
+              page: params.page,
+              limit: 50
+            })
+            break
+          case 'jsearch':
+            // SECONDARY: Google for Jobs aggregator
+            jobs = await this.searchJSearchAPI({
+              query: params.query || 'developer',
+              location: params.location,
+              date_posted: 'week', // Last 7 days for freshness
+              page: params.page,
+              employment_types: params.employment_type
+            })
+            break
           case 'employment-agency':
             jobs = await this.searchEmploymentAgencyJobs(params)
             break
@@ -244,7 +457,7 @@ export class RapidAPIService {
         }
 
         sourceCounts[source] = jobs.length
-        return jobs.map(job => ({ ...job, source }))
+        return jobs.map(job => ({ ...job, source: `rapidapi-${source}` }))
       } catch (error) {
         console.error(`Error fetching from ${source}:`, error)
         sourceCounts[source] = 0
@@ -253,7 +466,13 @@ export class RapidAPIService {
     })
 
     const allResults = await Promise.all(searchPromises)
+    console.log('🌐 [Aggregate] All promises resolved:', {
+      promiseCount: allResults.length,
+      resultCounts: allResults.map(r => r.length)
+    })
+    
     allResults.forEach(jobs => results.push(...jobs))
+    console.log('🌐 [Aggregate] Total results before dedup:', results.length)
 
     // Remove duplicates based on title and company
     const uniqueJobs = results.filter((job, index, self) => 
@@ -262,6 +481,20 @@ export class RapidAPIService {
         j.company.toLowerCase() === job.company.toLowerCase()
       )
     )
+    console.log('🌐 [Aggregate] After deduplication:', uniqueJobs.length)
+
+    // Sort by posted date (newest first)
+    uniqueJobs.sort((a, b) => {
+      const dateA = new Date(a.posted_date || 0).getTime()
+      const dateB = new Date(b.posted_date || 0).getTime()
+      return dateB - dateA
+    })
+
+    console.log('✅ [Aggregate] Final result:', {
+      uniqueJobs: uniqueJobs.length,
+      sources: sourceCounts,
+      total: uniqueJobs.length
+    })
 
     return {
       jobs: uniqueJobs,

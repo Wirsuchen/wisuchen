@@ -20,12 +20,13 @@ import { formatDistanceToNow } from 'date-fns'
 import type { OfferWithRelations } from '@/lib/types/database'
 
 interface JobCardProps {
-  job: OfferWithRelations
+  job: OfferWithRelations & { is_external?: boolean; application_url?: string | null; source?: string | null }
   variant?: 'default' | 'compact' | 'featured'
   showCompany?: boolean
 }
 
 export function JobCard({ job, variant = 'default', showCompany = true }: JobCardProps) {
+  const isExternal = Boolean((job as any).is_external || ((job as any).source && (job as any).source !== 'manual'))
   const formatSalary = (min?: number | null, max?: number | null, currency = 'EUR', period = 'yearly') => {
     if (!min && !max) return null
     
@@ -89,7 +90,7 @@ export function JobCard({ job, variant = 'default', showCompany = true }: JobCar
                 )}
               </div>
               
-              <Link href={`/jobs/${job.id}`} className="block">
+              <Link href={isExternal && (job as any).application_url ? (job as any).application_url : `/jobs/${job.id}`} className="block" target={isExternal ? '_blank' : undefined} rel={isExternal ? 'noopener noreferrer' : undefined}>
                 <h3 className="font-semibold text-lg hover:text-primary truncate">
                   {job.title}
                 </h3>
@@ -167,7 +168,7 @@ export function JobCard({ job, variant = 'default', showCompany = true }: JobCar
                 )}
               </div>
               
-              <Link href={`/jobs/${job.id}`}>
+              <Link href={isExternal && (job as any).application_url ? (job as any).application_url : `/jobs/${job.id}`} target={isExternal ? '_blank' : undefined} rel={isExternal ? 'noopener noreferrer' : undefined}>
                 <h3 className="font-semibold text-xl hover:text-primary transition-colors">
                   {job.title}
                 </h3>
@@ -275,10 +276,11 @@ export function JobCard({ job, variant = 'default', showCompany = true }: JobCar
           
           <div className="flex gap-2">
             <Button variant="outline" size="sm" asChild>
-              <Link href={`/jobs/${job.id}`}>
-                View Details
+              <Link href={isExternal && (job as any).application_url ? (job as any).application_url : `/jobs/${job.id}`} target={isExternal ? '_blank' : undefined} rel={isExternal ? 'noopener noreferrer' : undefined}>
+                {isExternal ? 'View Job' : 'View Details'}
               </Link>
             </Button>
+            {!isExternal && (
             <Button
               variant="outline"
               size="sm"
@@ -294,6 +296,7 @@ export function JobCard({ job, variant = 'default', showCompany = true }: JobCar
             >
               Save
             </Button>
+            )}
             
             {job.application_url && (
               <Button size="sm" asChild>

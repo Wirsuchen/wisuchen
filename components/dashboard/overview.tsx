@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Briefcase, ShoppingBag, FileText, TrendingUp, Eye, Users, TestTube } from "lucide-react"
 import Link from "next/link"
 import { formatEuroText } from "@/lib/utils"
+import { LatestJobsWidget } from "@/components/dashboard/latest-jobs-widget"
 
 export function DashboardOverview() {
   const [loading, setLoading] = useState(true)
@@ -202,6 +203,9 @@ export function DashboardOverview() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Latest Jobs from All API Sources */}
+      <LatestJobsWidget />
 
       {/* Quick Actions */}
       <Card>
