@@ -17,7 +17,8 @@ import {
   Line,
   PieChart,
   Pie,
-  Cell
+  Cell,
+  ComposedChart
 } from 'recharts'
 import { 
   Users, 
@@ -34,6 +35,7 @@ import {
 } from 'lucide-react'
 import { JobImportManager } from './job-import'
 import { AffiliateImportManager } from './affiliate-import'
+import { useIsMobile } from '@/hooks/use-mobile'
 
 interface DashboardStats {
   totalJobs: number
@@ -50,7 +52,7 @@ interface DashboardStats {
 
 interface ChartData {
   name: string
-  value: number
+  value?: number
   jobs?: number
   revenue?: number
   imports?: number
@@ -71,6 +73,7 @@ export function AdminDashboard() {
     totalClicks: 0
   })
   const [isLoading, setIsLoading] = useState(true)
+  const isMobile = useIsMobile()
 
   // Mock data for charts
   const monthlyData: ChartData[] = [
@@ -150,7 +153,7 @@ export function AdminDashboard() {
         <Icon className={`h-4 w-4 ${color}`} />
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{value.toLocaleString()}</div>
+        <div className="text-2xl font-bold">{typeof value === 'number' ? value.toLocaleString() : value}</div>
         <p className="text-xs text-muted-foreground">{description}</p>
         {trend && (
           <div className="flex items-center pt-1">
@@ -164,7 +167,7 @@ export function AdminDashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
         <div>
           <h1 className="text-3xl font-bold">Admin Dashboard</h1>
           <p className="text-muted-foreground">Manage your TalentPlus job portal</p>
@@ -176,7 +179,7 @@ export function AdminDashboard() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-2">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="jobs">Job Import</TabsTrigger>
           <TabsTrigger value="affiliates">Affiliates</TabsTrigger>
@@ -227,7 +230,7 @@ export function AdminDashboard() {
               value={stats.totalImports}
               description={`${stats.successfulImports} successful`}
               icon={Download}
-              trend={`${Math.round((stats.successfulImports / stats.totalImports) * 100)}% success rate`}
+              trend={`${stats.totalImports ? Math.round((stats.successfulImports / stats.totalImports) * 100) : 0}% success rate`}
               color="text-indigo-600"
             />
             <StatCard
@@ -248,7 +251,7 @@ export function AdminDashboard() {
             />
             <StatCard
               title="Conversion Rate"
-              value={`${Math.round((stats.totalClicks / stats.totalViews) * 100)}%`}
+              value={`${stats.totalViews ? Math.round((stats.totalClicks / stats.totalViews) * 100) : 0}%`}
               description="Views to applications"
               icon={TrendingUp}
               trend="+3% from last month"
@@ -264,8 +267,8 @@ export function AdminDashboard() {
                 <CardDescription>Job postings and revenue over time</CardDescription>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={monthlyData}>
+                <ResponsiveContainer width="100%" height={isMobile ? 220 : 300}>
+                  <ComposedChart data={monthlyData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis yAxisId="left" />
@@ -273,7 +276,7 @@ export function AdminDashboard() {
                     <Tooltip />
                     <Bar yAxisId="left" dataKey="jobs" fill="#8884d8" name="Jobs" />
                     <Line yAxisId="right" type="monotone" dataKey="revenue" stroke="#82ca9d" name="Revenue (€)" />
-                  </LineChart>
+                  </ComposedChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
@@ -284,14 +287,14 @@ export function AdminDashboard() {
                 <CardDescription>Distribution of job postings by category</CardDescription>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer width="100%" height={isMobile ? 220 : 300}>
                   <PieChart>
                     <Pie
                       data={categoryData}
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
                       outerRadius={80}
                       fill="#8884d8"
                       dataKey="value"
@@ -322,7 +325,7 @@ export function AdminDashboard() {
                   { action: 'Job Import', source: 'RapidAPI', count: 8, time: '1 hour ago', status: 'failed' },
                   { action: 'User Registration', source: 'Website', count: 3, time: '2 hours ago', status: 'success' }
                 ].map((activity, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div key={index} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 border rounded-lg">
                     <div className="flex items-center gap-3">
                       <div className={`w-2 h-2 rounded-full ${
                         activity.status === 'success' ? 'bg-green-500' : 'bg-red-500'
@@ -358,14 +361,14 @@ export function AdminDashboard() {
                 <CardDescription>Distribution of job sources</CardDescription>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer width="100%" height={isMobile ? 220 : 300}>
                   <PieChart>
                     <Pie
                       data={sourceData}
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
                       outerRadius={80}
                       fill="#8884d8"
                       dataKey="value"
@@ -386,7 +389,7 @@ export function AdminDashboard() {
                 <CardDescription>Import activity over time</CardDescription>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer width="100%" height={isMobile ? 220 : 300}>
                   <BarChart data={monthlyData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
@@ -436,7 +439,7 @@ export function AdminDashboard() {
               <CardContent>
                 <div className="text-center">
                   <div className="text-3xl font-bold text-green-600">
-                    {Math.round((stats.successfulImports / stats.totalImports) * 100)}%
+                    {stats.totalImports ? Math.round((stats.successfulImports / stats.totalImports) * 100) : 0}%
                   </div>
                   <p className="text-sm text-muted-foreground">
                     {stats.successfulImports} of {stats.totalImports} imports successful

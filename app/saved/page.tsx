@@ -51,24 +51,24 @@ export default function SavedPage() {
   }))
 
   return (
-    <PageLayout containerClassName="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Saved Items</h1>
+    <PageLayout containerClassName="container mx-auto px-4 py-8 max-w-6xl">
+      <div className="mb-8 text-center md:text-left">
+        <h1 className="text-3xl md:text-4xl font-bold mb-2">Saved Items</h1>
         <p className="text-muted-foreground">Keep track of your favorite jobs and deals in one place.</p>
       </div>
 
       <Tabs defaultValue="jobs" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 max-w-md">
+        <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto md:mx-0">
           <TabsTrigger value="jobs">Saved Jobs ({savedJobs.length}{loading ? '…' : ''})</TabsTrigger>
           <TabsTrigger value="deals">Saved Deals ({savedDeals.length}{loading ? '…' : ''})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="jobs" className="mt-6">
-          <div className="grid gap-6">
+          <div className="grid gap-4 md:gap-6">
             {savedJobs.map((job) => (
               <Card key={job.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
-                  <div className="flex items-start justify-between">
+                  <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
                     <div className="flex items-center space-x-4">
                       <img
                         src={job.logo || "/placeholder.svg"}
@@ -91,19 +91,19 @@ export default function SavedPage() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex flex-wrap items-center gap-4 mb-4">
+                  <div className="flex flex-wrap items-center gap-2 md:gap-4 mb-4">
                     <div className="flex items-center text-sm text-muted-foreground">
                       <span>{job.location}</span>
                     </div>
                     <Badge variant="secondary">{job.type}</Badge>
                     <div className="text-sm font-medium text-primary">{job.salary}</div>
                   </div>
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div className="flex items-center text-sm text-muted-foreground">
                       <Calendar className="h-4 w-4 mr-1" />
                       Saved on {new Date(job.savedDate).toLocaleDateString()}
                     </div>
-                    <div className="flex space-x-2">
+                    <div className="flex flex-wrap gap-2">
                       <Link href={`/jobs/${job.id}`}>
                         <Button variant="outline" size="sm">
                           <ExternalLink className="h-4 w-4 mr-2" />
@@ -118,7 +118,7 @@ export default function SavedPage() {
             ))}
 
             {!loading && savedJobs.length === 0 && (
-              <Card className="text-center py-12">
+              <Card className="text-center py-12 max-w-2xl mx-auto">
                 <CardContent>
                   <Heart className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                   <h3 className="text-lg font-semibold mb-2">No saved jobs yet</h3>
@@ -135,11 +135,11 @@ export default function SavedPage() {
         </TabsContent>
 
         <TabsContent value="deals" className="mt-6">
-          <div className="grid gap-6">
+          <div className="grid gap-4 md:gap-6">
             {savedDeals.map((deal) => (
               <Card key={deal.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
-                  <div className="flex items-start justify-between">
+                  <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
                     <div className="flex items-center space-x-4">
                       <img
                         src={deal.image || "/placeholder.svg"}
@@ -162,19 +162,19 @@ export default function SavedPage() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
                     <div className="flex items-center space-x-4">
                       <div className="text-2xl font-bold text-primary">${deal.currentPrice}</div>
                       <div className="text-sm text-muted-foreground line-through">${deal.originalPrice}</div>
                       <Badge variant="destructive">{deal.discount}% OFF</Badge>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div className="flex items-center text-sm text-muted-foreground">
                       <Calendar className="h-4 w-4 mr-1" />
                       Saved on {new Date(deal.savedDate).toLocaleDateString()}
                     </div>
-                    <div className="flex space-x-2">
+                    <div className="flex flex-wrap gap-2">
                       <Link href={`/deals/${deal.id}`}>
                         <Button variant="outline" size="sm">
                           <ExternalLink className="h-4 w-4 mr-2" />
@@ -189,7 +189,7 @@ export default function SavedPage() {
             ))}
 
             {!loading && savedDeals.length === 0 && (
-              <Card className="text-center py-12">
+              <Card className="text-center py-12 max-w-2xl mx-auto">
                 <CardContent>
                   <Heart className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                   <h3 className="text-lg font-semibold mb-2">No saved deals yet</h3>

@@ -65,8 +65,8 @@ export function DashboardSidebar() {
   ]
 
   return (
-    <div className={cn("bg-muted/50 border-r transition-all duration-300", collapsed ? "w-16" : "w-64")}>
-      <div className="flex h-full flex-col">
+    <div className={cn("bg-muted/50 border-r transition-all duration-300 h-screen sticky top-0", collapsed ? "w-16" : "w-64")}>
+      <div className="flex flex-col h-full">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">
           {!collapsed && <h2 className="text-lg font-semibold">Dashboard</h2>}
