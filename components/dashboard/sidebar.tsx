@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { useAuth } from "@/contexts/auth-context"
 import {
   LayoutDashboard,
   Briefcase,
@@ -22,6 +23,7 @@ import {
 export function DashboardSidebar() {
   const [collapsed, setCollapsed] = useState(false)
   const pathname = usePathname()
+  const { user } = useAuth()
 
   const navigation = [
     {
@@ -110,23 +112,36 @@ export function DashboardSidebar() {
         </nav>
 
         {/* User Info */}
-        {!collapsed && (
+        {!collapsed && user && (
           <div className="p-4 border-t">
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-primary-foreground font-semibold">
-                    JD
-                  </div>
+                  {user.avatar ? (
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-muted flex-shrink-0">
+                      <img
+                        src={user.avatar}
+                        alt={user.name}
+                        className="w-full h-full object-cover"
+                        referrerPolicy="no-referrer"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-primary-foreground font-semibold">
+                      {user.name.charAt(0).toUpperCase()}
+                    </div>
+                  )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">John Doe</p>
-                    <p className="text-xs text-muted-foreground truncate">john@example.com</p>
+                    <p className="text-sm font-medium truncate">{user.name}</p>
+                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                   </div>
                 </div>
-                <Button variant="outline" size="sm" className="w-full mt-3 bg-transparent">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Settings
-                </Button>
+                <Link href="/dashboard/profile">
+                  <Button variant="outline" size="sm" className="w-full mt-3 bg-transparent">
+                    <Settings className="h-4 w-4 mr-2" />
+                    Settings
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           </div>

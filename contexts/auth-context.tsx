@@ -43,8 +43,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUser({
             id: session.user.id,
             email: session.user.email || '',
-            name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
-            avatar: session.user.user_metadata?.avatar_url || undefined,
+            name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
+            avatar: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || undefined,
             role: session.user.user_metadata?.role || 'user',
             company: session.user.user_metadata?.company || undefined,
           })
@@ -68,8 +68,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser({
           id: session.user.id,
           email: session.user.email || '',
-          name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
-          avatar: session.user.user_metadata?.avatar_url || undefined,
+          name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
+          avatar: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || undefined,
           role: session.user.user_metadata?.role || 'user',
           company: session.user.user_metadata?.company || undefined,
         })

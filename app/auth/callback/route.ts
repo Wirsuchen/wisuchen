@@ -26,10 +26,19 @@ export async function GET(request: NextRequest) {
           .insert({
             user_id: data.user.id,
             email: data.user.email!,
-            full_name: data.user.user_metadata?.full_name || data.user.user_metadata?.name || '',
-            avatar_url: data.user.user_metadata?.avatar_url || null,
+            full_name: data.user.user_metadata?.full_name || data.user.user_metadata?.name || data.user.email?.split('@')[0] || '',
+            avatar_url: data.user.user_metadata?.avatar_url || data.user.user_metadata?.picture || null,
             role: 'job_seeker', // default role
           })
+      } else {
+        // Update profile with latest OAuth data if profile exists
+        await supabase
+          .from('profiles')
+          .update({
+            full_name: data.user.user_metadata?.full_name || data.user.user_metadata?.name || profile.full_name,
+            avatar_url: data.user.user_metadata?.avatar_url || data.user.user_metadata?.picture || profile.avatar_url,
+          })
+          .eq('user_id', data.user.id)
       }
 
       const forwardedHost = request.headers.get('x-forwarded-host') // original origin before load balancer
