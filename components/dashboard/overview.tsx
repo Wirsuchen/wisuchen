@@ -17,20 +17,48 @@ export function DashboardOverview() {
     totalInvoices: 0,
     profileViews: 0,
   })
+  const [recentAds, setRecentAds] = useState<any[]>([])
+  const [recentDeals, setRecentDeals] = useState<any[]>([])
 
   useEffect(() => {
     async function load() {
       setLoading(true)
       try {
-        const res = await fetch('/api/user/stats', { cache: 'no-store' })
-        if (!res.ok) throw new Error('Failed to load user stats')
-        const data = await res.json()
-        setUserStats({
-          activeJobAds: data.activeJobAds ?? 0,
-          savedDeals: data.savedDeals ?? 0,
-          totalInvoices: data.totalInvoices ?? 0,
-          profileViews: data.profileViews ?? 0,
-        })
+        // Fetch user stats
+        const statsRes = await fetch('/api/user/stats', { cache: 'no-store' })
+        if (statsRes.ok) {
+          const data = await statsRes.json()
+          setUserStats({
+            activeJobAds: data.activeJobAds ?? 0,
+            savedDeals: data.savedDeals ?? 0,
+            totalInvoices: data.totalInvoices ?? 0,
+            profileViews: data.profileViews ?? 0,
+          })
+        }
+
+        // Fetch real user ads (if API exists)
+        try {
+          const adsRes = await fetch('/api/user/ads?limit=3', { cache: 'no-store' })
+          if (adsRes.ok) {
+            const adsData = await adsRes.json()
+            setRecentAds(adsData.ads || [])
+          }
+        } catch (e) {
+          // API might not exist yet, just show empty
+          setRecentAds([])
+        }
+
+        // Fetch real user saved deals (if API exists)
+        try {
+          const dealsRes = await fetch('/api/user/saved-deals?limit=3', { cache: 'no-store' })
+          if (dealsRes.ok) {
+            const dealsData = await dealsRes.json()
+            setRecentDeals(dealsData.deals || [])
+          }
+        } catch (e) {
+          // API might not exist yet, just show empty
+          setRecentDeals([])
+        }
       } catch (e) {
         // eslint-disable-next-line no-console
         console.error(e)
@@ -46,60 +74,6 @@ export function DashboardOverview() {
     { title: 'Saved Deals', value: String(userStats.savedDeals), change: '', icon: ShoppingBag, color: 'text-green-600' },
     { title: 'Total Invoices', value: String(userStats.totalInvoices), change: '', icon: FileText, color: 'text-purple-600' },
     { title: 'Profile Views', value: String(userStats.profileViews), change: '', icon: Eye, color: 'text-orange-600' },
-  ]
-
-  const recentAds = [
-    {
-      id: 1,
-      title: "Senior Frontend Developer",
-      status: "Active",
-      views: 45,
-      applicants: 12,
-      posted: "2 days ago",
-    },
-    {
-      id: 2,
-      title: "Product Manager",
-      status: "Active",
-      views: 23,
-      applicants: 8,
-      posted: "1 week ago",
-    },
-    {
-      id: 3,
-      title: "UX Designer",
-      status: "Expired",
-      views: 67,
-      applicants: 15,
-      posted: "1 month ago",
-    },
-  ]
-
-  const recentDeals = [
-    {
-      id: 1,
-      title: "MacBook Pro M3 14-inch",
-      price: "€2,199",
-      originalPrice: "€2,499",
-      discount: "12%",
-      saved: "2 days ago",
-    },
-    {
-      id: 2,
-      title: "iPhone 15 Pro 128GB",
-      price: "€1,099",
-      originalPrice: "€1,199",
-      discount: "8%",
-      saved: "1 week ago",
-    },
-    {
-      id: 3,
-      title: "Sony WH-1000XM5 Headphones",
-      price: "€299",
-      originalPrice: "€399",
-      discount: "25%",
-      saved: "3 days ago",
-    },
   ]
 
   return (
@@ -148,7 +122,7 @@ export function DashboardOverview() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentAds.map((ad) => (
+              {recentAds.length > 0 ? recentAds.map((ad) => (
                 <div key={ad.id} className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex-1">
                     <h4 className="font-medium">{ad.title}</h4>
@@ -166,7 +140,16 @@ export function DashboardOverview() {
                   </div>
                   <Badge variant={ad.status === "Active" ? "default" : "secondary"}>{ad.status}</Badge>
                 </div>
-              ))}
+              )) : (
+                !loading && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <p>No job ads yet</p>
+                    <Link href="/jobs/post" className="text-primary hover:underline text-sm mt-2 inline-block">
+                      Post your first job ad
+                    </Link>
+                  </div>
+                )
+              )}
             </div>
           </CardContent>
         </Card>
@@ -186,7 +169,7 @@ export function DashboardOverview() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentDeals.map((deal) => (
+              {recentDeals.length > 0 ? recentDeals.map((deal) => (
                 <div key={deal.id} className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex-1">
                     <h4 className="font-medium">{deal.title}</h4>
@@ -198,7 +181,16 @@ export function DashboardOverview() {
                     <p className="text-xs text-muted-foreground mt-1">Saved {deal.saved}</p>
                   </div>
                 </div>
-              ))}
+              )) : (
+                !loading && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <p>No saved deals yet</p>
+                    <Link href="/deals" className="text-primary hover:underline text-sm mt-2 inline-block">
+                      Browse deals
+                    </Link>
+                  </div>
+                )
+              )}
             </div>
           </CardContent>
         </Card>
