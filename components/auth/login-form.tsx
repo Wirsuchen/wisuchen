@@ -11,8 +11,10 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2, Mail, Lock, Eye, EyeOff } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useTranslation } from '@/contexts/i18n-context'
 
 export function LoginForm() {
+  const { t } = useTranslation()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -40,12 +42,12 @@ export function LoginForm() {
       }
 
       if (data.user) {
-        setMessage('Login successful! Redirecting...')
+        setMessage(t('auth.loginSuccess'))
         router.push('/dashboard')
         router.refresh()
       }
     } catch (err) {
-      setError('An unexpected error occurred. Please try again.')
+      setError(t('common.error'))
     } finally {
       setIsLoading(false)
     }
@@ -69,14 +71,14 @@ export function LoginForm() {
       }
       // Don't set isLoading to false here as we're redirecting
     } catch (err) {
-      setError('An unexpected error occurred. Please try again.')
+      setError(t('common.error'))
       setIsLoading(false)
     }
   }
 
   const handleForgotPassword = async () => {
     if (!email) {
-      setError('Please enter your email address first.')
+      setError(t('auth.emailRequired'))
       return
     }
 
@@ -91,10 +93,10 @@ export function LoginForm() {
       if (error) {
         setError(error.message)
       } else {
-        setMessage('Password reset email sent! Check your inbox.')
+        setMessage(t('auth.passwordResetSent'))
       }
     } catch (err) {
-      setError('An unexpected error occurred. Please try again.')
+      setError(t('common.error'))
     } finally {
       setIsLoading(false)
     }
@@ -103,9 +105,9 @@ export function LoginForm() {
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold text-center">Sign In</CardTitle>
+        <CardTitle className="text-2xl font-bold text-center">{t('auth.signIn')}</CardTitle>
         <CardDescription className="text-center">
-          Enter your credentials to access your account
+          {t('auth.signInDescription')}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -146,7 +148,7 @@ export function LoginForm() {
               d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
             />
           </svg>
-          Continue with Google
+          {t('auth.continueWithGoogle')}
         </Button>
 
         <div className="relative">
@@ -154,19 +156,19 @@ export function LoginForm() {
             <span className="w-full border-t" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+            <span className="bg-background px-2 text-muted-foreground">{t('auth.orContinueWith')}</span>
           </div>
         </div>
         
         <form onSubmit={handleLogin} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t('auth.email')}</Label>
             <div className="relative">
               <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
                 id="email"
                 type="email"
-                placeholder="Enter your email"
+                placeholder={t('auth.enterEmail')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="pl-10"
@@ -177,13 +179,13 @@ export function LoginForm() {
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">{t('auth.password')}</Label>
             <div className="relative">
               <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
                 id="password"
                 type={showPassword ? 'text' : 'password'}
-                placeholder="Enter your password"
+                placeholder={t('auth.enterPassword')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="pl-10 pr-10"
@@ -211,10 +213,10 @@ export function LoginForm() {
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Signing in...
+                {t('auth.signingIn')}
               </>
             ) : (
-              'Sign In'
+              t('auth.signIn')
             )}
           </Button>
         </form>
@@ -228,13 +230,13 @@ export function LoginForm() {
           onClick={handleForgotPassword}
           disabled={isLoading}
         >
-          Forgot your password?
+          {t('auth.forgotPassword')}
         </Button>
         
         <div className="text-sm text-center text-muted-foreground">
-          Don't have an account?{' '}
+          {t('auth.noAccount')}{' '}
           <Link href="/register" className="text-primary hover:underline">
-            Sign up
+            {t('auth.signUp')}
           </Link>
         </div>
       </CardFooter>

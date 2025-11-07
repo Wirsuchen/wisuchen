@@ -1,8 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import type { OfferInsert, OfferUpdate } from '@/lib/types/database'
-import { API_CONFIG } from '@/lib/config/api-keys'
+import { API_CONFIG, CACHE_CONFIG } from '@/lib/config/api-keys'
+import { searchActiveJobsDb } from '@/lib/api/active-jobs-db'
 import { searchAdzunaJobs } from '@/lib/api/adzuna'
+import { cacheWrap } from '@/lib/api/cache'
 
 // GET /api/jobs - Fetch jobs with filtering and pagination
 export async function GET(request: NextRequest) {
@@ -22,6 +24,13 @@ export async function GET(request: NextRequest) {
     const includeExternal = (searchParams.get('include_external') ?? 'true') === 'true'
     
     const offset = (page - 1) * limit
+
+    // Create cache key based on all query parameters
+    const cacheKey = `jobs:${page}:${limit}:${category || 'all'}:${location || 'all'}:${type || 'all'}:${remote || 'false'}:${search || 'all'}:${featured || 'all'}:${includeExternal}`
+    console.log('🔑 [Jobs API] Cache key:', cacheKey)
+
+    // Use cached response if available
+    const cachedResponse = await cacheWrap(cacheKey, CACHE_CONFIG.jobs.ttl, async () => {
 
     // Build query
     let query = supabase
@@ -83,38 +92,90 @@ export async function GET(request: NextRequest) {
       .eq('status', 'active')
       .eq('type', 'job')
 
-    // Optionally fetch Adzuna external jobs and merge
+    // Fetch external jobs from multiple sources (prioritized order)
     let externalJobs: any[] = []
-    if (includeExternal && API_CONFIG.adzuna.enabled) {
-      const country = 'de'
-      // Map location to postcode if a German postal code is detected
-      const postcode = location && /^\d{5}$/.test(location) ? location : undefined
-      externalJobs = await searchAdzunaJobs({
-        country: country as any,
-        what: search ?? undefined,
-        where: postcode ? undefined : location ?? undefined,
-        postcode,
-        radiusKm: 25,
-        page: 1,
-        resultsPerPage: Math.max(0, 20 - (jobs?.length ?? 0)),
-        remote: remote === 'true' ? true : false,
-        language: 'de',
-        currency: 'EUR',
-        isTest: false,
-      })
+    
+    if (includeExternal) {
+      const country = 'de' // Default to Germany for DACH region
+      const remainingSlots = Math.max(0, 20 - (jobs?.length ?? 0))
+      
+      // 1. Active Jobs DB (newest ATS jobs - highest priority)
+      if (API_CONFIG.rapidApi.enabled && remainingSlots > 0) {
+        try {
+          const activeJobsFilter = search || category || 'developer'
+          const locationFilter = location ? `"${location}"` : '"Germany" OR "Austria" OR "Switzerland"'
+          
+          const activeJobs = await searchActiveJobsDb({
+            limit: Math.min(10, remainingSlots), // Get up to 10 from Active Jobs DB
+            offset: 0,
+            title_filter: search ? `"${search}"` : undefined,
+            location_filter: locationFilter,
+            description_type: 'text',
+            country: country as any,
+          })
+          
+          externalJobs.push(...activeJobs)
+          console.log(`[Jobs API] Fetched ${activeJobs.length} jobs from Active Jobs DB`)
+        } catch (error) {
+          console.error('[Jobs API] Active Jobs DB failed:', error)
+          // Continue with other sources
+        }
+      }
+      
+      // 2. Adzuna (fallback/supplement)
+      const adzunaSlots = Math.max(0, remainingSlots - externalJobs.length)
+      if (API_CONFIG.adzuna.enabled && adzunaSlots > 0) {
+        try {
+          // Map location to postcode if a German postal code is detected
+          const postcode = location && /^\d{5}$/.test(location) ? location : undefined
+          const adzunaJobs = await searchAdzunaJobs({
+            country: country as any,
+            what: search ?? undefined,
+            where: postcode ? undefined : location ?? undefined,
+            postcode,
+            radiusKm: 25,
+            page: 1,
+            resultsPerPage: adzunaSlots,
+            remote: remote === 'true' ? true : false,
+            language: 'de',
+            currency: 'EUR',
+            isTest: false,
+          })
+          
+          externalJobs.push(...adzunaJobs)
+          console.log(`[Jobs API] Fetched ${adzunaJobs.length} jobs from Adzuna`)
+        } catch (error) {
+          console.error('[Jobs API] Adzuna failed:', error)
+          // Continue even if this source fails
+        }
+      }
     }
 
-    // Merge with external (append, keep DB first)
-    const combined = [...(jobs || []), ...externalJobs]
+    // Merge with external (Active Jobs DB first, then Adzuna, then DB jobs)
+    const combined = [...externalJobs, ...(jobs || [])]
 
-    return NextResponse.json({
+    return {
       jobs: combined,
       pagination: {
         page,
         limit,
         total: (totalCount || 0) + (externalJobs?.length || 0),
         pages: Math.max(1, Math.ceil((totalCount || 0) / limit)),
+      },
+      sources: {
+        database: jobs?.length || 0,
+        activeJobsDb: externalJobs.filter(j => j.source?.includes('active-jobs')).length,
+        adzuna: externalJobs.filter(j => j.source === 'adzuna').length,
       }
+    }
+    })
+
+    console.log(`✅ [Jobs API] Successfully fetched ${cachedResponse.jobs.length} jobs`)
+
+    return NextResponse.json({
+      ...cachedResponse,
+      cached: true,
+      cacheTtl: `${CACHE_CONFIG.jobs.ttl} seconds (${Math.round(CACHE_CONFIG.jobs.ttl / 60)} minutes)`,
     })
   } catch (error) {
     console.error('API Error:', error)

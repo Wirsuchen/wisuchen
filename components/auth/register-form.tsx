@@ -14,8 +14,10 @@ import { Loader2, Mail, Lock, Eye, EyeOff, User } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import type { UserRole } from '@/lib/types/database'
+import { useTranslation } from '@/contexts/i18n-context'
 
 export function RegisterForm() {
+  const { t } = useTranslation()
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -54,29 +56,29 @@ export function RegisterForm() {
       }
       // Don't set isLoading to false here as we're redirecting
     } catch (err) {
-      setError('An unexpected error occurred. Please try again.')
+      setError(t('common.error'))
       setIsLoading(false)
     }
   }
 
   const validateForm = () => {
     if (!formData.email || !formData.password || !formData.fullName) {
-      setError('Please fill in all required fields.')
+      setError(t('auth.allFieldsRequired', 'Please fill in all required fields.'))
       return false
     }
 
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long.')
+      setError(t('auth.passwordTooShort'))
       return false
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match.')
+      setError(t('auth.passwordsMustMatch'))
       return false
     }
 
     if (!acceptTerms) {
-      setError('Please accept the terms and conditions.')
+      setError(t('auth.acceptTermsRequired', 'Please accept the terms and conditions.'))
       return false
     }
 
@@ -130,7 +132,7 @@ export function RegisterForm() {
           // Don't show this error to user as auth was successful
         }
 
-        setMessage('Registration successful! Redirecting to dashboard...')
+        setMessage(t('auth.registrationSuccess', 'Registration successful! Redirecting to dashboard...'))
         
         // Redirect to dashboard immediately
         setTimeout(() => {
@@ -139,7 +141,7 @@ export function RegisterForm() {
         }, 1500)
       }
     } catch (err) {
-      setError('An unexpected error occurred. Please try again.')
+      setError(t('common.error'))
     } finally {
       setIsLoading(false)
     }
@@ -148,9 +150,9 @@ export function RegisterForm() {
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold text-center">Create Account</CardTitle>
+        <CardTitle className="text-2xl font-bold text-center">{t('auth.createAccount')}</CardTitle>
         <CardDescription className="text-center">
-          Join TalentPlus to find your dream job or hire top talent
+          {t('auth.signUpDescription')}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -191,7 +193,7 @@ export function RegisterForm() {
               d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
             />
           </svg>
-          Continue with Google
+          {t('auth.continueWithGoogle')}
         </Button>
 
         <div className="relative">
@@ -199,19 +201,19 @@ export function RegisterForm() {
             <span className="w-full border-t" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+            <span className="bg-background px-2 text-muted-foreground">{t('auth.orContinueWith')}</span>
           </div>
         </div>
         
         <form onSubmit={handleRegister} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="fullName">Full Name *</Label>
+            <Label htmlFor="fullName">{t('auth.fullName')} *</Label>
             <div className="relative">
               <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
                 id="fullName"
                 type="text"
-                placeholder="Enter your full name"
+                placeholder={t('auth.enterFullName', 'Enter your full name')}
                 value={formData.fullName}
                 onChange={(e) => handleInputChange('fullName', e.target.value)}
                 className="pl-10"
@@ -222,13 +224,13 @@ export function RegisterForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email *</Label>
+            <Label htmlFor="email">{t('auth.email')} *</Label>
             <div className="relative">
               <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
                 id="email"
                 type="email"
-                placeholder="Enter your email"
+                placeholder={t('auth.enterEmail')}
                 value={formData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
                 className="pl-10"
@@ -239,32 +241,32 @@ export function RegisterForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="role">I am a *</Label>
+            <Label htmlFor="role">{t('auth.iAmA', 'I am a')} *</Label>
             <Select
               value={formData.role}
               onValueChange={(value) => handleInputChange('role', value)}
               disabled={isLoading}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select your role" />
+                <SelectValue placeholder={t('auth.selectRole', 'Select your role')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="job_seeker">Job Seeker</SelectItem>
-                <SelectItem value="employer">Employer</SelectItem>
-                <SelectItem value="publisher">Publisher</SelectItem>
-                <SelectItem value="blogger">Blogger</SelectItem>
+                <SelectItem value="job_seeker">{t('auth.jobSeeker', 'Job Seeker')}</SelectItem>
+                <SelectItem value="employer">{t('auth.employer', 'Employer')}</SelectItem>
+                <SelectItem value="publisher">{t('auth.publisher', 'Publisher')}</SelectItem>
+                <SelectItem value="blogger">{t('auth.blogger', 'Blogger')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="password">Password *</Label>
+            <Label htmlFor="password">{t('auth.password')} *</Label>
             <div className="relative">
               <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
                 id="password"
                 type={showPassword ? 'text' : 'password'}
-                placeholder="Create a password"
+                placeholder={t('auth.createPassword', 'Create a password')}
                 value={formData.password}
                 onChange={(e) => handleInputChange('password', e.target.value)}
                 className="pl-10 pr-10"
@@ -289,13 +291,13 @@ export function RegisterForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm Password *</Label>
+            <Label htmlFor="confirmPassword">{t('auth.confirmPassword')} *</Label>
             <div className="relative">
               <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
                 id="confirmPassword"
                 type={showConfirmPassword ? 'text' : 'password'}
-                placeholder="Confirm your password"
+                placeholder={t('auth.confirmPasswordPlaceholder', 'Confirm your password')}
                 value={formData.confirmPassword}
                 onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
                 className="pl-10 pr-10"
@@ -327,13 +329,13 @@ export function RegisterForm() {
               disabled={isLoading}
             />
             <Label htmlFor="terms" className="text-sm">
-              I agree to the{' '}
+              {t('auth.acceptTerms')}{' '}
               <Link href="/terms" className="text-primary hover:underline">
-                Terms of Service
+                {t('auth.termsAndConditions')}
               </Link>{' '}
-              and{' '}
+              {t('auth.and')}{' '}
               <Link href="/privacy" className="text-primary hover:underline">
-                Privacy Policy
+                {t('auth.privacyPolicy')}
               </Link>
             </Label>
           </div>
@@ -342,10 +344,10 @@ export function RegisterForm() {
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating account...
+                {t('auth.creatingAccount', 'Creating account...')}
               </>
             ) : (
-              'Create Account'
+              t('auth.createAccount')
             )}
           </Button>
         </form>
@@ -353,9 +355,9 @@ export function RegisterForm() {
       
       <CardFooter>
         <div className="text-sm text-center text-muted-foreground w-full">
-          Already have an account?{' '}
+          {t('auth.hasAccount')}{' '}
           <Link href="/login" className="text-primary hover:underline">
-            Sign in
+            {t('auth.signIn')}
           </Link>
         </div>
       </CardFooter>

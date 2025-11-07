@@ -2,11 +2,12 @@
 
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import {
   Heart,
@@ -20,130 +21,148 @@ import {
   XCircle,
   AlertCircle,
   ArrowLeft,
+  Play,
+  Image as ImageIcon,
+  Loader2,
 } from "lucide-react"
 import Link from "next/link"
 import { formatEuro, formatEuroText } from "@/lib/utils"
 
+interface DealDetail {
+  id: string
+  title: string
+  description: string
+  currentPrice: number
+  originalPrice: number
+  discount: number
+  rating: number
+  reviews: number
+  store: string
+  image: string
+  url: string
+  currency: string
+  category: string
+  brand?: string
+  source: string
+  product_photos?: string[]
+  product_videos?: Array<{
+    title: string
+    url: string
+    source: string
+    publisher: string
+    thumbnail: string
+    duration_ms: number
+  }>
+  product_attributes?: Record<string, any>
+  product_variants?: {
+    Size?: Array<{ name: string; product_id: string }>
+    Color?: Array<{ name: string; thumbnail: string; product_id: string }>
+  }
+  offer?: {
+    offer_id: string
+    offer_title: string | null
+    offer_page_url: string
+    price: string
+    original_price: string | null
+    on_sale: boolean
+    percent_off?: string
+    shipping: string
+    returns?: string
+    offer_badge?: string
+    product_condition: string
+    store_name: string
+    store_rating: string
+    store_review_count: number
+    store_favicon: string
+    payment_methods?: string
+  }
+}
+
 export default function DealDetailPage({ params }: { params: { id: string } }) {
-  const [selectedStore, setSelectedStore] = useState(0)
+  const [deal, setDeal] = useState<DealDetail | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [selectedImage, setSelectedImage] = useState(0)
+  const [selectedSize, setSelectedSize] = useState<string | null>(null)
+  const [selectedColor, setSelectedColor] = useState<string | null>(null)
 
-  // Mock deal data - in real app, fetch based on params.id
-  const deal = {
-    id: 1,
-    title: "MacBook Pro M3 14-inch",
-    brand: "Apple",
-    category: "Electronics",
-    originalPrice: 2499,
-    currentPrice: 2199,
-    discount: 12,
-    rating: 4.8,
-    reviews: 1247,
-    image: "/macbook-pro-deal.png",
-    images: ["/macbook-pro-deal.png", "/macbook-pro-side.jpg", "/macbook-pro-keyboard.jpg", "/macbook-pro-ports.jpg"],
-    description: `The MacBook Pro M3 14-inch delivers exceptional performance with Apple's latest M3 chip. Perfect for professionals, creators, and power users who demand the best.
+  useEffect(() => {
+    fetchDealDetails()
+  }, [params.id])
 
-Key Features:
-• Apple M3 chip with 8-core CPU and 10-core GPU
-• 14-inch Liquid Retina XDR display
-• 16GB unified memory, 512GB SSD storage
-• Up to 22 hours battery life
-• Three Thunderbolt 4 ports, HDMI port, SDXC card slot
-• 1080p FaceTime HD camera
-• Six-speaker sound system with Spatial Audio
-
-This laptop combines power, portability, and stunning display quality in one premium package.`,
-    specifications: {
-      Display: "14-inch Liquid Retina XDR",
-      Processor: "Apple M3 chip",
-      Memory: "16GB unified memory",
-      Storage: "512GB SSD",
-      Graphics: "10-core GPU",
-      Battery: "Up to 22 hours",
-      Weight: "1.55 kg",
-      Dimensions: "31.26 × 22.12 × 1.55 cm",
-    },
-    stores: [
-      {
-        name: "TechStore",
-        price: 2199,
-        originalPrice: 2499,
-        shipping: "Free",
-        shippingTime: "1-2 days",
-        inStock: true,
-        rating: 4.7,
-        url: "https://techstore.example.com",
-        logo: "/techstore-logo.png",
-        verified: true,
-      },
-      {
-        name: "ElectroWorld",
-        price: 2249,
-        originalPrice: 2499,
-        shipping: "€9.99",
-        shippingTime: "2-3 days",
-        inStock: true,
-        rating: 4.5,
-        url: "https://electroworld.example.com",
-        logo: "/electroworld-logo.png",
-        verified: true,
-      },
-      {
-        name: "ComputerHub",
-        price: 2299,
-        originalPrice: 2499,
-        shipping: "Free",
-        shippingTime: "3-5 days",
-        inStock: false,
-        rating: 4.3,
-        url: "https://computerhub.example.com",
-        logo: "/computerhub-logo.png",
-        verified: false,
-      },
-      {
-        name: "TechMart",
-        price: 2349,
-        originalPrice: 2499,
-        shipping: "€14.99",
-        shippingTime: "1-2 days",
-        inStock: true,
-        rating: 4.6,
-        url: "https://techmart.example.com",
-        logo: "/techmart-logo.png",
-        verified: true,
-      },
-    ],
-    featured: true,
-    savings: 300,
+  const fetchDealDetails = async () => {
+    try {
+      setLoading(true)
+      // First, try to get from recent deals
+      const response = await fetch(`/api/deals?page=1&limit=50`)
+      const data = await response.json()
+      
+      // Find the deal by ID
+      const foundDeal = data.deals?.find((d: any) => d.id === params.id)
+      
+      if (foundDeal) {
+        setDeal(foundDeal)
+      } else {
+        setError('Deal not found')
+      }
+    } catch (err) {
+      console.error('Error fetching deal:', err)
+      setError('Failed to load deal details')
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const relatedDeals = [
-    {
-      id: 2,
-      title: "MacBook Air M2",
-      currentPrice: 1299,
-      originalPrice: 1499,
-      discount: 13,
-      image: "/macbook-air-deal.jpg",
-    },
-    {
-      id: 3,
-      title: "iPad Pro 12.9-inch",
-      currentPrice: 999,
-      originalPrice: 1199,
-      discount: 17,
-      image: "/ipad-pro-deal.jpg",
-    },
-    {
-      id: 4,
-      title: "Apple Studio Display",
-      currentPrice: 1499,
-      originalPrice: 1699,
-      discount: 12,
-      image: "/studio-display-deal.jpg",
-    },
-  ]
+  if (loading) {
+    return (
+      <div className="min-h-screen">
+        <Header />
+        <main className="pt-24 container mx-auto px-4 py-8">
+          <div className="flex items-center justify-center h-96">
+            <Loader2 className="h-8 w-8 animate-spin text-accent" />
+          </div>
+        </main>
+        <Footer />
+      </div>
+    )
+  }
 
-  const bestStore = deal.stores.reduce((best, store) => (store.price < best.price ? store : best), deal.stores[0])
+  if (error || !deal) {
+    return (
+      <div className="min-h-screen">
+        <Header />
+        <main className="pt-24 container mx-auto px-4 py-8">
+          <div className="text-center py-12">
+            <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h2 className="text-2xl font-bold mb-2">Deal Not Found</h2>
+            <p className="text-muted-foreground mb-6">{error || 'The deal you\'re looking for doesn\'t exist.'}</p>
+            <Button asChild>
+              <Link href="/deals">Back to Deals</Link>
+            </Button>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    )
+  }
+
+  const photos = deal.product_photos || [deal.image]
+  const videos = deal.product_videos || []
+  const attributes = deal.product_attributes || {}
+  const sizeVariants = deal.product_variants?.Size || []
+  const colorVariants = deal.product_variants?.Color || []
+  const offer = deal.offer
+
+  const currentImage = photos[selectedImage] || deal.image
+
+  const formatPrice = (price: string | number) => {
+    if (typeof price === 'string') {
+      // Remove currency symbols and parse
+      const numPrice = parseFloat(price.replace(/[^0-9.]/g, ''))
+      return `€${numPrice.toFixed(2)}`
+    }
+    return `€${price.toFixed(2)}`
+  }
 
   return (
     <div className="min-h-screen">
@@ -166,33 +185,75 @@ This laptop combines power, portability, and stunning display quality in one pre
             <Card>
               <CardContent className="p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Product Images */}
+                  {/* Product Images & Videos */}
                   <div>
                     <div className="relative mb-4">
                       <img
-                        src={deal.image || "/placeholder.svg?height=400&width=400&query=macbook pro"}
+                        src={currentImage || "/placeholder.svg?height=400&width=400"}
                         alt={deal.title}
-                        className="w-full h-80 object-cover rounded-lg"
+                        className="w-full h-80 object-contain bg-muted rounded-lg"
                       />
                       <div className="absolute top-4 left-4">
-                        <Badge className="bg-accent text-accent-foreground">-{deal.discount}%</Badge>
+                        <Badge className="bg-red-600 text-white">-{deal.discount}%</Badge>
                       </div>
-                      {deal.featured && (
+                      {offer?.on_sale && (
                         <div className="absolute top-4 right-4">
-                          <Badge variant="secondary">Featured Deal</Badge>
+                          <Badge variant="secondary">{offer.percent_off}</Badge>
                         </div>
                       )}
                     </div>
-                    <div className="grid grid-cols-4 gap-2">
-                      {deal.images.map((image, index) => (
-                        <img
-                          key={index}
-                          src={image || `/placeholder.svg?height=80&width=80&query=macbook ${index}`}
-                          alt={`${deal.title} ${index + 1}`}
-                          className="w-full h-16 object-cover rounded cursor-pointer hover:opacity-75 transition-opacity"
-                        />
-                      ))}
-                    </div>
+                    
+                    {/* Image & Video Tabs */}
+                    <Tabs defaultValue="photos" className="w-full">
+                      <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="photos">
+                          <ImageIcon className="h-4 w-4 mr-2" />
+                          Photos ({photos.length})
+                        </TabsTrigger>
+                        <TabsTrigger value="videos">
+                          <Play className="h-4 w-4 mr-2" />
+                          Videos ({videos.length})
+                        </TabsTrigger>
+                      </TabsList>
+                      <TabsContent value="photos" className="mt-4">
+                        <div className="grid grid-cols-4 gap-2">
+                          {photos.slice(0, 12).map((image, index) => (
+                            <img
+                              key={index}
+                              src={image || `/placeholder.svg?height=80&width=80`}
+                              alt={`${deal.title} ${index + 1}`}
+                              onClick={() => setSelectedImage(index)}
+                              className={`w-full h-16 object-cover rounded cursor-pointer hover:opacity-75 transition-opacity border-2 ${selectedImage === index ? 'border-accent' : 'border-transparent'}`}
+                            />
+                          ))}
+                        </div>
+                      </TabsContent>
+                      <TabsContent value="videos" className="mt-4">
+                        <div className="grid grid-cols-2 gap-2">
+                          {videos.slice(0, 6).map((video, index) => (
+                            <a 
+                              key={index} 
+                              href={video.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="relative group"
+                            >
+                              <img
+                                src={video.thumbnail}
+                                alt={video.title}
+                                className="w-full h-20 object-cover rounded"
+                              />
+                              <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded">
+                                <Play className="h-8 w-8 text-white" />
+                              </div>
+                              <div className="absolute bottom-1 right-1 bg-black/75 text-white text-xs px-1 rounded">
+                                {Math.floor(video.duration_ms / 1000 / 60)}:{String(Math.floor((video.duration_ms / 1000) % 60)).padStart(2, '0')}
+                              </div>
+                            </a>
+                          ))}
+                        </div>
+                      </TabsContent>
+                    </Tabs>
                   </div>
 
                   {/* Product Info */}
@@ -227,37 +288,88 @@ This laptop combines power, portability, and stunning display quality in one pre
                         </div>
                         <div className="flex items-center mt-2 text-green-600">
                           <TrendingDown className="h-4 w-4 mr-1" />
-                          <span className="font-medium">You save {formatEuro(deal.savings)}</span>
+                          <span className="font-medium">You save {formatEuro(deal.originalPrice - deal.currentPrice)}</span>
                         </div>
                       </div>
 
-                      <Badge variant="outline" className="w-fit">
-                        {deal.category}
-                      </Badge>
+                      <div className="flex items-center space-x-2">
+                        <Badge variant="outline">{deal.category}</Badge>
+                        {deal.brand && <Badge variant="secondary">{deal.brand}</Badge>}
+                      </div>
 
-                      <div className="bg-muted/50 p-4 rounded-lg">
-                        <h3 className="font-semibold mb-2 flex items-center">
-                          <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
-                          Best Price Found
-                        </h3>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2">
-                            <img
-                              src={bestStore.logo || "/placeholder.svg?height=24&width=24&query=store logo"}
-                              alt={bestStore.name}
-                              className="w-6 h-6 rounded"
-                            />
-                            <span className="font-medium">{bestStore.name}</span>
-                            {bestStore.verified && <CheckCircle className="h-4 w-4 text-green-600" />}
+                      {/* Size & Color Variants */}
+                      {sizeVariants.length > 0 && (
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">Select Size</label>
+                          <div className="flex flex-wrap gap-2">
+                            {sizeVariants.slice(0, 8).map((size, idx) => (
+                              <Button
+                                key={idx}
+                                variant={selectedSize === size.name ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => setSelectedSize(size.name)}
+                              >
+                                {size.name}
+                              </Button>
+                            ))}
                           </div>
-                          <Button asChild>
-                            <Link href={bestStore.url} target="_blank">
-                              <ExternalLink className="h-4 w-4 mr-2" />
-                              Go to Store
-                            </Link>
-                          </Button>
                         </div>
-                      </div>
+                      )}
+
+                      {colorVariants.length > 0 && (
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">Select Color</label>
+                          <div className="flex flex-wrap gap-2">
+                            {colorVariants.slice(0, 8).map((color, idx) => (
+                              <div
+                                key={idx}
+                                onClick={() => setSelectedColor(color.name)}
+                                className={`relative cursor-pointer rounded-lg overflow-hidden border-2 ${selectedColor === color.name ? 'border-accent' : 'border-transparent'}`}
+                              >
+                                <img
+                                  src={color.thumbnail}
+                                  alt={color.name}
+                                  className="w-12 h-12 object-cover"
+                                  title={color.name}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {offer && (
+                        <div className="bg-muted/50 p-4 rounded-lg">
+                          <h3 className="font-semibold mb-2 flex items-center">
+                            <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
+                            {offer.offer_badge || 'Available at'}
+                          </h3>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2">
+                              {offer.store_favicon && (
+                                <img
+                                  src={offer.store_favicon}
+                                  alt={offer.store_name}
+                                  className="w-6 h-6 rounded"
+                                />
+                              )}
+                              <div>
+                                <span className="font-medium block">{offer.store_name}</span>
+                                <div className="flex items-center text-sm text-muted-foreground">
+                                  <Star className="h-3 w-3 fill-yellow-400 text-yellow-400 mr-1" />
+                                  {offer.store_rating} ({offer.store_review_count} reviews)
+                                </div>
+                              </div>
+                            </div>
+                            <Button asChild>
+                              <Link href={offer.offer_page_url} target="_blank">
+                                <ExternalLink className="h-4 w-4 mr-2" />
+                                Buy Now
+                              </Link>
+                            </Button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -273,120 +385,75 @@ This laptop combines power, portability, and stunning display quality in one pre
                     </div>
                   </div>
 
-                  <Separator />
-
-                  {/* Specifications */}
-                  <div>
-                    <h2 className="text-xl font-semibold mb-3">Specifications</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {Object.entries(deal.specifications).map(([key, value]) => (
-                        <div key={key} className="flex justify-between py-2 border-b">
-                          <span className="font-medium">{key}</span>
-                          <span className="text-muted-foreground">{value}</span>
+                  {Object.keys(attributes).length > 0 && (
+                    <>
+                      <Separator />
+                      
+                      {/* Product Attributes */}
+                      <div>
+                        <h2 className="text-xl font-semibold mb-3">Product Attributes</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {Object.entries(attributes).slice(0, 20).map(([key, value]) => (
+                            <div key={key} className="flex justify-between py-2 border-b">
+                              <span className="font-medium text-sm">{key}</span>
+                              <span className="text-muted-foreground text-sm text-right">
+                                {typeof value === 'string' || typeof value === 'number' ? value : JSON.stringify(value)}
+                              </span>
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </CardContent>
             </Card>
 
-            {/* Price Comparison Table */}
-            <Card className="mt-6">
-              <CardHeader>
-                <CardTitle>Price Comparison</CardTitle>
-                <CardDescription>Compare prices from {deal.stores.length} different stores</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Store</TableHead>
-                      <TableHead>Price</TableHead>
-                      <TableHead>Shipping</TableHead>
-                      <TableHead>Delivery</TableHead>
-                      <TableHead>Stock</TableHead>
-                      <TableHead>Rating</TableHead>
-                      <TableHead></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {deal.stores.map((store, index) => (
-                      <TableRow key={index} className={index === 0 ? "bg-muted/50" : ""}>
-                        <TableCell>
-                          <div className="flex items-center space-x-2">
-                            <img
-                              src={store.logo || "/placeholder.svg?height=24&width=24&query=store logo"}
-                              alt={store.name}
-                              className="w-6 h-6 rounded"
-                            />
-                            <span className="font-medium">{store.name}</span>
-                            {store.verified && <CheckCircle className="h-4 w-4 text-green-600" />}
-                            {index === 0 && <Badge variant="secondary">Best Price</Badge>}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <span className="font-bold text-accent">{formatEuro(store.price)}</span>
-                            {store.originalPrice > store.price && (
-                              <div className="text-sm text-muted-foreground line-through">{formatEuro(store.originalPrice)}</div>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center">
-                            <Truck className="h-4 w-4 mr-1 text-muted-foreground" />
-                            {formatEuroText(store.shipping as string)}
-                          </div>
-                        </TableCell>
-                        <TableCell>{store.shippingTime}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center">
-                            {store.inStock ? (
-                              <>
-                                <CheckCircle className="h-4 w-4 mr-1 text-green-600" />
-                                <span className="text-green-600">In Stock</span>
-                              </>
-                            ) : (
-                              <>
-                                <XCircle className="h-4 w-4 mr-1 text-red-600" />
-                                <span className="text-red-600">Out of Stock</span>
-                              </>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center">
-                            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
-                            {store.rating}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            variant={store.inStock ? "default" : "outline"}
-                            size="sm"
-                            disabled={!store.inStock}
-                            asChild={store.inStock}
-                          >
-                            {store.inStock ? (
-                              <Link href={store.url} target="_blank">
-                                <ExternalLink className="h-4 w-4 mr-2" />
-                                Go to Store
-                              </Link>
-                            ) : (
-                              <>
-                                <AlertCircle className="h-4 w-4 mr-2" />
-                                Unavailable
-                              </>
-                            )}
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+            {/* Offer Details */}
+            {offer && (
+              <Card className="mt-6">
+                <CardHeader>
+                  <CardTitle>Offer Details</CardTitle>
+                  <CardDescription>From {offer.store_name}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between py-3 border-b">
+                      <span className="text-muted-foreground">Price</span>
+                      <span className="font-bold text-lg">{formatPrice(offer.price)}</span>
+                    </div>
+                    {offer.original_price && (
+                      <div className="flex items-center justify-between py-3 border-b">
+                        <span className="text-muted-foreground">Original Price</span>
+                        <span className="line-through">{formatPrice(offer.original_price)}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between py-3 border-b">
+                      <span className="text-muted-foreground">Shipping</span>
+                      <span className="flex items-center">
+                        <Truck className="h-4 w-4 mr-2" />
+                        {offer.shipping}
+                      </span>
+                    </div>
+                    {offer.returns && (
+                      <div className="flex items-center justify-between py-3 border-b">
+                        <span className="text-muted-foreground">Returns</span>
+                        <span>{offer.returns}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between py-3 border-b">
+                      <span className="text-muted-foreground">Condition</span>
+                      <Badge>{offer.product_condition}</Badge>
+                    </div>
+                    {offer.payment_methods && (
+                      <div className="py-3">
+                        <span className="text-muted-foreground text-sm">{offer.payment_methods}</span>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Sidebar */}
@@ -397,12 +464,14 @@ This laptop combines power, portability, and stunning display quality in one pre
                 <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button className="w-full" size="lg" asChild>
-                  <Link href={bestStore.url} target="_blank">
-                    <ShoppingBag className="h-4 w-4 mr-2" />
-                    Buy Now - {formatEuro(bestStore.price)}
-                  </Link>
-                </Button>
+                {offer && (
+                  <Button className="w-full" size="lg" asChild>
+                    <Link href={offer.offer_page_url} target="_blank">
+                      <ShoppingBag className="h-4 w-4 mr-2" />
+                      Buy Now - {formatPrice(offer.price)}
+                    </Link>
+                  </Button>
+                )}
                 <Button variant="outline" className="w-full bg-transparent">
                   <Heart className="h-4 w-4 mr-2" />
                   Save Deal
@@ -414,57 +483,48 @@ This laptop combines power, portability, and stunning display quality in one pre
               </CardContent>
             </Card>
 
-            {/* Deal Alert */}
+            {/* Product Info */}
             <Card>
               <CardHeader>
-                <CardTitle>Price Alert</CardTitle>
+                <CardTitle>Product Info</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Get notified when the price drops below your target.
-                </p>
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-sm font-medium">Target Price (€)</label>
-                    <input type="number" placeholder="2000" className="w-full mt-1 px-3 py-2 border rounded-md" />
+              <CardContent className="space-y-3">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Category</span>
+                  <Badge variant="outline">{deal.category}</Badge>
+                </div>
+                {deal.brand && (
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Brand</span>
+                    <span className="font-medium">{deal.brand}</span>
                   </div>
-                  <Button className="w-full">Set Price Alert</Button>
+                )}
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Rating</span>
+                  <div className="flex items-center">
+                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
+                    <span className="font-medium">{deal.rating}</span>
+                    <span className="text-muted-foreground ml-1">({deal.reviews})</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Source</span>
+                  <span className="font-medium capitalize">{deal.source}</span>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Related Deals */}
+            {/* Share Options */}
             <Card>
               <CardHeader>
-                <CardTitle>Related Deals</CardTitle>
+                <CardTitle>Share This Deal</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                {relatedDeals.map((relatedDeal) => (
-                  <div key={relatedDeal.id} className="border rounded-lg p-3">
-                    <div className="flex space-x-3">
-                      <img
-                        src={relatedDeal.image || "/placeholder.svg?height=60&width=60&query=product"}
-                        alt={relatedDeal.title}
-                        className="w-12 h-12 object-cover rounded"
-                      />
-                      <div className="flex-1">
-                        <Link href={`/deals/${relatedDeal.id}`}>
-                          <h4 className="font-medium text-sm hover:text-accent transition-colors line-clamp-2">
-                            {relatedDeal.title}
-                          </h4>
-                        </Link>
-                        <div className="flex items-center justify-between mt-1">
-                          <span className="text-sm font-bold text-accent">{formatEuro(relatedDeal.currentPrice)}</span>
-                          <Badge variant="outline" className="text-xs">
-                            -{relatedDeal.discount}%
-                          </Badge>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Found a great deal? Share it with your friends!
+                </p>
                 <Button variant="outline" className="w-full bg-transparent" asChild>
-                  <Link href="/deals">View All Deals</Link>
+                  <Link href="/deals">Browse More Deals</Link>
                 </Button>
               </CardContent>
             </Card>

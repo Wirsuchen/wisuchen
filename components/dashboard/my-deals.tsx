@@ -1,88 +1,102 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Heart, Search, Star, ShoppingBag, Trash2, ExternalLink } from "lucide-react"
+import { Heart, Search, Star, ShoppingBag, Trash2, ExternalLink, Loader2, AlertCircle } from "lucide-react"
 import Link from "next/link"
 import { formatEuro } from "@/lib/utils"
+
+interface SavedDeal {
+  id: string
+  title: string
+  brand: string
+  category: string
+  currentPrice: number
+  originalPrice: number
+  discount: number
+  rating: number
+  image: string
+  savedDate: string
+  inStock: boolean
+}
 
 export function MyDeals() {
   const [searchQuery, setSearchQuery] = useState("")
   const [categoryFilter, setCategoryFilter] = useState("all")
+  const [savedDeals, setSavedDeals] = useState<SavedDeal[]>([])
+  const [loading, setLoading] = useState(false)
 
-  const savedDeals = [
-    {
-      id: 1,
-      title: "MacBook Pro M3 14-inch",
-      brand: "Apple",
-      category: "Electronics",
-      currentPrice: 2199,
-      originalPrice: 2499,
-      discount: 12,
-      rating: 4.8,
-      image: "/macbook-pro-deal.jpg",
-      savedDate: "2024-01-15",
-      inStock: true,
-    },
-    {
-      id: 2,
-      title: "iPhone 15 Pro 128GB",
-      brand: "Apple",
-      category: "Electronics",
-      currentPrice: 1099,
-      originalPrice: 1199,
-      discount: 8,
-      rating: 4.9,
-      image: "/iphone-15-pro-deal.jpg",
-      savedDate: "2024-01-10",
-      inStock: true,
-    },
-    {
-      id: 3,
-      title: "Sony WH-1000XM5 Headphones",
-      brand: "Sony",
-      category: "Electronics",
-      currentPrice: 299,
-      originalPrice: 399,
-      discount: 25,
-      rating: 4.7,
-      image: "/sony-headphones-deal.jpg",
-      savedDate: "2024-01-12",
-      inStock: true,
-    },
-    {
-      id: 4,
-      title: "Nike Air Max 270",
-      brand: "Nike",
-      category: "Fashion",
-      currentPrice: 119,
-      originalPrice: 150,
-      discount: 21,
-      rating: 4.5,
-      image: "/nike-airmax-deal.jpg",
-      savedDate: "2024-01-08",
-      inStock: false,
-    },
-    {
-      id: 5,
-      title: 'Samsung 55" QLED TV',
-      brand: "Samsung",
-      category: "Electronics",
-      currentPrice: 699,
-      originalPrice: 899,
-      discount: 22,
-      rating: 4.6,
-      image: "/samsung-tv-deal.jpg",
-      savedDate: "2024-01-05",
-      inStock: true,
-    },
-  ]
+  // Note: In a real app, saved deals would come from localStorage or a database
+  // For now, showing empty state to demonstrate the UI
+  useEffect(() => {
+    // Load saved deals from localStorage
+    const loadSavedDeals = () => {
+      try {
+        const saved = localStorage.getItem('savedDeals')
+        if (saved) {
+          setSavedDeals(JSON.parse(saved))
+        }
+      } catch (error) {
+        console.error('Error loading saved deals:', error)
+      }
+    }
+    loadSavedDeals()
+  }, [])
 
   const totalSavings = savedDeals.reduce((total, deal) => total + (deal.originalPrice - deal.currentPrice), 0)
+
+  const removeDeal = (dealId: string) => {
+    const updated = savedDeals.filter(d => d.id !== dealId)
+    setSavedDeals(updated)
+    localStorage.setItem('savedDeals', JSON.stringify(updated))
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <Loader2 className="h-8 w-8 animate-spin text-accent" />
+      </div>
+    )
+  }
+
+  if (savedDeals.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">My Saved Deals</h1>
+            <p className="text-muted-foreground">Track your favorite deals and never miss a bargain</p>
+          </div>
+          <Button variant="outline" asChild className="bg-transparent">
+            <Link href="/deals">
+              <ShoppingBag className="h-4 w-4 mr-2" />
+              Browse Deals
+            </Link>
+          </Button>
+        </div>
+
+        <Card className="border-dashed">
+          <CardContent className="flex flex-col items-center justify-center py-16">
+            <AlertCircle className="h-16 w-16 text-muted-foreground mb-4" />
+            <h3 className="text-xl font-semibold mb-2">No Saved Deals Yet</h3>
+            <p className="text-muted-foreground text-center mb-6 max-w-md">
+              Start saving your favorite deals by clicking the heart icon on any deal. They'll appear here for easy access.
+            </p>
+            <Button asChild>
+              <Link href="/deals">
+                <ShoppingBag className="h-4 w-4 mr-2" />
+                Browse All Deals
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -227,6 +241,7 @@ export function MyDeals() {
                         variant="outline"
                         size="sm"
                         className="text-destructive hover:text-destructive bg-transparent"
+                        onClick={() => removeDeal(deal.id)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

@@ -1,15 +1,17 @@
 import { updateSession } from '@/lib/supabase/middleware'
+import type { NextRequest } from 'next/server'
 
 // Simple token-bucket rate limiting per IP for API routes
 const RATE_LIMIT = 100 // requests
 const WINDOW_MS = 60_000 // 1 minute
 const ipBuckets = new Map<string, { tokens: number; resetAt: number }>()
 
-export async function middleware(request: Request) {
+export async function middleware(request: NextRequest) {
   const url = new URL(request.url)
+  const pathname = url.pathname
 
   // Rate limit only API routes
-  if (url.pathname.startsWith('/api/')) {
+  if (pathname.startsWith('/api/')) {
     const ip = (request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || '127.0.0.1').split(',')[0].trim()
     const now = Date.now()
     const bucket = ipBuckets.get(ip) || { tokens: RATE_LIMIT, resetAt: now + WINDOW_MS }

@@ -21,128 +21,10 @@ export default function DealsPage() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [selectedBrands, setSelectedBrands] = useState<string[]>([])
   const [priceRange, setPriceRange] = useState("")
-  const [externalDeals, setExternalDeals] = useState<any[]>([])
-
-  const categories = ["Electronics", "Fashion", "Home & Garden", "Sports", "Books", "Beauty", "Automotive", "Toys"]
-
-  const brands = ["Apple", "Samsung", "Nike", "Adidas", "Sony", "LG", "HP", "Dell"]
-
-  const deals = [
-    {
-      id: 1,
-      title: "MacBook Pro M3 14-inch",
-      brand: "Apple",
-      category: "Electronics",
-      originalPrice: 2499,
-      currentPrice: 2199,
-      discount: 12,
-      rating: 4.8,
-      reviews: 1247,
-      image: "/macbook-pro-deal.png",
-      stores: [
-        { name: "TechStore", price: 2199, shipping: "Free", inStock: true },
-        { name: "ElectroWorld", price: 2249, shipping: "€9.99", inStock: true },
-        { name: "ComputerHub", price: 2299, shipping: "Free", inStock: false },
-      ],
-      featured: true,
-      savings: 300,
-    },
-    {
-      id: 2,
-      title: "iPhone 15 Pro 128GB",
-      brand: "Apple",
-      category: "Electronics",
-      originalPrice: 1199,
-      currentPrice: 1099,
-      discount: 8,
-      rating: 4.9,
-      reviews: 2156,
-      image: "/iphone-15-pro-deal.png",
-      stores: [
-        { name: "MobileShop", price: 1099, shipping: "Free", inStock: true },
-        { name: "PhoneWorld", price: 1129, shipping: "€4.99", inStock: true },
-        { name: "TechMart", price: 1149, shipping: "Free", inStock: true },
-      ],
-      featured: false,
-      savings: 100,
-    },
-    {
-      id: 3,
-      title: "Sony WH-1000XM5 Headphones",
-      brand: "Sony",
-      category: "Electronics",
-      originalPrice: 399,
-      currentPrice: 299,
-      discount: 25,
-      rating: 4.7,
-      reviews: 892,
-      image: "/sony-headphones-deal.png",
-      stores: [
-        { name: "AudioWorld", price: 299, shipping: "Free", inStock: true },
-        { name: "SoundHub", price: 319, shipping: "€5.99", inStock: true },
-        { name: "MusicStore", price: 329, shipping: "Free", inStock: true },
-      ],
-      featured: true,
-      savings: 100,
-    },
-    {
-      id: 4,
-      title: "Nike Air Max 270",
-      brand: "Nike",
-      category: "Fashion",
-      originalPrice: 150,
-      currentPrice: 119,
-      discount: 21,
-      rating: 4.5,
-      reviews: 634,
-      image: "/nike-airmax-deal.png",
-      stores: [
-        { name: "SportShop", price: 119, shipping: "Free", inStock: true },
-        { name: "RunningWorld", price: 125, shipping: "€3.99", inStock: true },
-        { name: "SneakerHub", price: 129, shipping: "Free", inStock: false },
-      ],
-      featured: false,
-      savings: 31,
-    },
-    {
-      id: 5,
-      title: 'Samsung 55" QLED TV',
-      brand: "Samsung",
-      category: "Electronics",
-      originalPrice: 899,
-      currentPrice: 699,
-      discount: 22,
-      rating: 4.6,
-      reviews: 445,
-      image: "/samsung-tv-deal.png",
-      stores: [
-        { name: "ElectroWorld", price: 699, shipping: "Free", inStock: true },
-        { name: "TVCenter", price: 729, shipping: "€19.99", inStock: true },
-        { name: "HomeElectronics", price: 749, shipping: "Free", inStock: true },
-      ],
-      featured: false,
-      savings: 200,
-    },
-    {
-      id: 6,
-      title: "Adidas Ultraboost 22",
-      brand: "Adidas",
-      category: "Fashion",
-      originalPrice: 180,
-      currentPrice: 129,
-      discount: 28,
-      rating: 4.4,
-      reviews: 523,
-      image: "/adidas-ultraboost-deal.png",
-      stores: [
-        { name: "SportWorld", price: 129, shipping: "Free", inStock: true },
-        { name: "RunningGear", price: 135, shipping: "€4.99", inStock: true },
-        { name: "AthleticStore", price: 139, shipping: "Free", inStock: true },
-      ],
-      featured: true,
-      savings: 51,
-    },
-  ]
+  const [deals, setDeals] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [categories, setCategories] = useState<string[]>([])
+  const [brands, setBrands] = useState<string[]>([])
 
   const handleCategoryChange = (category: string, checked: boolean) => {
     if (checked) {
@@ -160,27 +42,23 @@ export default function DealsPage() {
     }
   }
 
-  const filteredDeals = filterDeals(deals, {
-    searchQuery,
-    categories: selectedCategories,
-    brands: selectedBrands,
-    priceRange,
-  })
-
-  const sortedDeals = sortDeals(filteredDeals, sortBy)
-
-  // Load external deals from API and map to our local shape
+  // Load deals from API
   useEffect(() => {
-    const loadExternal = async () => {
+    const loadDeals = async () => {
+      setLoading(true)
       try {
-        const res = await fetch('/api/deals?page=1&limit=12', { cache: 'no-store' })
-        if (!res.ok) return
+        const res = await fetch('/api/deals?page=1&limit=50', { cache: 'no-store' })
+        if (!res.ok) {
+          console.error('Failed to fetch deals')
+          setDeals([])
+          return
+        }
         const data = await res.json()
         const mapped = (data.deals || []).map((d: any) => ({
           id: d.id,
           title: d.title,
           brand: d.store || 'Partner',
-          category: 'External',
+          category: d.category || 'General',
           originalPrice: d.originalPrice ?? 0,
           currentPrice: d.currentPrice ?? 0,
           discount: d.discount ?? 0,
@@ -194,13 +72,31 @@ export default function DealsPage() {
           savings: d.originalPrice && d.currentPrice ? Math.max(0, Number(d.originalPrice) - Number(d.currentPrice)) : 0,
           url: d.url || null,
         }))
-        setExternalDeals(mapped)
-      } catch {}
+        setDeals(mapped)
+
+        // Extract unique categories and brands from deals
+        const uniqueCategories = [...new Set(mapped.map((d: any) => d.category).filter(Boolean))]
+        const uniqueBrands = [...new Set(mapped.map((d: any) => d.brand).filter(Boolean))]
+        setCategories(uniqueCategories as string[])
+        setBrands(uniqueBrands as string[])
+      } catch (error) {
+        console.error('Error loading deals:', error)
+        setDeals([])
+      } finally {
+        setLoading(false)
+      }
     }
-    loadExternal()
+    loadDeals()
   }, [])
 
-  const mergedDeals = [...sortedDeals, ...externalDeals]
+  const filteredDeals = filterDeals(deals, {
+    searchQuery,
+    categories: selectedCategories,
+    brands: selectedBrands,
+    priceRange,
+  })
+
+  const sortedDeals = sortDeals(filteredDeals, sortBy)
 
   const clearAll = () => {
     setSearchQuery("")
@@ -337,7 +233,7 @@ export default function DealsPage() {
           <div className="flex-1">
             <div className="flex items-center justify-between mb-6">
               <p className="text-muted-foreground">
-                Showing <span className="font-semibold">{mergedDeals.length}</span> deals
+                {loading ? 'Loading deals...' : `Showing ${sortedDeals.length} deals`}
               </p>
               <div className="flex items-center space-x-2">
                 <Button
@@ -359,9 +255,17 @@ export default function DealsPage() {
               </div>
             </div>
 
-            {viewMode === "grid" ? (
+            {loading ? (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">Loading deals from API...</p>
+              </div>
+            ) : sortedDeals.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">No deals found. Try adjusting your filters.</p>
+              </div>
+            ) : viewMode === "grid" ? (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {mergedDeals.map((deal) => (
+                {sortedDeals.map((deal) => (
                   <Card key={deal.id} className="hover:shadow-lg transition-shadow">
                     <CardContent className="p-0">
                       <div className="relative">
@@ -426,7 +330,7 @@ export default function DealsPage() {
               </div>
             ) : (
               <div className="space-y-4">
-                {mergedDeals.map((deal) => (
+                {sortedDeals.map((deal) => (
                   <Card key={deal.id} className="hover:shadow-lg transition-shadow">
                     <CardContent className="p-6">
                       <div className="flex items-start space-x-4">

@@ -1,18 +1,56 @@
+'use client'
+
 import { PageLayout } from "@/components/layout/page-layout"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Search, MapPin, ShoppingBag, TrendingUp, Users, Star, ArrowRight } from "lucide-react"
+import { Search, MapPin, ShoppingBag, TrendingUp, Users, Star, ArrowRight, Loader2 } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import CountUp from "@/components/count-up"
 import RotatingText from "@/components/rotating-text"
 import { ShimmerButton } from "@/components/magicui/shimmer-button"
 import { DotPattern } from "@/components/magicui/dot-pattern"
-import { formatEuroText } from "@/lib/utils"
+import { formatEuroText, formatEuro } from "@/lib/utils"
+import { useTranslation } from "@/contexts/i18n-context"
+import { useState, useEffect } from "react"
+
+interface Deal {
+  id: string
+  title: string
+  currentPrice: number
+  originalPrice: number
+  discount: number
+  store: string
+  rating: number
+  image: string
+}
 
 export default function HomePage() {
+  const { t } = useTranslation()
+  const [topDeals, setTopDeals] = useState<Deal[]>([])
+  const [dealsLoading, setDealsLoading] = useState(true)
+
+  useEffect(() => {
+    fetchTopDeals()
+  }, [])
+
+  const fetchTopDeals = async () => {
+    try {
+      setDealsLoading(true)
+      const response = await fetch('/api/deals?page=1&limit=6')
+      const data = await response.json()
+      if (data.deals && data.deals.length > 0) {
+        setTopDeals(data.deals.slice(0, 3))
+      }
+    } catch (error) {
+      console.error('Error fetching deals:', error)
+    } finally {
+      setDealsLoading(false)
+    }
+  }
+
   const featuredJobs = [
     {
       id: 1,
@@ -43,38 +81,6 @@ export default function HomePage() {
     },
   ]
 
-  const topDeals = [
-    {
-      id: 1,
-      title: "MacBook Pro M3",
-      originalPrice: "€2,499",
-      currentPrice: "€2,199",
-      discount: "12%",
-      store: "TechStore",
-      rating: 4.8,
-      image: "https://myshop.pk/pub/media/catalog/product/cache/26f8091d81cea4b38d820a1d1a4f62be/m/a/macbook-air-m2-myshop-pk_6__1_1.jpg",
-    },
-    {
-      id: 2,
-      title: "iPhone 15 Pro",
-      originalPrice: "€1,199",
-      currentPrice: "€1,099",
-      discount: "8%",
-      store: "MobileShop",
-      rating: 4.9,
-      image: "/iphone-15-pro-deal.png",
-    },
-    {
-      id: 3,
-      title: "Sony WH-1000XM5",
-      originalPrice: "€399",
-      currentPrice: "€299",
-      discount: "25%",
-      store: "AudioWorld",
-      rating: 4.7,
-      image: "/sony-headphones-deal.png",
-    },
-  ]
 
   const blogPosts = [
     {
@@ -116,30 +122,17 @@ export default function HomePage() {
           />
           <div className="container mx-auto px-4 text-center">
             <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold leading-tight mb-4 sm:mb-6">
-              Find Your Next{" "}
-              <RotatingText
-                className="text-accent"
-                words={[
-                  "Opportunity",
-                  "Job",
-                  "Role",
-                  "Deal",
-                  "Offer",
-                  "Career",
-                  "Savings",
-                ]}
-              />
+              {t('home.heroTitle')}
             </h1>
             <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-6 sm:mb-8 max-w-2xl mx-auto">
-              Discover thousands of jobs and compare the best deals all in one place. Your career and savings start
-              here.
+              {t('home.heroDescription')}
             </p>
 
             {/* Hero Search */}
             <div className="max-w-2xl mx-auto mb-6 sm:mb-8">
               <div className="flex flex-col md:flex-row gap-3 sm:gap-4">
                 <div className="flex-1">
-                  <Input type="search" placeholder="Search jobs, companies, or deals..." className="h-11 sm:h-12 text-base sm:text-lg" />
+                  <Input type="search" placeholder={t('home.searchPlaceholder')} className="h-11 sm:h-12 text-base sm:text-lg" />
                 </div>
                 <ShimmerButton
                   shimmerColor="#ffffff"
@@ -147,7 +140,7 @@ export default function HomePage() {
                   className="h-11 sm:h-12 px-6 sm:px-8 w-full md:w-auto text-primary-foreground"
                 >
                   <Search className="h-5 w-5 mr-2" />
-                  Search
+                  {t('common.search')}
                 </ShimmerButton>
               </div>
             </div>
@@ -155,27 +148,27 @@ export default function HomePage() {
             {/* Quick Location Links */}
             <div className="max-w-2xl mx-auto mb-2 sm:mb-4">
               <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-sm">
-                <span className="text-muted-foreground">Popular:</span>
+                <span className="text-muted-foreground">{t('home.popular')}:</span>
                 <Link
                   href="/jobs?location=Germany"
                   className="inline-flex items-center rounded-full border px-3 py-1 bg-background hover:bg-accent/50 transition-colors"
                 >
                   <MapPin className="h-4 w-4 mr-1 text-red-500" />
-                  Jobs in Germany
+                  {t('home.jobsIn')} Germany
                 </Link>
                 <Link
                   href="/jobs?location=Austria"
                   className="inline-flex items-center rounded-full border px-3 py-1 bg-background hover:bg-accent/50 transition-colors"
                 >
                   <MapPin className="h-4 w-4 mr-1 text-red-500" />
-                  Jobs in Austria
+                  {t('home.jobsIn')} Austria
                 </Link>
                 <Link
                   href="/jobs?location=Switzerland"
                   className="inline-flex items-center rounded-full border px-3 py-1 bg-background hover:bg-accent/50 transition-colors"
                 >
                   <MapPin className="h-4 w-4 mr-1 text-red-500" />
-                  Jobs in Switzerland
+                  {t('home.jobsIn')} Switzerland
                 </Link>
               </div>
             </div>
@@ -186,19 +179,19 @@ export default function HomePage() {
                 <div className="text-3xl font-bold text-accent">
                   <CountUp to={50} from={0} duration={1.2} />K+
                 </div>
-                <div className="text-sm text-muted-foreground">Active Jobs</div>
+                <div className="text-sm text-muted-foreground">{t('home.activeJobs')}</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-accent">
                   <CountUp to={100} from={0} duration={1.2} delay={0.1} />K+
                 </div>
-                <div className="text-sm text-muted-foreground">Daily Deals</div>
+                <div className="text-sm text-muted-foreground">{t('home.dailyDeals')}</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-accent">
                   <CountUp to={25} from={0} duration={1.2} delay={0.2} />K+
                 </div>
-                <div className="text-sm text-muted-foreground">Happy Users</div>
+                <div className="text-sm text-muted-foreground">{t('home.happyUsers')}</div>
               </div>
             </div>
           </div>
@@ -209,12 +202,12 @@ export default function HomePage() {
           <div className="container mx-auto px-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6 sm:mb-8">
               <div>
-                <h2 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">Featured Jobs</h2>
-                <p className="text-muted-foreground">Hand-picked opportunities from top companies</p>
+                <h2 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">{t('home.featuredJobs')}</h2>
+                <p className="text-muted-foreground">{t('home.featuredJobsDesc')}</p>
               </div>
               <Button variant="outline" asChild>
                 <Link href="/jobs">
-                  View All Jobs
+                  {t('home.viewAllJobs')}
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Link>
               </Button>
@@ -229,7 +222,7 @@ export default function HomePage() {
                         <CardTitle className="text-lg">{job.title}</CardTitle>
                         <CardDescription>{job.company}</CardDescription>
                       </div>
-                      {job.featured && <Badge variant="secondary">Featured</Badge>}
+                      {job.featured && <Badge variant="secondary">{t('home.featured')}</Badge>}
                     </div>
                   </CardHeader>
                   <CardContent>
@@ -244,7 +237,7 @@ export default function HomePage() {
                       </div>
                     </div>
                     <Button className="w-full mt-4 bg-transparent" variant="outline" asChild>
-                      <Link href={`/jobs/${job.id}`}>View Details</Link>
+                      <Link href={`/jobs/${job.id}`}>{t('home.viewDetails')}</Link>
                     </Button>
                   </CardContent>
                 </Card>
@@ -258,62 +251,69 @@ export default function HomePage() {
           <div className="container mx-auto px-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6 sm:mb-8">
               <div>
-                <h2 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">Top Deals</h2>
-                <p className="text-muted-foreground">Best prices from trusted retailers</p>
+                <h2 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">{t('home.topDeals')}</h2>
+                <p className="text-muted-foreground">{t('home.topDealsDesc')}</p>
               </div>
               <Button variant="outline" asChild>
                 <Link href="/deals">
-                  View All Deals
+                  {t('home.viewAllDeals')}
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Link>
               </Button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {topDeals.map((deal) => (
-                <Card key={deal.id} className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <CardTitle className="text-lg">{deal.title}</CardTitle>
-                      <Badge className="bg-accent text-accent-foreground">-{deal.discount}</Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    {/* Deal Image */}
-                    {deal.image && (
-                      <div className="mb-4">
-                        <Image
-                          src={deal.image}
-                          alt={`${deal.title} image`}
-                          width={640}
-                          height={360}
-                          className="w-full h-44 sm:h-40 object-cover rounded-md"
-                          priority={false}
-                        />
+              {dealsLoading ? (
+                <div className="col-span-full flex justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-accent" />
+                </div>
+              ) : topDeals.length === 0 ? (
+                <div className="col-span-full text-center py-12 text-muted-foreground">
+                  No deals available at the moment
+                </div>
+              ) : (
+                topDeals.map((deal) => (
+                  <Card key={deal.id} className="hover:shadow-lg transition-shadow">
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <CardTitle className="text-lg line-clamp-2">{deal.title}</CardTitle>
+                        <Badge className="bg-accent text-accent-foreground shrink-0">-{deal.discount}%</Badge>
                       </div>
-                    )}
-                    <div className="space-y-3">
-                      <div className="flex items-center space-x-2">
-                        <span className="text-2xl font-bold text-accent">{formatEuroText(deal.currentPrice)}</span>
-                        <span className="text-sm text-muted-foreground line-through">{formatEuroText(deal.originalPrice)}</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">{deal.store}</span>
-                        <div className="flex items-center">
-                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
-                          <span className="text-sm">{deal.rating}</span>
+                    </CardHeader>
+                    <CardContent>
+                      {/* Deal Image */}
+                      {deal.image && (
+                        <div className="mb-4">
+                          <img
+                            src={deal.image}
+                            alt={deal.title}
+                            className="w-full h-44 sm:h-40 object-cover rounded-md"
+                          />
+                        </div>
+                      )}
+                      <div className="space-y-3">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-2xl font-bold text-accent">{formatEuro(deal.currentPrice)}</span>
+                          <span className="text-sm text-muted-foreground line-through">{formatEuro(deal.originalPrice)}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground truncate">{deal.store}</span>
+                          <div className="flex items-center">
+                            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
+                            <span className="text-sm">{deal.rating}</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <Button className="w-full mt-4" asChild>
-                      <Link href={`/deals/${deal.id}`}>
-                        <ShoppingBag className="h-4 w-4 mr-2" />
-                        View Deal
-                      </Link>
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
+                      <Button className="w-full mt-4" asChild>
+                        <Link href={`/deals/${deal.id}`}>
+                          <ShoppingBag className="h-4 w-4 mr-2" />
+                          {t('home.viewDeal')}
+                        </Link>
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
             </div>
           </div>
         </section>
@@ -323,12 +323,12 @@ export default function HomePage() {
           <div className="container mx-auto px-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6 sm:mb-8">
               <div>
-                <h2 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">Latest Insights</h2>
-                <p className="text-muted-foreground">Career tips, market trends, and more</p>
+                <h2 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">{t('home.latestInsights')}</h2>
+                <p className="text-muted-foreground">{t('home.latestInsightsDesc')}</p>
               </div>
               <Button variant="outline" asChild>
                 <Link href="/blog">
-                  View All Posts
+                  {t('home.viewAllPosts')}
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Link>
               </Button>
@@ -347,7 +347,7 @@ export default function HomePage() {
                   </CardHeader>
                   <CardContent>
                     <Button variant="outline" className="w-full bg-transparent" asChild>
-                      <Link href={`/blog/${post.id}`}>Read More</Link>
+                      <Link href={`/blog/${post.id}`}>{t('home.readMore')}</Link>
                     </Button>
                   </CardContent>
                 </Card>
@@ -359,15 +359,15 @@ export default function HomePage() {
         {/* CTA Section */}
         <section className="py-12 sm:py-16 md:py-20 bg-primary text-primary-foreground">
           <div className="container mx-auto px-4 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Get Started?</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">{t('home.readyToStart')}</h2>
             <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
-              Join thousands of professionals who trust WIRsuchen for their career growth and savings.
+              {t('home.readyToStartDesc')}
             </p>
             <div className="flex flex-col md:flex-row gap-4 justify-center">
               <Button size="lg" variant="secondary" className="w-full md:w-auto" asChild>
                 <Link href="/jobs">
                   <Users className="h-5 w-5 mr-2" />
-                  Find Jobs
+                  {t('home.findJobs')}
                 </Link>
               </Button>
               <Button
@@ -378,7 +378,7 @@ export default function HomePage() {
               >
                 <Link href="/deals">
                   <TrendingUp className="h-5 w-5 mr-2" />
-                  Browse Deals
+                  {t('home.browseDeals')}
                 </Link>
               </Button>
             </div>

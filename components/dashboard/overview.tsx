@@ -8,8 +8,10 @@ import { Briefcase, ShoppingBag, FileText, TrendingUp, Eye, Users, TestTube } fr
 import Link from "next/link"
 import { formatEuroText } from "@/lib/utils"
 import { LatestJobsWidget } from "@/components/dashboard/latest-jobs-widget"
+import { useTranslation } from "@/contexts/i18n-context"
 
 export function DashboardOverview() {
+  const { t } = useTranslation()
   const [loading, setLoading] = useState(true)
   const [userStats, setUserStats] = useState({
     activeJobAds: 0,
@@ -70,17 +72,17 @@ export function DashboardOverview() {
   }, [])
 
   const stats = [
-    { title: 'Active Job Ads', value: String(userStats.activeJobAds), change: '', icon: Briefcase, color: 'text-blue-600' },
-    { title: 'Saved Deals', value: String(userStats.savedDeals), change: '', icon: ShoppingBag, color: 'text-green-600' },
-    { title: 'Total Invoices', value: String(userStats.totalInvoices), change: '', icon: FileText, color: 'text-purple-600' },
-    { title: 'Profile Views', value: String(userStats.profileViews), change: '', icon: Eye, color: 'text-orange-600' },
+    { title: t('dashboard.activeJobAds'), value: String(userStats.activeJobAds), change: '', icon: Briefcase, color: 'text-blue-600' },
+    { title: t('dashboard.savedDeals'), value: String(userStats.savedDeals), change: '', icon: ShoppingBag, color: 'text-green-600' },
+    { title: t('dashboard.totalInvoices'), value: String(userStats.totalInvoices), change: '', icon: FileText, color: 'text-purple-600' },
+    { title: t('dashboard.profileViews'), value: String(userStats.profileViews), change: '', icon: Eye, color: 'text-orange-600' },
   ]
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Dashboard Overview</h1>
-        <p className="text-muted-foreground">Welcome back! Here's what's happening with your account.</p>
+        <h1 className="text-3xl font-bold">{t('dashboard.title')}</h1>
+        <p className="text-muted-foreground">{t('dashboard.overview')}</p>
       </div>
 
       {/* Stats Grid */}
@@ -112,11 +114,11 @@ export function DashboardOverview() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Recent Job Ads</CardTitle>
-                <CardDescription>Your latest job postings and their performance</CardDescription>
+                <CardTitle>{t('dashboard.myAds')}</CardTitle>
+                <CardDescription>{t('dashboard.recentActivity')}</CardDescription>
               </div>
               <Button variant="outline" size="sm" asChild>
-                <Link href="/dashboard/my-ads">View All</Link>
+                <Link href="/dashboard/my-ads">{t('common.viewAll')}</Link>
               </Button>
             </div>
           </CardHeader>
@@ -129,11 +131,11 @@ export function DashboardOverview() {
                     <div className="flex items-center space-x-4 mt-1 text-sm text-muted-foreground">
                       <div className="flex items-center">
                         <Eye className="h-4 w-4 mr-1" />
-                        {ad.views} views
+                        {ad.views} {t('jobs.views', 'views')}
                       </div>
                       <div className="flex items-center">
                         <Users className="h-4 w-4 mr-1" />
-                        {ad.applicants} applicants
+                        {ad.applicants} {t('jobs.applicants', 'applicants')}
                       </div>
                       <span>{ad.posted}</span>
                     </div>
@@ -143,9 +145,9 @@ export function DashboardOverview() {
               )) : (
                 !loading && (
                   <div className="text-center py-8 text-muted-foreground">
-                    <p>No job ads yet</p>
+                    <p>{t('dashboard.noAdsYet')}</p>
                     <Link href="/jobs/post" className="text-primary hover:underline text-sm mt-2 inline-block">
-                      Post your first job ad
+                      {t('dashboard.postFirstAd')}
                     </Link>
                   </div>
                 )
@@ -159,11 +161,11 @@ export function DashboardOverview() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Recent Saved Deals</CardTitle>
-                <CardDescription>Your latest saved deals and offers</CardDescription>
+                <CardTitle>{t('dashboard.savedDeals')}</CardTitle>
+                <CardDescription>{t('dashboard.recentActivity')}</CardDescription>
               </div>
               <Button variant="outline" size="sm" asChild>
-                <Link href="/dashboard/my-deals">View All</Link>
+                <Link href="/dashboard/my-deals">{t('common.viewAll')}</Link>
               </Button>
             </div>
           </CardHeader>
@@ -178,15 +180,15 @@ export function DashboardOverview() {
                       <span className="text-sm text-muted-foreground line-through">{formatEuroText(deal.originalPrice)}</span>
                       <Badge className="bg-accent text-accent-foreground">-{deal.discount}</Badge>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">Saved {deal.saved}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{t('jobs.save')} {deal.saved}</p>
                   </div>
                 </div>
               )) : (
                 !loading && (
                   <div className="text-center py-8 text-muted-foreground">
-                    <p>No saved deals yet</p>
+                    <p>{t('dashboard.noDealsYet')}</p>
                     <Link href="/deals" className="text-primary hover:underline text-sm mt-2 inline-block">
-                      Browse deals
+                      {t('dashboard.browseDeals')}
                     </Link>
                   </div>
                 )
@@ -202,33 +204,33 @@ export function DashboardOverview() {
       {/* Quick Actions */}
       <Card>
         <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>Common tasks and shortcuts</CardDescription>
+          <CardTitle>{t('dashboard.quickActions', 'Quick Actions')}</CardTitle>
+          <CardDescription>{t('dashboard.commonTasks', 'Common tasks and shortcuts')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Button asChild className="h-auto p-4 flex-col space-y-2">
               <Link href="/jobs/post">
                 <Briefcase className="h-6 w-6" />
-                <span>Post New Job</span>
+                <span>{t('dashboard.postNewJob', 'Post New Job')}</span>
               </Link>
             </Button>
             <Button variant="outline" asChild className="h-auto p-4 flex-col space-y-2 bg-transparent">
               <Link href="/dashboard/my-invoices">
                 <FileText className="h-6 w-6" />
-                <span>Create Invoice</span>
+                <span>{t('dashboard.createInvoice', 'Create Invoice')}</span>
               </Link>
             </Button>
             <Button variant="outline" asChild className="h-auto p-4 flex-col space-y-2 bg-transparent">
               <Link href="/dashboard/stats">
                 <TrendingUp className="h-6 w-6" />
-                <span>View Analytics</span>
+                <span>{t('dashboard.viewAnalytics', 'View Analytics')}</span>
               </Link>
             </Button>
             <Button variant="outline" asChild className="h-auto p-4 flex-col space-y-2 bg-transparent border-blue-500/50 hover:bg-blue-500/10">
               <Link href="/api-test">
                 <TestTube className="h-6 w-6 text-blue-600" />
-                <span>API Testing</span>
+                <span>{t('dashboard.apiTesting', 'API Testing')}</span>
               </Link>
             </Button>
           </div>
