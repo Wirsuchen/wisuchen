@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(parseInt(searchParams.get('limit') || '10'), 50)
 
     // Fetch user's saved deals with offer details
-    const { data: savedDeals, error } = await supabase
+    const { data: savedDeals, error } = await (supabase as any)
       .from('saved_offers')
       .select(`
         id,
@@ -36,11 +36,9 @@ export async function GET(request: NextRequest) {
           id,
           title,
           price,
-          original_price,
           type,
-          discount_percentage,
           featured_image_url,
-          redirect_url,
+          affiliate_url,
           company_id,
           companies (
             name,
@@ -84,23 +82,17 @@ export async function GET(request: NextRequest) {
           saved = `${months} month${months > 1 ? 's' : ''} ago`
         }
 
-        // Calculate discount if not provided
-        const discount = offer.discount_percentage || 
-          (offer.original_price && offer.price 
-            ? Math.round(((offer.original_price - offer.price) / offer.original_price) * 100) 
-            : 0)
-
         return {
           id: offer.id,
           title: offer.title,
           price: offer.price || 0,
-          originalPrice: offer.original_price || offer.price || 0,
-          discount: `${discount}%`,
+          originalPrice: offer.price || 0,
+          discount: `0%`,
           saved,
           store: offer.companies?.name || 'Unknown Store',
           storeLogo: offer.companies?.logo_url || null,
           image: offer.featured_image_url || null,
-          url: offer.redirect_url || null,
+          url: offer.affiliate_url || null,
         }
       })
 
@@ -136,7 +128,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Missing offerId' }, { status: 400 })
     }
 
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('saved_offers')
       .delete()
       .eq('user_id', profile.id)

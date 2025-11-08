@@ -56,28 +56,81 @@ interface PaymentStatus {
   }
 }
 
-export function PayPalCheckout() {
+interface SelectedPlan {
+  id: string
+  name: string
+  description: string
+  price: string
+  features: string[]
+}
+
+interface PayPalCheckoutProps {
+  selectedPlan?: SelectedPlan | null
+}
+
+export function PayPalCheckout({ selectedPlan }: PayPalCheckoutProps) {
   const [step, setStep] = useState<'form' | 'processing' | 'approval' | 'completed' | 'failed'>('form')
   const [isLoading, setIsLoading] = useState(false)
   const [paymentOrder, setPaymentOrder] = useState<PaymentOrder | null>(null)
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus | null>(null)
   const { toast } = useToast()
 
-  // Payment form state
-  const [paymentForm, setPaymentForm] = useState({
-    amount: '29.99',
-    currency: 'EUR',
-    description: 'Premium Job Posting',
-    items: [
-      {
-        name: 'Premium Job Posting',
-        description: '30-day featured job listing',
-        quantity: 1,
-        unit_amount: '29.99',
-        sku: 'JOB_PREMIUM_30D'
+  // Initialize payment form based on selected plan
+  const getInitialFormState = () => {
+    if (selectedPlan) {
+      return {
+        amount: selectedPlan.price,
+        currency: 'EUR',
+        description: selectedPlan.name,
+        items: [
+          {
+            name: selectedPlan.name,
+            description: selectedPlan.description,
+            quantity: 1,
+            unit_amount: selectedPlan.price,
+            sku: `PLAN_${selectedPlan.id.toUpperCase()}`
+          }
+        ] as PaymentItem[]
       }
-    ] as PaymentItem[]
-  })
+    }
+    return {
+      amount: '29.99',
+      currency: 'EUR',
+      description: 'Premium Job Posting',
+      items: [
+        {
+          name: 'Premium Job Posting',
+          description: '30-day featured job listing',
+          quantity: 1,
+          unit_amount: '29.99',
+          sku: 'JOB_PREMIUM_30D'
+        }
+      ] as PaymentItem[]
+    }
+  }
+
+  // Payment form state
+  const [paymentForm, setPaymentForm] = useState(getInitialFormState())
+
+  // Update form when selectedPlan changes
+  useEffect(() => {
+    if (selectedPlan) {
+      setPaymentForm({
+        amount: selectedPlan.price,
+        currency: 'EUR',
+        description: selectedPlan.name,
+        items: [
+          {
+            name: selectedPlan.name,
+            description: selectedPlan.description,
+            quantity: 1,
+            unit_amount: selectedPlan.price,
+            sku: `PLAN_${selectedPlan.id.toUpperCase()}`
+          }
+        ]
+      })
+    }
+  }, [selectedPlan])
 
   const predefinedPackages = [
     {

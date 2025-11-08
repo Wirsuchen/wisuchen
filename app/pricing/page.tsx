@@ -3,12 +3,15 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { PageLayout } from "@/components/layout/page-layout"
+import Link from "next/link"
 
 export default function PricingPage() {
   const plans = [
     {
+      id: 'basic',
       name: "Basic",
       price: "Free",
+      amount: "0",
       description: "Perfect for job seekers and casual deal hunters",
       features: [
         "Browse unlimited jobs",
@@ -19,10 +22,13 @@ export default function PricingPage() {
       ],
       cta: "Get Started",
       popular: false,
+      href: "/dashboard"
     },
     {
+      id: 'professional',
       name: "Professional",
-      price: "$19",
+      price: "€19",
+      amount: "19.99",
       period: "/month",
       description: "Ideal for active job seekers and deal enthusiasts",
       features: [
@@ -36,10 +42,13 @@ export default function PricingPage() {
       ],
       cta: "Start Free Trial",
       popular: true,
+      href: "/payment?plan=professional"
     },
     {
+      id: 'business',
       name: "Business",
-      price: "$49",
+      price: "€49",
+      amount: "49.99",
       period: "/month",
       description: "For companies and recruiters",
       features: [
@@ -53,6 +62,7 @@ export default function PricingPage() {
       ],
       cta: "Contact Sales",
       popular: false,
+      href: "/payment?plan=business"
     },
   ]
 
@@ -96,8 +106,14 @@ export default function PricingPage() {
                   </ul>
                 </CardContent>
                 <CardFooter>
-                  <Button className="w-full" variant={plan.popular ? "default" : "outline"}>
-                    {plan.cta}
+                  <Button 
+                    className="w-full" 
+                    variant={plan.popular ? "default" : "outline"}
+                    asChild
+                  >
+                    <Link href={plan.href}>
+                      {plan.cta}
+                    </Link>
                   </Button>
                 </CardFooter>
               </Card>
