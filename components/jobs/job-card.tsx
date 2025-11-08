@@ -280,23 +280,48 @@ export function JobCard({ job, variant = 'default', showCompany = true }: JobCar
                 {isExternal ? 'View Job' : 'View Details'}
               </Link>
             </Button>
-            {!isExternal && (
             <Button
               variant="outline"
               size="sm"
-              onClick={async () => {
+              onClick={async (e) => {
+                e.preventDefault()
+                e.stopPropagation()
                 try {
-                  await fetch('/api/saved', {
+                  const response = await fetch(isExternal ? '/api/saved/jobs' : '/api/saved', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ offer_id: job.id }),
+                    body: JSON.stringify(isExternal ? {
+                      id: job.id,
+                      title: job.title,
+                      description: job.description,
+                      company: (job as any).company_name || (job as any).company?.name || 'Unknown',
+                      location: job.location,
+                      employmentType: job.employment_type,
+                      experienceLevel: job.experience_level,
+                      salaryMin: job.salary_min,
+                      salaryMax: job.salary_max,
+                      salaryCurrency: job.salary_currency || 'EUR',
+                      salaryPeriod: job.salary_period || 'yearly',
+                      isRemote: job.is_remote,
+                      skills: job.skills,
+                      applicationUrl: job.application_url,
+                      source: (job as any).source || 'external'
+                    } : {
+                      offer_id: job.id
+                    }),
                   })
-                } catch {}
+                  const data = await response.json()
+                  if (data.success) {
+                    alert('Job saved successfully!')
+                  }
+                } catch (error) {
+                  console.error('Error saving job:', error)
+                  alert('Failed to save job')
+                }
               }}
             >
               Save
             </Button>
-            )}
             
             {job.application_url && (
               <Button size="sm" asChild>

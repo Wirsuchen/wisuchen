@@ -3,6 +3,7 @@
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { useState, useEffect } from "react"
+import { fetchWithCache } from "@/lib/utils/client-cache"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -78,27 +79,38 @@ interface DealDetail {
   }
 }
 
-export default function DealDetailPage({ params }: { params: { id: string } }) {
+export default function DealDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const [deal, setDeal] = useState<DealDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedImage, setSelectedImage] = useState(0)
   const [selectedSize, setSelectedSize] = useState<string | null>(null)
   const [selectedColor, setSelectedColor] = useState<string | null>(null)
+  const [dealId, setDealId] = useState<string | null>(null)
+
+  // Unwrap params
+  useEffect(() => {
+    params.then(p => setDealId(p.id))
+  }, [params])
 
   useEffect(() => {
+    if (!dealId) return
     fetchDealDetails()
-  }, [params.id])
+  }, [dealId])
 
   const fetchDealDetails = async () => {
     try {
       setLoading(true)
-      // First, try to get from recent deals
-      const response = await fetch(`/api/deals?page=1&limit=50`)
-      const data = await response.json()
+      // Use cache with 1 hour TTL
+      const data = await fetchWithCache<any>(
+        `/api/deals?page=1&limit=50`,
+        undefined,
+        { page: 1, limit: 50 },
+        60 * 60 * 1000
+      )
       
       // Find the deal by ID
-      const foundDeal = data.deals?.find((d: any) => d.id === params.id)
+      const foundDeal = data.deals?.find((d: any) => d.id === dealId)
       
       if (foundDeal) {
         setDeal(foundDeal)
@@ -271,7 +283,37 @@ export default function DealDetailPage({ params }: { params: { id: string } }) {
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={async () => {
+                            if (!deal) return
+                            try {
+                              const response = await fetch('/api/saved/deals', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                  id: deal.id,
+                                  title: deal.title,
+                                  description: (deal as any).description || '',
+                                  currentPrice: deal.currentPrice,
+                                  originalPrice: deal.originalPrice,
+                                  image: deal.image,
+                                  url: (deal as any).url,
+                                  store: deal.brand,
+                                  category: (deal as any).category,
+                                }),
+                              })
+                              const data = await response.json()
+                              if (data.success) {
+                                alert('Deal saved successfully!')
+                              }
+                            } catch (error) {
+                              console.error('Error saving deal:', error)
+                              alert('Failed to save deal')
+                            }
+                          }}
+                        >
                           <Heart className="h-4 w-4" />
                         </Button>
                         <Button variant="outline" size="sm">

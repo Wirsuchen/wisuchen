@@ -1,9 +1,11 @@
 /**
  * Custom hook for fetching and managing affiliate offers
  * Provides loading states, error handling, and automatic retries
+ * Uses client-side cache to prevent unnecessary API calls on route changes
  */
 
 import { useState, useEffect, useCallback } from 'react'
+import { fetchWithCache } from '@/lib/utils/client-cache'
 
 export interface Offer {
   id: string
@@ -88,14 +90,10 @@ export function useOffers(initialParams?: SearchOffersParams): UseOffersReturn {
       if (params.sources?.length) queryParams.append('sources', params.sources.join(','))
       if (params.useCache !== undefined) queryParams.append('useCache', params.useCache.toString())
 
-      const response = await fetch(`/api/v1/offers/search?${queryParams.toString()}`)
+      const url = `/api/v1/offers/search?${queryParams.toString()}`
       
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => null)
-        throw new Error(errorData?.error || `HTTP ${response.status}: ${response.statusText}`)
-      }
-
-      const data = await response.json()
+      // Use cache with 1 hour TTL - prevents API calls on route changes/refreshes
+      const data = await fetchWithCache<any>(url, undefined, params, 60 * 60 * 1000)
 
       if (!data.success) {
         throw new Error(data.error || 'Failed to fetch offers')
@@ -156,13 +154,10 @@ export function useOffer(offerId: string | null) {
       setError(null)
 
       try {
-        const response = await fetch(`/api/v1/offers/${offerId}`)
+        const url = `/api/v1/offers/${offerId}`
         
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-        }
-
-        const data = await response.json()
+        // Use cache with 1 hour TTL
+        const data = await fetchWithCache<any>(url, undefined, { offerId }, 60 * 60 * 1000)
 
         if (!data.success) {
           throw new Error(data.error || 'Failed to fetch offer')

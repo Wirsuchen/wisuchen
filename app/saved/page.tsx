@@ -152,11 +152,15 @@ export default function SavedPage() {
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Button variant="ghost" size="sm">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={async () => {
+                          await fetch(`/api/saved?offer_id=${deal.id}`, { method: 'DELETE' })
+                          setItems(prev => prev.filter(i => i.offer_id !== deal.id))
+                        }}
+                      >
                         <Trash2 className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm">
-                        <Heart className="h-4 w-4 fill-current text-red-500" />
                       </Button>
                     </div>
                   </div>

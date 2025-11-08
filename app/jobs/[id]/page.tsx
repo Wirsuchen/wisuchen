@@ -26,10 +26,11 @@ import { formatEuroText } from "@/lib/utils"
 import { useSearchParams } from "next/navigation"
 import type { Job } from "@/hooks/use-jobs"
 
-export default function JobDetailPage({ params }: { params: { id: string } }) {
+export default function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const [isImproving, setIsImproving] = useState(false)
   const [improvedDescription, setImprovedDescription] = useState("")
   const searchParams = useSearchParams()
+  const [jobId, setJobId] = useState<string | null>(null)
 
   type ExtJob = Job & {
     logo?: string
@@ -45,9 +46,15 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
 
   const [job, setJob] = useState<ExtJob | null>(null)
 
+  // Unwrap params
   useEffect(() => {
+    params.then(p => setJobId(p.id))
+  }, [params])
+
+  useEffect(() => {
+    if (!jobId) return
     const source = searchParams.get('source') || 'rapidapi'
-    const storageKey = `job:${source}:${params.id}`
+    const storageKey = `job:${source}:${jobId}`
     try {
       const raw = sessionStorage.getItem(storageKey)
       if (raw) {
@@ -55,7 +62,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
         setJob(parsed)
       }
     } catch {}
-  }, [params.id, searchParams])
+  }, [jobId, searchParams])
 
   const relatedJobs = [
     {
@@ -204,7 +211,43 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={async () => {
+                        if (!job) return
+                        try {
+                          const response = await fetch('/api/saved/jobs', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              id: job.id,
+                              title: job.title,
+                              description: job.description,
+                              company: job.company,
+                              location: job.location,
+                              employmentType: job.employmentType,
+                              experienceLevel: job.experienceLevel,
+                              salaryMin: job.salary?.min,
+                              salaryMax: job.salary?.max,
+                              salaryCurrency: job.salary?.currency || 'EUR',
+                              salaryPeriod: 'yearly',
+                              isRemote: false,
+                              skills: job.skills,
+                              applicationUrl: job.applicationUrl,
+                              source: job.source
+                            }),
+                          })
+                          const data = await response.json()
+                          if (data.success) {
+                            alert('Job saved successfully!')
+                          }
+                        } catch (error) {
+                          console.error('Error saving job:', error)
+                          alert('Failed to save job')
+                        }
+                      }}
+                    >
                       <Heart className="h-4 w-4" />
                     </Button>
                     <Button variant="outline" size="sm">
@@ -291,7 +334,43 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
                     </a>
                   </Button>
                 )}
-                <Button variant="outline" className="w-full bg-transparent">
+                <Button 
+                  variant="outline" 
+                  className="w-full bg-transparent"
+                  onClick={async () => {
+                    if (!job) return
+                    try {
+                      const response = await fetch('/api/saved/jobs', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          id: job.id,
+                          title: job.title,
+                          description: job.description,
+                          company: job.company,
+                          location: job.location,
+                          employmentType: job.employmentType,
+                          experienceLevel: job.experienceLevel,
+                          salaryMin: job.salary?.min,
+                          salaryMax: job.salary?.max,
+                          salaryCurrency: job.salary?.currency || 'EUR',
+                          salaryPeriod: 'yearly',
+                          isRemote: false,
+                          skills: job.skills,
+                          applicationUrl: job.applicationUrl,
+                          source: job.source
+                        }),
+                      })
+                      const data = await response.json()
+                      if (data.success) {
+                        alert('Job saved successfully!')
+                      }
+                    } catch (error) {
+                      console.error('Error saving job:', error)
+                      alert('Failed to save job')
+                    }
+                  }}
+                >
                   <Heart className="h-4 w-4 mr-2" />
                   Save Job
                 </Button>

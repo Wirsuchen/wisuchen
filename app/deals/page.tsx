@@ -13,6 +13,7 @@ import { Search, Filter, Heart, Star, ShoppingBag, TrendingDown, Grid3X3, List }
 import Link from "next/link"
 import { filterDeals, sortDeals } from "@/lib/filters"
 import { formatEuro, formatEuroText } from "@/lib/utils"
+import { fetchWithCache } from "@/lib/utils/client-cache"
 
 export default function DealsPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -47,13 +48,13 @@ export default function DealsPage() {
     const loadDeals = async () => {
       setLoading(true)
       try {
-        const res = await fetch('/api/deals?page=1&limit=50', { cache: 'no-store' })
-        if (!res.ok) {
-          console.error('Failed to fetch deals')
-          setDeals([])
-          return
-        }
-        const data = await res.json()
+        // Use cache with 1 hour TTL
+        const data = await fetchWithCache<any>(
+          '/api/deals?page=1&limit=50',
+          undefined,
+          { page: 1, limit: 50 },
+          60 * 60 * 1000
+        )
         const mapped = (data.deals || []).map((d: any) => ({
           id: d.id,
           title: d.title,
@@ -278,7 +279,39 @@ export default function DealsPage() {
                           <Badge className="bg-accent text-accent-foreground">-{deal.discount}%</Badge>
                         </div>
                         <div className="absolute top-2 right-2">
-                          <Button variant="ghost" size="sm" className="bg-background/80 hover:bg-background">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="bg-background/80 hover:bg-background"
+                            onClick={async (e) => {
+                              e.preventDefault()
+                              e.stopPropagation()
+                              try {
+                                const response = await fetch('/api/saved/deals', {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({
+                                    id: deal.id,
+                                    title: deal.title,
+                                    description: (deal as any).description || '',
+                                    currentPrice: deal.currentPrice,
+                                    originalPrice: deal.originalPrice,
+                                    image: deal.image,
+                                    url: (deal as any).url,
+                                    store: deal.brand,
+                                    category: (deal as any).category,
+                                  }),
+                                })
+                                const data = await response.json()
+                                if (data.success) {
+                                  alert('Deal saved successfully!')
+                                }
+                              } catch (error) {
+                                console.error('Error saving deal:', error)
+                                alert('Failed to save deal')
+                              }
+                            }}
+                          >
                             <Heart className="h-4 w-4" />
                           </Button>
                         </div>

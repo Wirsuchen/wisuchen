@@ -1,9 +1,11 @@
 /**
  * Custom hook for fetching and managing jobs
  * Provides loading states, error handling, and automatic retries
+ * Uses client-side cache to prevent unnecessary API calls on route changes
  */
 
 import { useState, useEffect, useCallback } from 'react'
+import { fetchWithCache } from '@/lib/utils/client-cache'
 
 export interface Job {
   id: string
@@ -103,14 +105,10 @@ export function useJobs(initialParams?: SearchJobsParams): UseJobsReturn {
       if (params.countries?.length) queryParams.append('countries', params.countries.join(','))
       if (params.postcodes?.length) queryParams.append('postcodes', params.postcodes.join(','))
 
-      const response = await fetch(`/api/v1/jobs/search?${queryParams.toString()}`)
+      const url = `/api/v1/jobs/search?${queryParams.toString()}`
       
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => null)
-        throw new Error(errorData?.error || `HTTP ${response.status}: ${response.statusText}`)
-      }
-
-      const data = await response.json()
+      // Use cache with 1 hour TTL - prevents API calls on route changes/refreshes
+      const data = await fetchWithCache<any>(url, undefined, params, 60 * 60 * 1000)
 
       if (!data.success) {
         throw new Error(data.error || 'Failed to fetch jobs')
@@ -171,13 +169,10 @@ export function useJob(jobId: string | null) {
       setError(null)
 
       try {
-        const response = await fetch(`/api/v1/jobs/${jobId}`)
+        const url = `/api/v1/jobs/${jobId}`
         
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-        }
-
-        const data = await response.json()
+        // Use cache with 1 hour TTL
+        const data = await fetchWithCache<any>(url, undefined, { jobId }, 60 * 60 * 1000)
 
         if (!data.success) {
           throw new Error(data.error || 'Failed to fetch job')

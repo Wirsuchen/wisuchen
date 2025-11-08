@@ -255,8 +255,14 @@ export class RapidAPIService {
     console.log('🔥 [Job Search API] Starting search with params:', params)
     
     try {
+      // Skip if no keyword provided
+      if (!params.keyword) {
+        console.log('🔥 [Job Search API] No keyword provided, skipping')
+        return []
+      }
+
       const requestParams = {
-        keyword: params.keyword || 'developer',
+        keyword: params.keyword,
         location: params.location,
         page: params.page || 1,
         limit: Math.min(params.limit || 20, 50),
@@ -325,16 +331,22 @@ export class RapidAPIService {
     console.log('⚡ [JSearch API] Starting search with params:', params)
     
     try {
+      // Skip if no query provided
+      if (!params.query) {
+        console.log('⚡ [JSearch API] No query provided, skipping')
+        return []
+      }
+
       const requestParams = {
-        query: params.query || 'developer',
+        query: params.query,
         location: params.location,
         date_posted: params.date_posted || 'week', // Default to last week for freshness
         page: params.page || 1,
-        num_pages: Math.min(params.num_pages || 1, 5),
+        num_pages: params.num_pages || 1,
         employment_types: params.employment_types
       }
       
-      console.log('⚡ [JSearch API] Request params:', requestParams)
+      console.log(' [JSearch API] Request params:', requestParams)
       
       const data = await this.makeRequest(
         'jsearch.p.rapidapi.com',
@@ -395,14 +407,13 @@ export class RapidAPIService {
   }> {
     console.log('🌐 [Aggregate] Starting aggregate search:', params)
     
-    // Use only WORKING RapidAPI job sources
+    // Use only WORKING and SUBSCRIBED RapidAPI job sources
     // Most free job APIs on RapidAPI have been deprecated/removed (404 errors)
-    // These are the only ones that still work:
+    // Only using jsearch (Google for Jobs) as it's the only subscribed API
     const sources = params.sources && params.sources.length > 0 
       ? params.sources 
       : [
-          'job-search-api',  // Latest jobs from last 7 days
-          'jsearch'          // Google for Jobs aggregator (LinkedIn, Indeed, etc.)
+          'jsearch'  // Google for Jobs aggregator (LinkedIn, Indeed, etc.) - SUBSCRIBED
         ]
     console.log('🌐 [Aggregate] Using sources:', sources)
     
@@ -414,24 +425,23 @@ export class RapidAPIService {
         let jobs: RapidAPIJob[] = []
         
         switch (source) {
-          case 'job-search-api':
-            // PRIMARY: Latest jobs from last 7 days, hourly refresh
-            jobs = await this.searchJobSearchAPI({
-              keyword: params.query || 'developer',
-              location: params.location,
-              page: params.page,
-              limit: 50
-            })
-            break
           case 'jsearch':
-            // SECONDARY: Google for Jobs aggregator
+            // Google for Jobs aggregator (SUBSCRIBED)
+            if (!params.query) {
+              console.log('⚡ [JSearch] No query provided, skipping')
+              break
+            }
             jobs = await this.searchJSearchAPI({
-              query: params.query || 'developer',
+              query: params.query,
               location: params.location,
               date_posted: 'week', // Last 7 days for freshness
               page: params.page,
               employment_types: params.employment_type
             })
+            break
+          case 'job-search-api':
+            // NOT SUBSCRIBED - Skip to avoid 403 errors
+            console.warn('⚠️ [Job Search API] Not subscribed, skipping')
             break
           case 'employment-agency':
             jobs = await this.searchEmploymentAgencyJobs(params)

@@ -13,6 +13,7 @@ import RotatingText from "@/components/rotating-text"
 import { ShimmerButton } from "@/components/magicui/shimmer-button"
 import { DotPattern } from "@/components/magicui/dot-pattern"
 import { formatEuroText, formatEuro } from "@/lib/utils"
+import { fetchWithCache } from "@/lib/utils/client-cache"
 import { useTranslation } from "@/contexts/i18n-context"
 import { useState, useEffect } from "react"
 import type { Job } from "@/hooks/use-jobs"
@@ -43,8 +44,13 @@ export default function HomePage() {
   const fetchTopDeals = async () => {
     try {
       setDealsLoading(true)
-      const response = await fetch('/api/deals?page=1&limit=6')
-      const data = await response.json()
+      // Use cache with 1 hour TTL
+      const data = await fetchWithCache<any>(
+        '/api/deals?page=1&limit=6',
+        undefined,
+        { page: 1, limit: 6 },
+        60 * 60 * 1000
+      )
       if (data.deals && data.deals.length > 0) {
         setTopDeals(data.deals.slice(0, 3))
       }
@@ -58,9 +64,13 @@ export default function HomePage() {
   const fetchTopJobs = async () => {
     try {
       setJobsLoading(true)
-      const res = await fetch('/api/v1/jobs/search?limit=6&useCache=true&countries=de,at,ch')
-      if (!res.ok) throw new Error('Failed to fetch jobs')
-      const data = await res.json()
+      // Use cache with 1 hour TTL
+      const data = await fetchWithCache<any>(
+        '/api/v1/jobs/search?limit=6&useCache=true&countries=de,at,ch',
+        undefined,
+        { limit: 6, countries: ['de', 'at', 'ch'] },
+        60 * 60 * 1000
+      )
       const jobs: Job[] = data?.data?.jobs || []
       setTopJobs(jobs.slice(0, 6))
     } catch (e) {

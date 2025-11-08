@@ -144,12 +144,17 @@ class RedisCache {
   async connect() {
     if (this.connected) return
 
+    // Skip Redis in development - use memory cache only
+    if (process.env.NODE_ENV !== 'production') {
+      return
+    }
+
     try {
-      // Dynamically import Redis only if needed
+      // Only try to import Redis in production
+      // @ts-ignore - Redis is optional dependency
       const redis = await import('redis').catch(() => null)
       
       if (!redis) {
-        console.warn('⚠️ Redis module not installed. Using memory cache only.')
         return
       }
       
