@@ -73,14 +73,14 @@ export default function JobsPage() {
       <div className="space-y-8">
         {/* Header */}
         <div className="text-center space-y-4">
-          <h1 className="text-4xl md:text-5xl font-bold">Find Your Dream Job</h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold px-4">Find Your Dream Job</h1>
+          <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-2xl mx-auto px-4">
             Discover jobs from 10+ sources: Glassdoor, Upwork, Y Combinator & more
           </p>
           
           {/* Stats */}
           {meta && !loading && (
-            <div className="flex items-center justify-center gap-6 text-sm">
+            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-sm px-4">
               <div className="flex items-center gap-2">
                 <Briefcase className="w-4 h-4 text-blue-600" />
                 <span className="font-semibold">{pagination?.total || 0} Jobs</span>
@@ -99,7 +99,7 @@ export default function JobsPage() {
         </div>
 
         {/* Search Section */}
-        <div className="bg-white rounded-lg shadow-lg p-6 border">
+        <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 border">
           <form onSubmit={handleSearch} className="space-y-4">
             {/* Main Search Bar */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -134,12 +134,12 @@ export default function JobsPage() {
                   {loading ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Searching...
+                      <span className="hidden sm:inline">Searching...</span>
                     </>
                   ) : (
                     <>
-                      <Search className="w-4 h-4 mr-2" />
-                      Search
+                      <Search className="w-4 h-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Search</span>
                     </>
                   )}
                 </Button>
@@ -147,6 +147,7 @@ export default function JobsPage() {
                   type="button"
                   variant="outline"
                   onClick={() => setShowFilters(!showFilters)}
+                  className="px-3"
                 >
                   <Filter className="w-4 h-4" />
                 </Button>
@@ -335,41 +336,41 @@ function JobCard({ job }: { job: Job }) {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 border">
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex-1">
+    <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-4 sm:p-6 border">
+      <div className="flex flex-col sm:flex-row items-start justify-between gap-3 mb-3">
+        <div className="flex-1 w-full sm:w-auto">
           <a
             href={`/jobs/${encodeURIComponent(job.externalId || job.id)}?source=${encodeURIComponent(job.source)}`}
             onClick={onOpenDetails}
             className="block"
           >
-            <h3 className="text-xl font-semibold text-gray-900 mb-2 hover:text-blue-600">
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 hover:text-blue-600">
               {job.title}
             </h3>
           </a>
-          <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-sm text-gray-600">
             <span className="flex items-center gap-1">
               <Briefcase className="w-4 h-4" />
-              {job.company}
+              <span className="truncate max-w-[150px] sm:max-w-none">{job.company}</span>
             </span>
             <span className="flex items-center gap-1">
               <MapPin className="w-4 h-4" />
-              {job.location}
+              <span className="truncate max-w-[150px] sm:max-w-none">{job.location}</span>
             </span>
             {job.salary && (job.salary.min || job.salary.max || job.salary.text) && (
               <span className="flex items-center gap-1 text-green-600 font-medium">
                 <DollarSign className="w-4 h-4" />
-                {job.salary.text || `€${job.salary.min?.toLocaleString()} - €${job.salary.max?.toLocaleString()}`}
+                <span className="truncate">{job.salary.text || `€${job.salary.min?.toLocaleString()} - €${job.salary.max?.toLocaleString()}`}</span>
               </span>
             )}
           </div>
         </div>
         
-        <div className="flex flex-col items-end gap-2">
-          <Badge className={`border ${getSourceBadgeColor(job.source)}`}>
+        <div className="flex sm:flex-col items-center sm:items-end gap-2 w-full sm:w-auto">
+          <Badge className={`border text-xs ${getSourceBadgeColor(job.source)}`}>
             {getSourceName(job.source)}
           </Badge>
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-gray-500 ml-auto sm:ml-0">
             {formatDate(job.publishedAt)}
           </span>
         </div>
@@ -381,7 +382,7 @@ function JobCard({ job }: { job: Job }) {
         </p>
       )}
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="flex flex-wrap gap-2">
           {job.employmentType && (
             <Badge variant="secondary" className="text-xs">
@@ -400,25 +401,27 @@ function JobCard({ job }: { job: Job }) {
           ))}
         </div>
 
-        <div className="flex gap-2">
-          <Button asChild variant="outline">
+        <div className="flex gap-2 w-full sm:w-auto">
+          <Button asChild variant="outline" size="sm" className="flex-1 sm:flex-initial">
             <a
               href={`/jobs/${encodeURIComponent(job.externalId || job.id)}?source=${encodeURIComponent(job.source)}`}
               onClick={onOpenDetails}
-              className="flex items-center gap-2"
+              className="flex items-center justify-center gap-2"
             >
-              View Details
+              <span className="hidden sm:inline">View Details</span>
+              <span className="sm:hidden">Details</span>
             </a>
           </Button>
           {job.applicationUrl && (
-            <Button asChild>
+            <Button asChild size="sm" className="flex-1 sm:flex-initial">
               <a
                 href={job.applicationUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2"
+                className="flex items-center justify-center gap-2"
               >
-                Apply Now
+                <span className="hidden sm:inline">Apply Now</span>
+                <span className="sm:hidden">Apply</span>
                 <ExternalLink className="w-4 h-4" />
               </a>
             </Button>
