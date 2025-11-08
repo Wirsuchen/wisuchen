@@ -11,36 +11,28 @@ export function Footer() {
   const { t } = useTranslation()
   
   const footerLinks = {
+    explore: [
+      { name: t('nav.jobs'), href: "/jobs" },
+      { name: t('nav.deals'), href: "/deals" },
+      { name: t('nav.blog'), href: "/blog" },
+      { name: t('jobs.save'), href: "/saved" },
+    ],
+    account: [
+      { name: t('nav.dashboard'), href: "/dashboard" },
+      { name: t('nav.login'), href: "/login" },
+      { name: t('nav.register'), href: "/register" },
+      { name: t('pricing.title'), href: "/pricing" },
+    ],
     company: [
       { name: t('footer.aboutUs'), href: "/about" },
-      { name: t('footer.careers'), href: "/careers" },
-      { name: "Press", href: "/press" },
-      { name: t('footer.contactUs'), href: "/contact" },
-    ],
-    support: [
-      { name: "Help Center", href: "/help" },
-      { name: t('footer.faq'), href: "/faq" },
       { name: t('footer.support'), href: "/support" },
-      { name: "Community", href: "/community" },
-    ],
-    legal: [
-      { name: t('footer.privacyPolicy'), href: "/privacy" },
-      { name: t('footer.termsOfService'), href: "/terms" },
-      { name: t('footer.cookiePolicy'), href: "/cookies" },
-      { name: "Rules", href: "/rules" },
-    ],
-    resources: [
-      { name: t('nav.blog'), href: "/blog" },
-      { name: t('pricing.title'), href: "/pricing" },
-      { name: "API", href: "/api" },
-      { name: "Documentation", href: "/docs" },
     ],
   }
 
   return (
     <footer className="bg-muted/50 border-t">
       <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
           {/* Brand Section */}
           <div className="lg:col-span-2">
             <Link href="/" className="flex items-center space-x-2 mb-4">
@@ -104,59 +96,45 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Links Sections */}
+          {/* Explore Links */}
           <div>
-            <h3 className="font-semibold mb-3">{t('footer.aboutUs')}</h3>
+            <h3 className="font-semibold mb-3">Explore</h3>
+            <ul className="space-y-2">
+              {footerLinks.explore.map((link) => (
+                <li key={link.name}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Account Links */}
+          <div>
+            <h3 className="font-semibold mb-3">Account</h3>
+            <ul className="space-y-2">
+              {footerLinks.account.map((link) => (
+                <li key={link.name}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Company Links */}
+          <div>
+            <h3 className="font-semibold mb-3">Company</h3>
             <ul className="space-y-2">
               {footerLinks.company.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="font-semibold mb-3">{t('footer.support')}</h3>
-            <ul className="space-y-2">
-              {footerLinks.support.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="font-semibold mb-3">Legal</h3>
-            <ul className="space-y-2">
-              {footerLinks.legal.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="font-semibold mb-3">Resources</h3>
-            <ul className="space-y-2">
-              {footerLinks.resources.map((link) => (
                 <li key={link.name}>
                   <Link
                     href={link.href}
