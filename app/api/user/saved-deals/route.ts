@@ -3,14 +3,13 @@ import { createClient } from '@/lib/supabase/server'
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient()
+    const supabase: any = await createClient()
 
     // Check authentication
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-
     // Get user profile
     const { data: profile } = await supabase
       .from('profiles')
@@ -60,8 +59,8 @@ export async function GET(request: NextRequest) {
 
     // Format the deals data
     const dealsFormatted = (savedDeals || [])
-      .filter(item => item.offers) // Only include items where offer still exists
-      .map((item) => {
+      .filter((item: any) => item.offers) // Only include items where offer still exists
+      .map((item: any) => {
         const offer = item.offers as any
         
         // Calculate "saved" time ago
@@ -108,6 +107,49 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ deals: dealsFormatted })
   } catch (error) {
     console.error('Saved deals error:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const supabase = await createClient()
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('user_id', user.id)
+      .single()
+
+    if (!profile) {
+      return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+    }
+
+    const body = await request.json()
+    const { offerId } = body || {}
+    if (!offerId) {
+      return NextResponse.json({ error: 'Missing offerId' }, { status: 400 })
+    }
+
+    const { error } = await supabase
+      .from('saved_offers')
+      .delete()
+      .eq('user_id', profile.id)
+      .eq('offer_id', offerId)
+
+    if (error) {
+      console.error('Remove saved deal error:', error)
+      return NextResponse.json({ error: 'Failed to remove saved deal' }, { status: 500 })
+    }
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Saved deals DELETE error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

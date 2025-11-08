@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { useAuth } from "@/contexts/auth-context"
 import {
   LayoutDashboard,
@@ -37,14 +36,12 @@ export function DashboardSidebar() {
       href: "/dashboard/my-ads",
       icon: Briefcase,
       current: pathname === "/dashboard/my-ads",
-      badge: "3",
     },
     {
       name: "My Deals",
       href: "/dashboard/my-deals",
       icon: ShoppingBag,
       current: pathname === "/dashboard/my-deals",
-      badge: "12",
     },
     {
       name: "My Invoices",
@@ -97,11 +94,7 @@ export function DashboardSidebar() {
                     {!collapsed && (
                       <>
                         <span className="ml-3">{item.name}</span>
-                        {item.badge && (
-                          <Badge variant="secondary" className="ml-auto">
-                            {item.badge}
-                          </Badge>
-                        )}
+                        
                       </>
                     )}
                   </Link>

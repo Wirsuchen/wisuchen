@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient()
+    const supabase: any = await createClient()
 
     // Check authentication
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -26,22 +26,10 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const limit = Math.min(parseInt(searchParams.get('limit') || '10'), 50)
 
-    // Fetch user's job ads
+    // Fetch user's job ads (base fields only)
     const { data: ads, error } = await supabase
       .from('offers')
-      .select(`
-        id,
-        title,
-        status,
-        type,
-        created_at,
-        expires_at,
-        company_id,
-        companies (
-          name,
-          logo_url
-        )
-      `)
+      .select('id, title, status, type, created_at, expires_at, company_id')
       .eq('created_by', profile.id)
       .eq('type', 'job')
       .order('created_at', { ascending: false })
@@ -54,21 +42,21 @@ export async function GET(request: NextRequest) {
 
     // Get view and applicant counts for each ad
     const adsWithStats = await Promise.all(
-      (ads || []).map(async (ad) => {
+      (ads || []).map(async (ad: any) => {
         // Get views count
-        const { count: views } = await supabase
+        const { count: views } = await (supabase as any)
           .from('impressions')
           .select('*', { count: 'exact', head: true })
           .eq('offer_id', ad.id)
 
         // Get applicants count
-        const { count: applicants } = await supabase
+        const { count: applicants } = await (supabase as any)
           .from('applications')
           .select('*', { count: 'exact', head: true })
           .eq('offer_id', ad.id)
 
         // Calculate "posted" time ago
-        const createdDate = new Date(ad.created_at)
+        const createdDate = new Date(ad.created_at || new Date().toISOString())
         const now = new Date()
         const diffMs = now.getTime() - createdDate.getTime()
         const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
@@ -95,8 +83,9 @@ export async function GET(request: NextRequest) {
           views: views || 0,
           applicants: applicants || 0,
           posted,
-          company: ad.companies?.name || 'Unknown',
-          companyLogo: ad.companies?.logo_url || null,
+          company: undefined,
+          companyLogo: null,
+          expires: ad.expires_at,
         }
       })
     )
@@ -104,6 +93,94 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ ads: adsWithStats })
   } catch (error) {
     console.error('User ads error:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const supabase: any = await createClient()
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('user_id', user.id)
+      .single()
+
+    if (!profile) {
+      return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+    }
+
+    const body = await request.json()
+    const { id, action } = body || {}
+    if (!id || !action) {
+      return NextResponse.json({ error: 'Missing id or action' }, { status: 400 })
+    }
+
+    if (action === 'refresh') {
+      const { error } = await supabase
+        .from('offers')
+        .update({ status: 'active', updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .eq('created_by', profile.id)
+      if (error) {
+        console.error('Refresh ad error:', error)
+        return NextResponse.json({ error: 'Failed to refresh' }, { status: 500 })
+      }
+      return NextResponse.json({ success: true })
+    }
+
+    return NextResponse.json({ error: 'Unsupported action' }, { status: 400 })
+  } catch (error) {
+    console.error('User ads PATCH error:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const supabase: any = await createClient()
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('user_id', user.id)
+      .single()
+
+    if (!profile) {
+      return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+    }
+
+    const body = await request.json()
+    const { id } = body || {}
+    if (!id) {
+      return NextResponse.json({ error: 'Missing id' }, { status: 400 })
+    }
+
+    const { error } = await supabase
+      .from('offers')
+      .update({ status: 'archived', updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .eq('created_by', profile.id)
+
+    if (error) {
+      console.error('Archive ad error:', error)
+      return NextResponse.json({ error: 'Failed to archive' }, { status: 500 })
+    }
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('User ads DELETE error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

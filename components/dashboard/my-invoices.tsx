@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -18,13 +18,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { FileText, Download, Eye, Plus, Euro, Calendar, Printer } from "lucide-react"
+import { FileText, Download, Eye, Plus, Euro, Calendar, Printer, Loader2 } from "lucide-react"
 import { generateInvoicePDF } from "@/lib/invoice-generator"
+import { createClient } from "@/lib/supabase/client"
 
 export function MyInvoices() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isPreviewDialogOpen, setIsPreviewDialogOpen] = useState(false)
   const [selectedInvoice, setSelectedInvoice] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [invoices, setInvoices] = useState<any[]>([])
   const [invoiceData, setInvoiceData] = useState({
     clientName: "",
     clientEmail: "",
@@ -35,79 +38,64 @@ export function MyInvoices() {
     includeWatermark: true,
   })
 
-  const invoices = [
-    {
-      id: "INV-001",
-      clientName: "TechCorp GmbH",
-      clientEmail: "billing@techcorp.de",
-      clientAddress: "Musterstraße 123\n10115 Berlin\nGermany",
-      description: "Web Development Services - Q4 2023",
-      amount: 1500,
-      vatAmount: 285,
-      status: "Paid",
-      createdDate: "2024-01-15",
-      dueDate: "2024-02-15",
-      vatRate: 19,
-    },
-    {
-      id: "INV-002",
-      clientName: "StartupXYZ",
-      clientEmail: "finance@startupxyz.com",
-      clientAddress: "Innovation Hub 45\n80331 München\nGermany",
-      description: "Digital Marketing Campaign Setup",
-      amount: 2500,
-      vatAmount: 475,
-      status: "Pending",
-      createdDate: "2024-01-10",
-      dueDate: "2024-02-10",
-      vatRate: 19,
-    },
-    {
-      id: "INV-003",
-      clientName: "DesignStudio",
-      clientEmail: "hello@designstudio.de",
-      clientAddress: "Kreativstraße 67\n20095 Hamburg\nGermany",
-      description: "UI/UX Design Services",
-      amount: 800,
-      vatAmount: 152,
-      status: "Overdue",
-      createdDate: "2023-12-15",
-      dueDate: "2024-01-15",
-      vatRate: 19,
-    },
-    {
-      id: "INV-004",
-      clientName: "MarketPro",
-      clientEmail: "accounts@marketpro.com",
-      clientAddress: "Business Center 89\n50667 Köln\nGermany",
-      description: "SEO Optimization Services",
-      amount: 1200,
-      vatAmount: 228,
-      status: "Draft",
-      createdDate: "2024-01-20",
-      dueDate: "2024-02-20",
-      vatRate: 19,
-    },
-  ]
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setLoading(true)
+        const supabase = createClient()
+        const { data: { session } } = await supabase.auth.getSession()
+        const userId = session?.user?.id
+        if (!userId) {
+          setInvoices([])
+          return
+        }
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('user_id', userId)
+          .single()
+
+        if (!profile?.id) {
+          setInvoices([])
+          return
+        }
+
+        const { data } = await supabase
+          .from('invoices')
+          .select('id, invoice_number, status, subtotal, tax_amount, total_amount, currency, billing_name, billing_email, billing_address, issued_at, due_date, pdf_url, tax_rate')
+          .eq('user_id', profile.id)
+          .order('issued_at', { ascending: false })
+
+        setInvoices(data || [])
+      } catch (e) {
+        console.error('Load invoices error:', e)
+        setInvoices([])
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+  }, [])
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Paid":
+      case "paid":
         return "default"
-      case "Pending":
+      case "pending":
+      case "sent":
         return "secondary"
-      case "Overdue":
+      case "overdue":
         return "destructive"
-      case "Draft":
+      case "draft":
         return "outline"
       default:
         return "secondary"
     }
   }
 
-  const totalRevenue = invoices.filter((inv) => inv.status === "Paid").reduce((sum, inv) => sum + inv.amount, 0)
-  const pendingAmount = invoices.filter((inv) => inv.status === "Pending").reduce((sum, inv) => sum + inv.amount, 0)
-  const overdueAmount = invoices.filter((inv) => inv.status === "Overdue").reduce((sum, inv) => sum + inv.amount, 0)
+  const totalRevenue = invoices.filter((inv) => inv.status === "paid").reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0)
+  const pendingAmount = invoices.filter((inv) => inv.status === "pending" || inv.status === 'sent').reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0)
+  const overdueAmount = invoices.filter((inv) => inv.status === "overdue").reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0)
 
   const handleCreateInvoice = async () => {
     const newInvoice = {
@@ -147,7 +135,21 @@ export function MyInvoices() {
 
   const handleDownloadPDF = async (invoice: any) => {
     try {
-      await generateInvoicePDF(invoice)
+      const mapped = {
+        id: String(invoice.invoice_number || invoice.id),
+        clientName: invoice.billing_name || '-',
+        clientEmail: invoice.billing_email || undefined,
+        clientAddress: invoice.billing_address || '',
+        description: 'Invoice',
+        amount: Number(invoice.subtotal || 0),
+        vatRate: Number(invoice.tax_rate || 0),
+        vatAmount: Number(invoice.tax_amount || 0),
+        status: String(invoice.status || 'draft').toUpperCase(),
+        createdDate: invoice.issued_at || new Date().toISOString(),
+        dueDate: invoice.due_date || new Date().toISOString(),
+        includeWatermark: true,
+      }
+      await generateInvoicePDF(mapped as any)
     } catch (error) {
       console.error("Error downloading PDF:", error)
     }
@@ -156,6 +158,14 @@ export function MyInvoices() {
   const handlePreviewInvoice = (invoice: any) => {
     setSelectedInvoice(invoice)
     setIsPreviewDialogOpen(true)
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <Loader2 className="h-8 w-8 animate-spin text-accent" />
+      </div>
+    )
   }
 
   return (
@@ -289,7 +299,7 @@ export function MyInvoices() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Total Revenue</p>
-                <p className="text-2xl font-bold text-green-600">€{totalRevenue}</p>
+                <p className="text-2xl font-bold text-green-600">€{totalRevenue.toFixed(2)}</p>
               </div>
               <Euro className="h-8 w-8 text-green-600" />
             </div>
@@ -300,7 +310,7 @@ export function MyInvoices() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Pending</p>
-                <p className="text-2xl font-bold text-yellow-600">€{pendingAmount}</p>
+                <p className="text-2xl font-bold text-yellow-600">€{pendingAmount.toFixed(2)}</p>
               </div>
               <Calendar className="h-8 w-8 text-yellow-600" />
             </div>
@@ -311,7 +321,7 @@ export function MyInvoices() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Overdue</p>
-                <p className="text-2xl font-bold text-red-600">€{overdueAmount}</p>
+                <p className="text-2xl font-bold text-red-600">€{overdueAmount.toFixed(2)}</p>
               </div>
               <Calendar className="h-8 w-8 text-red-600" />
             </div>
@@ -341,39 +351,47 @@ export function MyInvoices() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {invoices.map((invoice) => (
-                  <TableRow key={invoice.id}>
-                    <TableCell className="font-medium">{invoice.id}</TableCell>
-                    <TableCell>{invoice.clientName}</TableCell>
-                    <TableCell>€{invoice.amount}</TableCell>
-                    <TableCell>€{invoice.vatAmount}</TableCell>
-                    <TableCell>
-                      <Badge variant={getStatusColor(invoice.status) as any}>{invoice.status}</Badge>
-                    </TableCell>
-                    <TableCell>{new Date(invoice.createdDate).toLocaleDateString()}</TableCell>
-                    <TableCell>{new Date(invoice.dueDate).toLocaleDateString()}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="bg-transparent"
-                          onClick={() => handlePreviewInvoice(invoice)}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="bg-transparent"
-                          onClick={() => handleDownloadPDF(invoice)}
-                        >
-                          <Download className="h-4 w-4" />
-                        </Button>
-                      </div>
+                {invoices.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                      No invoices yet.
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : (
+                  invoices.map((invoice) => (
+                    <TableRow key={invoice.id}>
+                      <TableCell className="font-medium">{invoice.invoice_number || invoice.id}</TableCell>
+                      <TableCell>{invoice.billing_name || invoice.billing_email || '-'}</TableCell>
+                      <TableCell>€{Number(invoice.total_amount || 0).toFixed(2)}</TableCell>
+                      <TableCell>€{Number(invoice.tax_amount || 0).toFixed(2)}</TableCell>
+                      <TableCell>
+                        <Badge variant={getStatusColor(invoice.status) as any}>{String(invoice.status || '').toUpperCase()}</Badge>
+                      </TableCell>
+                      <TableCell>{invoice.issued_at ? new Date(invoice.issued_at).toLocaleDateString() : '—'}</TableCell>
+                      <TableCell>{invoice.due_date ? new Date(invoice.due_date).toLocaleDateString() : '—'}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="bg-transparent"
+                            onClick={() => handlePreviewInvoice(invoice)}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="bg-transparent"
+                            onClick={() => handleDownloadPDF(invoice)}
+                          >
+                            <Download className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>
@@ -413,11 +431,11 @@ export function MyInvoices() {
                 <div>
                   <h4 className="font-semibold mb-2">To:</h4>
                   <div className="text-sm text-gray-600">
-                    <p className="font-medium">{selectedInvoice.clientName}</p>
-                    {selectedInvoice.clientAddress.split("\n").map((line: string, index: number) => (
+                    <p className="font-medium">{selectedInvoice.billing_name || '-'}</p>
+                    {(selectedInvoice.billing_address || '').split("\n").map((line: string, index: number) => (
                       <p key={index}>{line}</p>
                     ))}
-                    {selectedInvoice.clientEmail && <p>{selectedInvoice.clientEmail}</p>}
+                    {selectedInvoice.billing_email && <p>{selectedInvoice.billing_email}</p>}
                   </div>
                 </div>
               </div>
@@ -426,17 +444,17 @@ export function MyInvoices() {
                 <div>
                   <p className="text-sm">
                     <span className="font-semibold">Invoice Date:</span>{" "}
-                    {new Date(selectedInvoice.createdDate).toLocaleDateString()}
+                    {selectedInvoice.issued_at ? new Date(selectedInvoice.issued_at).toLocaleDateString() : '—'}
                   </p>
                   <p className="text-sm">
                     <span className="font-semibold">Due Date:</span>{" "}
-                    {new Date(selectedInvoice.dueDate).toLocaleDateString()}
+                    {selectedInvoice.due_date ? new Date(selectedInvoice.due_date).toLocaleDateString() : '—'}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm">
                     <span className="font-semibold">Status:</span>{" "}
-                    <Badge variant={getStatusColor(selectedInvoice.status) as any}>{selectedInvoice.status}</Badge>
+                    <Badge variant={getStatusColor(selectedInvoice.status) as any}>{String(selectedInvoice.status || '').toUpperCase()}</Badge>
                   </p>
                 </div>
               </div>
@@ -451,8 +469,8 @@ export function MyInvoices() {
                   </TableHeader>
                   <TableBody>
                     <TableRow>
-                      <TableCell>{selectedInvoice.description}</TableCell>
-                      <TableCell className="text-right">€{selectedInvoice.amount.toFixed(2)}</TableCell>
+                      <TableCell>Invoice total</TableCell>
+                      <TableCell className="text-right">€{Number(selectedInvoice.total_amount || 0).toFixed(2)}</TableCell>
                     </TableRow>
                   </TableBody>
                 </Table>
@@ -462,24 +480,22 @@ export function MyInvoices() {
                 <div className="w-64">
                   <div className="flex justify-between py-2">
                     <span>Subtotal:</span>
-                    <span>€{selectedInvoice.amount.toFixed(2)}</span>
+                    <span>€{Number(selectedInvoice.subtotal || 0).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between py-2">
-                    <span>VAT ({selectedInvoice.vatRate}%):</span>
-                    <span>€{selectedInvoice.vatAmount.toFixed(2)}</span>
+                    <span>VAT ({Number(selectedInvoice.tax_rate || 0).toFixed(2)}%):</span>
+                    <span>€{Number(selectedInvoice.tax_amount || 0).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between py-2 border-t font-bold">
                     <span>Total:</span>
-                    <span>€{(selectedInvoice.amount + selectedInvoice.vatAmount).toFixed(2)}</span>
+                    <span>€{Number(selectedInvoice.total_amount || 0).toFixed(2)}</span>
                   </div>
                 </div>
               </div>
 
-              {selectedInvoice.includeWatermark && (
-                <div className="text-center mt-8 pt-4 border-t">
-                  <p className="text-xs text-gray-400">Generated by WIRsuchen Invoice System</p>
-                </div>
-              )}
+              <div className="text-center mt-8 pt-4 border-t">
+                <p className="text-xs text-gray-400">Generated by WIRsuchen Invoice System</p>
+              </div>
             </div>
           )}
           <div className="flex justify-end space-x-2 mt-4">

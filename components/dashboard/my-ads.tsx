@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -13,53 +13,44 @@ import Link from "next/link"
 export function MyAds() {
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
+  const [loading, setLoading] = useState(true)
+  const [ads, setAds] = useState<Array<{ id: string; title: string; company?: string; status?: string; views?: number; applicants?: number; posted?: string; expires?: string; featured?: boolean }>>([])
 
-  const ads = [
-    {
-      id: 1,
-      title: "Senior Frontend Developer",
-      company: "TechCorp GmbH",
-      status: "Active",
-      views: 145,
-      applicants: 23,
-      posted: "2024-01-15",
-      expires: "2024-02-15",
-      featured: true,
-    },
-    {
-      id: 2,
-      title: "Product Manager",
-      company: "StartupXYZ",
-      status: "Active",
-      views: 89,
-      applicants: 12,
-      posted: "2024-01-10",
-      expires: "2024-02-10",
-      featured: false,
-    },
-    {
-      id: 3,
-      title: "UX Designer",
-      company: "DesignStudio",
-      status: "Expired",
-      views: 234,
-      applicants: 45,
-      posted: "2023-12-15",
-      expires: "2024-01-15",
-      featured: false,
-    },
-    {
-      id: 4,
-      title: "Marketing Specialist",
-      company: "MarketPro",
-      status: "Draft",
-      views: 0,
-      applicants: 0,
-      posted: "2024-01-20",
-      expires: "2024-02-20",
-      featured: true,
-    },
-  ]
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setLoading(true)
+        const res = await fetch('/api/user/ads?limit=50', { cache: 'no-store' })
+        if (!res.ok) throw new Error('Failed to load ads')
+        const data = await res.json()
+        setAds(data.ads || [])
+      } catch (e) {
+        console.error('Load ads error:', e)
+        setAds([])
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+  }, [])
+
+  const filteredAds = useMemo(() => {
+    let list = ads
+    if (statusFilter !== 'all') {
+      const sf = statusFilter.toLowerCase()
+      list = list.filter(a => (a.status || '').toLowerCase() === sf)
+    }
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase()
+      list = list.filter(a => a.title.toLowerCase().includes(q))
+    }
+    return list
+  }, [ads, statusFilter, searchQuery])
+
+  const totalAds = filteredAds.length
+  const activeCount = filteredAds.filter(a => (a.status || '').toLowerCase() === 'active').length
+  const totalViews = filteredAds.reduce((sum, a) => sum + (a.views || 0), 0)
+  const totalApplicants = filteredAds.reduce((sum, a) => sum + (a.applicants || 0), 0)
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -71,6 +62,36 @@ export function MyAds() {
         return "secondary"
       default:
         return "secondary"
+    }
+  }
+
+  const refreshAd = async (id: string) => {
+    try {
+      const res = await fetch('/api/user/ads', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, action: 'refresh' }),
+      })
+      if (!res.ok) throw new Error('Failed to refresh')
+      const updated = await fetch('/api/user/ads?limit=50', { cache: 'no-store' })
+      const data = await updated.json()
+      setAds(data.ads || [])
+    } catch (e) {
+      console.error('Refresh ad error:', e)
+    }
+  }
+
+  const archiveAd = async (id: string) => {
+    try {
+      const res = await fetch('/api/user/ads', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      })
+      if (!res.ok) throw new Error('Failed to delete')
+      setAds(prev => prev.filter(a => a.id !== id))
+    } catch (e) {
+      console.error('Archive ad error:', e)
     }
   }
 
@@ -96,7 +117,7 @@ export function MyAds() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Total Ads</p>
-                <p className="text-2xl font-bold">4</p>
+                <p className="text-2xl font-bold">{loading ? '—' : totalAds}</p>
               </div>
               <Eye className="h-8 w-8 text-blue-600" />
             </div>
@@ -107,7 +128,7 @@ export function MyAds() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Active</p>
-                <p className="text-2xl font-bold text-green-600">2</p>
+                <p className="text-2xl font-bold text-green-600">{loading ? '—' : activeCount}</p>
               </div>
               <RefreshCw className="h-8 w-8 text-green-600" />
             </div>
@@ -118,7 +139,7 @@ export function MyAds() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Total Views</p>
-                <p className="text-2xl font-bold">468</p>
+                <p className="text-2xl font-bold">{loading ? '—' : totalViews}</p>
               </div>
               <Eye className="h-8 w-8 text-purple-600" />
             </div>
@@ -129,7 +150,7 @@ export function MyAds() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Total Applicants</p>
-                <p className="text-2xl font-bold">80</p>
+                <p className="text-2xl font-bold">{loading ? '—' : totalApplicants}</p>
               </div>
               <Users className="h-8 w-8 text-orange-600" />
             </div>
@@ -184,53 +205,68 @@ export function MyAds() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {ads.map((ad) => (
-                  <TableRow key={ad.id}>
-                    <TableCell>
-                      <div>
-                        <div className="flex items-center space-x-2">
-                          <span className="font-medium">{ad.title}</span>
-                          {ad.featured && <Badge variant="secondary">Featured</Badge>}
-                        </div>
-                        <p className="text-sm text-muted-foreground">{ad.company}</p>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={getStatusColor(ad.status) as any}>{ad.status}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center">
-                        <Eye className="h-4 w-4 mr-1 text-muted-foreground" />
-                        {ad.views}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center">
-                        <Users className="h-4 w-4 mr-1 text-muted-foreground" />
-                        {ad.applicants}
-                      </div>
-                    </TableCell>
-                    <TableCell>{new Date(ad.posted).toLocaleDateString()}</TableCell>
-                    <TableCell>{new Date(ad.expires).toLocaleDateString()}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center space-x-2">
-                        <Button variant="outline" size="sm" className="bg-transparent">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm" className="bg-transparent">
-                          <RefreshCw className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-destructive hover:text-destructive bg-transparent"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Loading...</TableCell>
+                  </TableRow>
+                ) : filteredAds.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                      No job ads yet. <Link href="/jobs/post" className="underline">Post your first job</Link>.
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : (
+                  filteredAds.map((ad) => (
+                    <TableRow key={ad.id}>
+                      <TableCell>
+                        <div>
+                          <div className="flex items-center space-x-2">
+                            <span className="font-medium">{ad.title}</span>
+                            {ad.featured && <Badge variant="secondary">Featured</Badge>}
+                          </div>
+                          <p className="text-sm text-muted-foreground">{ad.company || '—'}</p>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={getStatusColor(ad.status || '') as any}>{ad.status || '—'}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center">
+                          <Eye className="h-4 w-4 mr-1 text-muted-foreground" />
+                          {ad.views ?? 0}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center">
+                          <Users className="h-4 w-4 mr-1 text-muted-foreground" />
+                          {ad.applicants ?? 0}
+                        </div>
+                      </TableCell>
+                      <TableCell>{ad.posted || '—'}</TableCell>
+                      <TableCell>{ad.expires ? new Date(ad.expires).toLocaleDateString() : '—'}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center space-x-2">
+                          <Button variant="outline" size="sm" className="bg-transparent" asChild>
+                            <Link href={`/jobs/post?edit=${ad.id}`}>
+                            <Edit className="h-4 w-4" />
+                            </Link>
+                          </Button>
+                          <Button variant="outline" size="sm" className="bg-transparent" onClick={() => refreshAd(ad.id)}>
+                            <RefreshCw className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-destructive hover:text-destructive bg-transparent"
+                            onClick={() => archiveAd(ad.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>

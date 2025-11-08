@@ -27,32 +27,41 @@ interface SavedDeal {
 export function MyDeals() {
   const [searchQuery, setSearchQuery] = useState("")
   const [categoryFilter, setCategoryFilter] = useState("all")
-  const [savedDeals, setSavedDeals] = useState<SavedDeal[]>([])
-  const [loading, setLoading] = useState(false)
+  const [savedDeals, setSavedDeals] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
 
-  // Note: In a real app, saved deals would come from localStorage or a database
-  // For now, showing empty state to demonstrate the UI
   useEffect(() => {
-    // Load saved deals from localStorage
-    const loadSavedDeals = () => {
+    const load = async () => {
       try {
-        const saved = localStorage.getItem('savedDeals')
-        if (saved) {
-          setSavedDeals(JSON.parse(saved))
-        }
+        setLoading(true)
+        const res = await fetch('/api/user/saved-deals?limit=60', { cache: 'no-store' })
+        if (!res.ok) throw new Error('Failed to load saved deals')
+        const data = await res.json()
+        setSavedDeals(data.deals || [])
       } catch (error) {
         console.error('Error loading saved deals:', error)
+        setSavedDeals([])
+      } finally {
+        setLoading(false)
       }
     }
-    loadSavedDeals()
+    load()
   }, [])
 
-  const totalSavings = savedDeals.reduce((total, deal) => total + (deal.originalPrice - deal.currentPrice), 0)
+  const totalSavings = savedDeals.reduce((total, deal) => total + (Number(deal.originalPrice || 0) - Number(deal.price || deal.currentPrice || 0)), 0)
 
-  const removeDeal = (dealId: string) => {
-    const updated = savedDeals.filter(d => d.id !== dealId)
-    setSavedDeals(updated)
-    localStorage.setItem('savedDeals', JSON.stringify(updated))
+  const removeDeal = async (dealId: string) => {
+    try {
+      const res = await fetch('/api/user/saved-deals', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ offerId: dealId })
+      })
+      if (!res.ok) throw new Error('Failed to remove saved deal')
+      setSavedDeals(prev => prev.filter(d => d.id !== dealId))
+    } catch (e) {
+      console.error('Remove saved deal error:', e)
+    }
   }
 
   if (loading) {
@@ -63,7 +72,7 @@ export function MyDeals() {
     )
   }
 
-  if (savedDeals.length === 0) {
+  if (!loading && savedDeals.length === 0) {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
@@ -185,24 +194,33 @@ export function MyDeals() {
 
           {/* Deals Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {savedDeals.map((deal) => (
+            {savedDeals
+              .filter((deal) => (categoryFilter === 'all' ? true : (deal.category || '').toLowerCase() === categoryFilter))
+              .filter((deal) => (searchQuery ? (deal.title || '').toLowerCase().includes(searchQuery.toLowerCase()) : true))
+              .map((deal) => (
               <Card key={deal.id} className="hover:shadow-lg transition-shadow">
                 <CardContent className="p-0">
                   <div className="relative">
-                    <img
-                      src={deal.image || "/placeholder.svg?height=200&width=300&query=product"}
-                      alt={deal.title}
-                      className="w-full h-48 object-cover rounded-t-lg"
-                    />
+                    {deal.image ? (
+                      <img
+                        src={deal.image}
+                        alt={deal.title}
+                        className="w-full h-48 object-cover rounded-t-lg"
+                      />
+                    ) : (
+                      <div className="w-full h-48 bg-muted rounded-t-lg" />
+                    )}
                     <div className="absolute top-2 left-2">
-                      <Badge className="bg-accent text-accent-foreground">-{deal.discount}%</Badge>
+                      {deal.discount && (
+                        <Badge className="bg-accent text-accent-foreground">{deal.discount}</Badge>
+                      )}
                     </div>
                     <div className="absolute top-2 right-2">
                       <Button variant="ghost" size="sm" className="bg-background/80 hover:bg-background text-red-600">
                         <Heart className="h-4 w-4 fill-current" />
                       </Button>
                     </div>
-                    {!deal.inStock && (
+                    {deal.inStock === false && (
                       <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-t-lg">
                         <Badge variant="destructive">Out of Stock</Badge>
                       </div>
@@ -212,29 +230,35 @@ export function MyDeals() {
                     <Link href={`/deals/${deal.id}`}>
                       <h3 className="font-semibold hover:text-accent transition-colors line-clamp-2">{deal.title}</h3>
                     </Link>
-                    <p className="text-sm text-muted-foreground mt-1">{deal.brand}</p>
+                    {deal.store && <p className="text-sm text-muted-foreground mt-1">{deal.store}</p>}
 
                     <div className="flex items-center mt-2">
-                      <div className="flex items-center">
-                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
-                        <span className="text-sm">{deal.rating}</span>
-                      </div>
+                      {deal.rating && (
+                        <div className="flex items-center">
+                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
+                          <span className="text-sm">{deal.rating}</span>
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex items-center space-x-2 mt-3">
-                      <span className="text-2xl font-bold text-accent">{formatEuro(deal.currentPrice)}</span>
-                      <span className="text-sm text-muted-foreground line-through">{formatEuro(deal.originalPrice)}</span>
+                      <span className="text-2xl font-bold text-accent">{formatEuro(deal.price ?? deal.currentPrice)}</span>
+                      {(deal.originalPrice || deal.original_price) && (
+                        <span className="text-sm text-muted-foreground line-through">{formatEuro(deal.originalPrice ?? deal.original_price)}</span>
+                      )}
                     </div>
 
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Saved on {new Date(deal.savedDate).toLocaleDateString()}
-                    </p>
+                    {deal.saved && (
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Saved {deal.saved}
+                      </p>
+                    )}
 
                     <div className="flex items-center space-x-2 mt-4">
-                      <Button className="flex-1" asChild disabled={!deal.inStock}>
-                        <Link href={`/deals/${deal.id}`}>
+                      <Button className="flex-1" asChild disabled={deal.inStock === false}>
+                        <Link href={deal.url ? deal.url : `/deals/${deal.id}`}>
                           <ExternalLink className="h-4 w-4 mr-2" />
-                          {deal.inStock ? "View Deal" : "Out of Stock"}
+                          {deal.inStock === false ? "Out of Stock" : "View Deal"}
                         </Link>
                       </Button>
                       <Button
