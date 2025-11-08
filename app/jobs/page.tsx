@@ -327,13 +327,26 @@ function JobCard({ job }: { job: Job }) {
     return 'RapidAPI'
   }
 
+  const onOpenDetails = () => {
+    try {
+      const key = `job:${job.source}:${job.externalId || job.id}`
+      sessionStorage.setItem(key, JSON.stringify(job))
+    } catch {}
+  }
+
   return (
     <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 border">
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
-          <h3 className="text-xl font-semibold text-gray-900 mb-2 hover:text-blue-600 cursor-pointer">
-            {job.title}
-          </h3>
+          <a
+            href={`/jobs/${encodeURIComponent(job.externalId || job.id)}?source=${encodeURIComponent(job.source)}`}
+            onClick={onOpenDetails}
+            className="block"
+          >
+            <h3 className="text-xl font-semibold text-gray-900 mb-2 hover:text-blue-600">
+              {job.title}
+            </h3>
+          </a>
           <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600">
             <span className="flex items-center gap-1">
               <Briefcase className="w-4 h-4" />
@@ -387,19 +400,30 @@ function JobCard({ job }: { job: Job }) {
           ))}
         </div>
 
-        {job.applicationUrl && (
-          <Button asChild>
+        <div className="flex gap-2">
+          <Button asChild variant="outline">
             <a
-              href={job.applicationUrl}
-              target="_blank"
-              rel="noopener noreferrer"
+              href={`/jobs/${encodeURIComponent(job.externalId || job.id)}?source=${encodeURIComponent(job.source)}`}
+              onClick={onOpenDetails}
               className="flex items-center gap-2"
             >
-              Apply Now
-              <ExternalLink className="w-4 h-4" />
+              View Details
             </a>
           </Button>
-        )}
+          {job.applicationUrl && (
+            <Button asChild>
+              <a
+                href={job.applicationUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2"
+              >
+                Apply Now
+                <ExternalLink className="w-4 h-4" />
+              </a>
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   )

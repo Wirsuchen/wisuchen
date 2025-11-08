@@ -533,8 +533,14 @@ export class APIAggregator {
     const unique: AggregatedJob[] = []
 
     for (const job of jobs) {
-      const key = `${job.title.toLowerCase().trim()}-${job.company.toLowerCase().trim()}`
-      
+      const title = job.title?.toLowerCase().trim() || ''
+      const company = job.company?.toLowerCase().trim() || ''
+      const location = job.location?.toLowerCase().trim() || ''
+      const externalId = job.externalId?.toLowerCase().trim() || ''
+
+      // Compose a stricter key including externalId and location where available
+      const key = [title, company, location, externalId].filter(Boolean).join('|')
+
       if (!seen.has(key)) {
         seen.add(key)
         unique.push(job)

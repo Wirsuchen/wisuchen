@@ -15,6 +15,7 @@ import { DotPattern } from "@/components/magicui/dot-pattern"
 import { formatEuroText, formatEuro } from "@/lib/utils"
 import { useTranslation } from "@/contexts/i18n-context"
 import { useState, useEffect } from "react"
+import type { Job } from "@/hooks/use-jobs"
 
 interface Deal {
   id: string
@@ -31,9 +32,12 @@ export default function HomePage() {
   const { t } = useTranslation()
   const [topDeals, setTopDeals] = useState<Deal[]>([])
   const [dealsLoading, setDealsLoading] = useState(true)
+  const [topJobs, setTopJobs] = useState<Job[]>([])
+  const [jobsLoading, setJobsLoading] = useState(true)
 
   useEffect(() => {
     fetchTopDeals()
+    fetchTopJobs()
   }, [])
 
   const fetchTopDeals = async () => {
@@ -48,6 +52,22 @@ export default function HomePage() {
       console.error('Error fetching deals:', error)
     } finally {
       setDealsLoading(false)
+    }
+  }
+
+  const fetchTopJobs = async () => {
+    try {
+      setJobsLoading(true)
+      const res = await fetch('/api/v1/jobs/search?limit=6&useCache=true&countries=de,at,ch')
+      if (!res.ok) throw new Error('Failed to fetch jobs')
+      const data = await res.json()
+      const jobs: Job[] = data?.data?.jobs || []
+      setTopJobs(jobs.slice(0, 6))
+    } catch (e) {
+      console.error('Error fetching jobs:', e)
+      setTopJobs([])
+    } finally {
+      setJobsLoading(false)
     }
   }
 
@@ -214,34 +234,87 @@ export default function HomePage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {featuredJobs.map((job) => (
-                <Card key={job.id} className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <CardTitle className="text-lg">{job.title}</CardTitle>
-                        <CardDescription>{job.company}</CardDescription>
+              {jobsLoading ? (
+                <div className="col-span-full flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-accent" /></div>
+              ) : topJobs.length > 0 ? (
+                topJobs.map((job) => {
+                  const salaryText = job.salary?.text || (
+                    job.salary?.min || job.salary?.max
+                      ? `${job.salary?.min ? `€${job.salary.min.toLocaleString()}` : ''}${job.salary?.min && job.salary?.max ? ' - ' : ''}${job.salary?.max ? `€${job.salary.max.toLocaleString()}` : ''}`
+                      : undefined
+                  )
+
+                  const jobType = job.employmentType ? job.employmentType.replace('_', ' ') : undefined
+                  const key = `${job.source}-${job.externalId || job.id}`
+
+                  const handleOpen = () => {
+                    try {
+                      const storageKey = `job:${job.source}:${job.externalId || job.id}`
+                      sessionStorage.setItem(storageKey, JSON.stringify(job))
+                    } catch {}
+                  }
+
+                  return (
+                    <Card key={key} className="hover:shadow-lg transition-shadow">
+                      <CardHeader>
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <CardTitle className="text-lg">{job.title}</CardTitle>
+                            <CardDescription>{job.company}</CardDescription>
+                          </div>
+                          <Badge variant="secondary">{job.source}</Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          <div className="flex items-center text-sm text-muted-foreground">
+                            <MapPin className="h-4 w-4 mr-2 text-red-500" />
+                            {job.location}
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="font-semibold text-accent">{salaryText || t('common.notAvailable')}</span>
+                            {jobType && <Badge variant="outline" className="capitalize">{jobType}</Badge>}
+                          </div>
+                        </div>
+                        <Button className="w-full mt-4 bg-transparent" variant="outline" asChild>
+                          <Link href={`/jobs/${encodeURIComponent(job.externalId || job.id)}?source=${encodeURIComponent(job.source)}`} onClick={handleOpen}>
+                            {t('home.viewDetails')}
+                          </Link>
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  )
+                })
+              ) : (
+                featuredJobs.map((job) => (
+                  <Card key={job.id} className="hover:shadow-lg transition-shadow">
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <CardTitle className="text-lg">{job.title}</CardTitle>
+                          <CardDescription>{job.company}</CardDescription>
+                        </div>
+                        {job.featured && <Badge variant="secondary">{t('home.featured')}</Badge>}
                       </div>
-                      {job.featured && <Badge variant="secondary">{t('home.featured')}</Badge>}
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <MapPin className="h-4 w-4 mr-2 text-red-500" />
-                        {job.location}
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        <div className="flex items-center text-sm text-muted-foreground">
+                          <MapPin className="h-4 w-4 mr-2 text-red-500" />
+                          {job.location}
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold text-accent">{formatEuroText(job.salary)}</span>
+                          <Badge variant="outline">{job.type}</Badge>
+                        </div>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <span className="font-semibold text-accent">{formatEuroText(job.salary)}</span>
-                        <Badge variant="outline">{job.type}</Badge>
-                      </div>
-                    </div>
-                    <Button className="w-full mt-4 bg-transparent" variant="outline" asChild>
-                      <Link href={`/jobs/${job.id}`}>{t('home.viewDetails')}</Link>
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
+                      <Button className="w-full mt-4 bg-transparent" variant="outline" asChild>
+                        <Link href={`/jobs/${job.id}`}>{t('home.viewDetails')}</Link>
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
             </div>
           </div>
         </section>

@@ -5,9 +5,39 @@ import { API_CONFIG, CACHE_CONFIG } from '@/lib/config/api-keys'
 import { searchActiveJobsDb } from '@/lib/api/active-jobs-db'
 import { searchAdzunaJobs } from '@/lib/api/adzuna'
 import { cacheWrap } from '@/lib/api/cache'
+import { withRateLimit } from '@/lib/utils/rate-limiter'
+
+// Deduplicate external jobs by composite key: title + company + location (+ external_id when present)
+function normalizeText(v: unknown): string {
+  return typeof v === 'string' ? v.toLowerCase().trim() : ''
+}
+
+export const GET = withRateLimit(handler, { max: 100, windowMs: 60000 })
+
+function dedupeExternalJobs(jobs: any[]): any[] {
+  const seen = new Set<string>()
+  const result: any[] = []
+
+  for (const j of jobs) {
+    const title = normalizeText(j?.title)
+    const company = normalizeText(j?.company?.name ?? j?.company)
+    const location = normalizeText(j?.location)
+    const extId = normalizeText(j?.external_id)
+
+    // Use a stable composite key; include external_id if available to tighten matches within same source
+    const key = [title, company, location, extId].filter(Boolean).join('|')
+
+    if (!seen.has(key)) {
+      seen.add(key)
+      result.push(j)
+    }
+  }
+
+  return result
+}
 
 // GET /api/jobs - Fetch jobs with filtering and pagination
-export async function GET(request: NextRequest) {
+async function handler(request: NextRequest) {
   try {
     const supabase = await createClient()
     const { searchParams } = new URL(request.url)
@@ -152,20 +182,21 @@ export async function GET(request: NextRequest) {
     }
 
     // Merge with external (Active Jobs DB first, then Adzuna, then DB jobs)
-    const combined = [...externalJobs, ...(jobs || [])]
+    const dedupedExternal = dedupeExternalJobs(externalJobs)
+    const combined = [...dedupedExternal, ...(jobs || [])]
 
     return {
       jobs: combined,
       pagination: {
         page,
         limit,
-        total: (totalCount || 0) + (externalJobs?.length || 0),
+        total: (totalCount || 0) + (dedupedExternal?.length || 0),
         pages: Math.max(1, Math.ceil((totalCount || 0) / limit)),
       },
       sources: {
         database: jobs?.length || 0,
-        activeJobsDb: externalJobs.filter(j => j.source?.includes('active-jobs')).length,
-        adzuna: externalJobs.filter(j => j.source === 'adzuna').length,
+        activeJobsDb: dedupedExternal.filter(j => j.source?.includes('active-jobs')).length,
+        adzuna: dedupedExternal.filter(j => j.source === 'adzuna').length,
       }
     }
     })

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { Button } from "@/components/ui/button"
@@ -23,52 +23,39 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { formatEuroText } from "@/lib/utils"
+import { useSearchParams } from "next/navigation"
+import type { Job } from "@/hooks/use-jobs"
 
 export default function JobDetailPage({ params }: { params: { id: string } }) {
   const [isImproving, setIsImproving] = useState(false)
   const [improvedDescription, setImprovedDescription] = useState("")
+  const searchParams = useSearchParams()
 
-  // Mock job data - in real app, fetch based on params.id
-  const job = {
-    id: 1,
-    title: "Senior Frontend Developer",
-    company: "TechCorp GmbH",
-    location: "Berlin, Germany",
-    salary: "€70,000 - €90,000",
-    type: "Full-time",
-    category: "Technology",
-    description: `We are looking for an experienced Frontend Developer to join our dynamic team and help build the next generation of web applications.
-
-Key Responsibilities:
-• Develop and maintain high-quality web applications using React, TypeScript, and modern frontend technologies
-• Collaborate with designers and backend developers to implement user-friendly interfaces
-• Optimize applications for maximum speed and scalability
-• Write clean, maintainable, and well-documented code
-• Participate in code reviews and contribute to team best practices
-
-Requirements:
-• 5+ years of experience in frontend development
-• Strong proficiency in React, TypeScript, HTML5, and CSS3
-• Experience with modern build tools and workflows (Webpack, Vite, etc.)
-• Knowledge of responsive design and cross-browser compatibility
-• Experience with version control systems (Git)
-• Strong problem-solving skills and attention to detail
-
-What We Offer:
-• Competitive salary and benefits package
-• Flexible working hours and remote work options
-• Professional development opportunities
-• Modern office in the heart of Berlin
-• Great team culture and collaborative environment`,
-    postedDate: "2 days ago",
-    featured: true,
-    logo: "/abstract-tech-logo.png",
-    applicants: 45,
-    companySize: "50-200 employees",
-    industry: "Technology",
-    website: "https://techcorp.example.com",
-    benefits: ["Health Insurance", "Flexible Hours", "Remote Work", "Professional Development", "Free Lunch"],
+  type ExtJob = Job & {
+    logo?: string
+    category?: string
+    benefits?: string[]
+    website?: string
+    applicants?: number
+    companySize?: string
+    industry?: string
+    postedDate?: string
+    type?: string
   }
+
+  const [job, setJob] = useState<ExtJob | null>(null)
+
+  useEffect(() => {
+    const source = searchParams.get('source') || 'rapidapi'
+    const storageKey = `job:${source}:${params.id}`
+    try {
+      const raw = sessionStorage.getItem(storageKey)
+      if (raw) {
+        const parsed = JSON.parse(raw) as ExtJob
+        setJob(parsed)
+      }
+    } catch {}
+  }, [params.id, searchParams])
 
   const relatedJobs = [
     {
@@ -132,6 +119,31 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
     }, 2000)
   }
 
+  if (!job) {
+    return (
+      <div className="min-h-screen">
+        <Header />
+        <main className="pt-24 container mx-auto px-4 py-16 text-center">
+          <h1 className="text-2xl font-bold mb-2">Job not found</h1>
+          <p className="text-muted-foreground mb-6">Open a job from the jobs list to view its details.</p>
+          <Button asChild variant="outline" className="bg-transparent">
+            <Link href="/jobs">Back to Jobs</Link>
+          </Button>
+        </main>
+        <Footer />
+      </div>
+    )
+  }
+
+  // Derive display fields from aggregator job
+  const salaryText = job.salary?.text || (
+    job.salary?.min || job.salary?.max
+      ? `${job.salary?.min ? `€${job.salary.min.toLocaleString()}` : ''}${job.salary?.min && job.salary?.max ? ' - ' : ''}${job.salary?.max ? `€${job.salary.max.toLocaleString()}` : ''}`
+      : undefined
+  )
+  const jobType = job.employmentType ? job.employmentType.replace('_', ' ') : undefined
+  const postedDate = job.publishedAt ? new Date(job.publishedAt).toLocaleDateString() : undefined
+
   return (
     <div className="min-h-screen">
       <Header />
@@ -155,7 +167,7 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
                 <div className="flex items-start justify-between">
                   <div className="flex items-start space-x-4">
                     <img
-                      src={job.logo || "/placeholder.svg"}
+                      src={"/placeholder-logo.svg"}
                       alt={`${job.company} logo`}
                       className="w-16 h-16 rounded-lg object-cover"
                     />
@@ -170,18 +182,24 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
                           <MapPin className="h-4 w-4 mr-1" />
                           {job.location}
                         </div>
-                        <div className="flex items-center">
-                          <Euro className="h-4 w-4 mr-1" />
-                          {formatEuroText(job.salary)}
-                        </div>
-                        <div className="flex items-center">
-                          <Briefcase className="h-4 w-4 mr-1" />
-                          {job.type}
-                        </div>
-                        <div className="flex items-center">
-                          <Clock className="h-4 w-4 mr-1" />
-                          {job.postedDate}
-                        </div>
+                        {salaryText && (
+                          <div className="flex items-center">
+                            <Euro className="h-4 w-4 mr-1" />
+                            {salaryText}
+                          </div>
+                        )}
+                        {jobType && (
+                          <div className="flex items-center">
+                            <Briefcase className="h-4 w-4 mr-1" />
+                            {jobType}
+                          </div>
+                        )}
+                        {postedDate && (
+                          <div className="flex items-center">
+                            <Clock className="h-4 w-4 mr-1" />
+                            {postedDate}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -195,9 +213,8 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
                   </div>
                 </div>
                 <div className="flex items-center space-x-2 mt-4">
-                  <Badge variant={job.featured ? "default" : "secondary"}>{job.category}</Badge>
-                  {job.featured && <Badge className="bg-accent text-accent-foreground">Featured</Badge>}
-                  <Badge variant="outline">{job.applicants} applicants</Badge>
+                  {jobType && <Badge variant="secondary" className="capitalize">{jobType}</Badge>}
+                  <Badge variant="outline">Source: {job.source}</Badge>
                 </div>
               </CardHeader>
               <CardContent>
@@ -241,16 +258,18 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
 
                   <Separator />
 
-                  <div>
-                    <h3 className="text-lg font-semibold mb-3">Benefits & Perks</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                      {job.benefits.map((benefit) => (
-                        <Badge key={benefit} variant="secondary" className="justify-center py-2">
-                          {benefit}
-                        </Badge>
-                      ))}
+                  {Array.isArray((job as any).benefits) && (job as any).benefits.length > 0 && (
+                    <div>
+                      <h3 className="text-lg font-semibold mb-3">Benefits & Perks</h3>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                        {(job as any).benefits.map((benefit: string) => (
+                          <Badge key={benefit} variant="secondary" className="justify-center py-2">
+                            {benefit}
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -264,18 +283,14 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
                 <CardTitle>Apply for this position</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Button className="w-full" size="lg" onClick={async () => {
-                  try {
-                    await fetch('/api/applications', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ offer_id: params.id }),
-                    })
-                  } catch {}
-                }}>
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  Apply Now
-                </Button>
+                {job.applicationUrl && (
+                  <Button asChild className="w-full" size="lg">
+                    <a href={job.applicationUrl} target="_blank" rel="noopener noreferrer">
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Apply Now
+                    </a>
+                  </Button>
+                )}
                 <Button variant="outline" className="w-full bg-transparent">
                   <Heart className="h-4 w-4 mr-2" />
                   Save Job
@@ -304,12 +319,14 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
                   <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
                   Founded in 2015
                 </div>
-                <Button variant="outline" className="w-full mt-4 bg-transparent" asChild>
-                  <Link href={job.website} target="_blank">
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    Visit Website
-                  </Link>
-                </Button>
+                {(job as any).website && (
+                  <Button variant="outline" className="w-full mt-4 bg-transparent" asChild>
+                    <Link href={(job as any).website} target="_blank">
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Visit Website
+                    </Link>
+                  </Button>
+                )}
               </CardContent>
             </Card>
 

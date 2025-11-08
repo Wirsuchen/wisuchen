@@ -71,21 +71,21 @@ export function BlogPost({ post }: BlogPostProps) {
       title: "How to Build an Effective Recruitment Strategy in 2024",
       category: "Recruiting",
       readTime: "10 min read",
-      image: "/blog-recruitment-strategy.jpg",
+      image: "/blog-career-growth.png",
     },
     {
       id: 4,
       title: "Salary Negotiation: A Complete Guide for German Job Market",
       category: "Career Advice",
       readTime: "7 min read",
-      image: "/blog-salary-negotiation.jpg",
+      image: "/blog-salary-negotiation.png",
     },
     {
       id: 5,
       title: "The Rise of AI in Recruitment: What Job Seekers Need to Know",
       category: "Market Insights",
       readTime: "9 min read",
-      image: "/blog-ai-recruitment.jpg",
+      image: "/blog-ai-recruiting.png",
     },
   ]
 

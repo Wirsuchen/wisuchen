@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { withRateLimit } from '@/lib/utils/rate-limiter'
 import { API_CONFIG, CACHE_CONFIG } from '@/lib/config/api-keys'
 import { cacheWrap } from '@/lib/api/cache'
 
@@ -6,7 +7,7 @@ import { cacheWrap } from '@/lib/api/cache'
  * Deals API - Uses RapidAPI Real-Time Product Search
  * This works with your existing RAPIDAPI_KEY
  */
-export async function GET(request: NextRequest) {
+async function handler(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1', 10)
@@ -156,3 +157,5 @@ export async function GET(request: NextRequest) {
     }, { status: 500 })
   }
 }
+
+export const GET = withRateLimit(handler, { max: 100, windowMs: 60000 })
