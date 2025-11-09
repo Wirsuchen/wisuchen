@@ -11,7 +11,7 @@ async function handler(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1', 10)
-    const limit = Math.min(parseInt(searchParams.get('limit') || '20', 10), 20) // Max 20 for faster response
+    const limit = Math.min(parseInt(searchParams.get('limit') || '20', 10), 50)
     const query = searchParams.get('query') || 'laptop' // Simple query for better results
     const country = searchParams.get('country') || 'us' // US has better data availability
 
@@ -106,8 +106,10 @@ async function handler(request: NextRequest) {
         ? Math.round(((originalPrice - price) / originalPrice) * 100)
         : Math.floor(Math.random() * 30) + 10 // Random discount for demo
 
+      const rawId = p.product_id || p.product_page_url || p.offer?.offer_page_url || `${p.product_brand || ''}|${p.product_title || p.title || 'product'}|${p.product_category || ''}`
+      const stableId = encodeURIComponent(String(rawId))
       return {
-        id: p.product_id || `deal-${Date.now()}-${index}`,
+        id: stableId,
         title: p.product_title || p.title || 'Product',
         description: p.product_description || '',
         currentPrice: price || 99.99,

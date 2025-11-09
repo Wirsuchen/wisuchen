@@ -3,6 +3,7 @@
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { useState, useEffect } from "react"
+import { useParams } from "next/navigation"
 import { fetchWithCache } from "@/lib/utils/client-cache"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -79,7 +80,7 @@ interface DealDetail {
   }
 }
 
-export default function DealDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default function DealDetailPage() {
   const [deal, setDeal] = useState<DealDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -87,11 +88,13 @@ export default function DealDetailPage({ params }: { params: Promise<{ id: strin
   const [selectedSize, setSelectedSize] = useState<string | null>(null)
   const [selectedColor, setSelectedColor] = useState<string | null>(null)
   const [dealId, setDealId] = useState<string | null>(null)
+  const routeParams = useParams<{ id: string }>()
 
-  // Unwrap params
   useEffect(() => {
-    params.then(p => setDealId(p.id))
-  }, [params])
+    if (!routeParams) return
+    const idVal = (routeParams as any).id as string
+    if (idVal) setDealId(idVal)
+  }, [routeParams])
 
   useEffect(() => {
     if (!dealId) return
@@ -109,8 +112,17 @@ export default function DealDetailPage({ params }: { params: Promise<{ id: strin
         60 * 60 * 1000
       )
       
-      // Find the deal by ID
-      const foundDeal = data.deals?.find((d: any) => d.id === dealId)
+      // Find the deal by ID (normalize by decoding both sides)
+      const safeDecode = (v: string) => {
+        try { return decodeURIComponent(v) } catch { return v }
+      }
+      const routeRaw = dealId || ''
+      const routeDec = safeDecode(routeRaw)
+      let foundDeal = data.deals?.find((d: any) => {
+        const did = String(d.id)
+        const didDec = safeDecode(did)
+        return did === routeRaw || did === routeDec || didDec === routeDec
+      })
       
       if (foundDeal) {
         setDeal(foundDeal)
