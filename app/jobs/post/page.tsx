@@ -13,12 +13,15 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
-import { Upload, Eye, CreditCard, CheckCircle } from "lucide-react"
+import { Upload, Eye, CreditCard, CheckCircle, Sparkles } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { JobDescriptionGenerator } from "@/components/ai/job-description-generator"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 
 export default function PostJobPage() {
   const router = useRouter()
   const [step, setStep] = useState(1)
+  const [showAIGenerator, setShowAIGenerator] = useState(false)
   const [formData, setFormData] = useState({
     title: "",
     company: "",
@@ -215,67 +218,120 @@ export default function PostJobPage() {
           )}
 
           {step === 2 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Job Description</CardTitle>
-                <CardDescription>Provide detailed information about the role and requirements</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div>
-                  <Label htmlFor="description">Job Description *</Label>
-                  <Textarea
-                    id="description"
-                    placeholder="Describe the role, responsibilities, and what you're looking for..."
-                    className="min-h-32"
-                    value={formData.description}
-                    onChange={(e) => handleInputChange("description", e.target.value)}
-                  />
-                </div>
+            <div className="space-y-6">
+              {/* AI Generator Section */}
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <Sparkles className="h-5 w-5 text-purple-500" />
+                        AI Job Description Generator
+                      </CardTitle>
+                      <CardDescription>
+                        Let AI create a professional job description for you
+                      </CardDescription>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowAIGenerator(!showAIGenerator)}
+                    >
+                      {showAIGenerator ? 'Hide AI Generator' : 'Use AI Generator'}
+                    </Button>
+                  </div>
+                </CardHeader>
+                {showAIGenerator && (
+                  <CardContent>
+                    <JobDescriptionGenerator
+                      initialData={{
+                        jobTitle: formData.title,
+                        company: formData.company,
+                        location: formData.location,
+                        employmentType: formData.jobType,
+                        existingDescription: formData.description,
+                      }}
+                      onGenerated={(description) => {
+                        handleInputChange("description", description)
+                        setShowAIGenerator(false)
+                      }}
+                    />
+                  </CardContent>
+                )}
+              </Card>
 
-                <div>
-                  <Label htmlFor="requirements">Requirements</Label>
-                  <Textarea
-                    id="requirements"
-                    placeholder="List the required skills, experience, and qualifications..."
-                    className="min-h-24"
-                    value={formData.requirements}
-                    onChange={(e) => handleInputChange("requirements", e.target.value)}
-                  />
-                </div>
+              {/* Manual Input Section */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Job Description</CardTitle>
+                  <CardDescription>
+                    {showAIGenerator 
+                      ? 'Or write your own job description manually' 
+                      : 'Provide detailed information about the role and requirements'}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div>
+                    <Label htmlFor="description">Job Description *</Label>
+                    <Textarea
+                      id="description"
+                      placeholder="Describe the role, responsibilities, and what you're looking for..."
+                      className="min-h-32"
+                      value={formData.description}
+                      onChange={(e) => handleInputChange("description", e.target.value)}
+                    />
+                    {formData.description && (
+                      <p className="text-sm text-muted-foreground mt-2">
+                        {formData.description.length} characters
+                      </p>
+                    )}
+                  </div>
 
-                <div>
-                  <Label htmlFor="benefits">Benefits & Perks</Label>
-                  <Textarea
-                    id="benefits"
-                    placeholder="Describe the benefits, perks, and what makes your company great..."
-                    className="min-h-24"
-                    value={formData.benefits}
-                    onChange={(e) => handleInputChange("benefits", e.target.value)}
-                  />
-                </div>
+                  <div>
+                    <Label htmlFor="requirements">Requirements</Label>
+                    <Textarea
+                      id="requirements"
+                      placeholder="List the required skills, experience, and qualifications..."
+                      className="min-h-24"
+                      value={formData.requirements}
+                      onChange={(e) => handleInputChange("requirements", e.target.value)}
+                    />
+                  </div>
 
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="featured"
-                    checked={formData.featured}
-                    onCheckedChange={(checked) => handleInputChange("featured", checked as boolean)}
-                  />
-                  <Label htmlFor="featured" className="text-sm">
-                    Make this a featured job (+€10)
-                  </Label>
-                  <Badge variant="secondary">Recommended</Badge>
-                </div>
+                  <div>
+                    <Label htmlFor="benefits">Benefits & Perks</Label>
+                    <Textarea
+                      id="benefits"
+                      placeholder="Describe the benefits, perks, and what makes your company great..."
+                      className="min-h-24"
+                      value={formData.benefits}
+                      onChange={(e) => handleInputChange("benefits", e.target.value)}
+                    />
+                  </div>
 
-                <div className="flex justify-between">
-                  <Button variant="outline" onClick={handleBack} className="bg-transparent">
-                    Back
-                  </Button>
-                  <Button onClick={handleNext} disabled={!formData.description}>
-                    Preview & Pay
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="featured"
+                      checked={formData.featured}
+                      onCheckedChange={(checked) => handleInputChange("featured", checked as boolean)}
+                    />
+                    <Label htmlFor="featured" className="text-sm">
+                      Make this a featured job (+€10)
+                    </Label>
+                    <Badge variant="secondary">Recommended</Badge>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <Button variant="outline" onClick={handleBack} className="bg-transparent">
+                      Back
+                    </Button>
+                    <Button onClick={handleNext} disabled={!formData.description}>
+                      Preview & Pay
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           )}
 
           {step === 3 && (
