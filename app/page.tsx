@@ -80,7 +80,7 @@ export default function HomePage() {
         60 * 60 * 1000
       )
       const jobs: Job[] = data?.data?.jobs || []
-      setTopJobs(jobs.slice(0, 6))
+      setTopJobs(jobs.slice(0, 4))
     } catch (e) {
       console.error('Error fetching jobs:', e)
       setTopJobs([])
@@ -121,35 +121,7 @@ export default function HomePage() {
     }
   }
 
-  const featuredJobs = [
-    {
-      id: 1,
-      title: "Senior Frontend Developer",
-      company: "TechCorp",
-      location: "Berlin, Germany",
-      salary: "€70,000 - €90,000",
-      type: "Full-time",
-      featured: true,
-    },
-    {
-      id: 2,
-      title: "Product Manager",
-      company: "StartupXYZ",
-      location: "Munich, Germany",
-      salary: "€60,000 - €80,000",
-      type: "Full-time",
-      featured: false,
-    },
-    {
-      id: 3,
-      title: "UX Designer",
-      company: "DesignStudio",
-      location: "Hamburg, Germany",
-      salary: "€50,000 - €65,000",
-      type: "Full-time",
-      featured: false,
-    },
-  ]
+  
 
 
   const blogPosts = [
@@ -336,34 +308,9 @@ export default function HomePage() {
                   )
                 })
               ) : (
-                featuredJobs.map((job) => (
-                  <Card key={job.id} className="hover:shadow-lg transition-shadow">
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <CardTitle className="text-lg">{job.title}</CardTitle>
-                          <CardDescription>{job.company}</CardDescription>
-                        </div>
-                        {job.featured && <Badge variant="secondary">{t('home.featured')}</Badge>}
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2">
-                        <div className="flex items-center text-sm text-muted-foreground">
-                          <MapPin className="h-4 w-4 mr-2 text-red-500" />
-                          {job.location}
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="font-semibold text-accent">{formatEuroText(job.salary)}</span>
-                          <Badge variant="outline">{job.type}</Badge>
-                        </div>
-                      </div>
-                      <Button className="w-full mt-4 bg-transparent" variant="outline" asChild>
-                        <Link href={`/jobs/${job.id}`}>{t('home.viewDetails')}</Link>
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ))
+                <div className="col-span-full text-center py-12 text-muted-foreground">
+                  {t('common.notAvailable')}
+                </div>
               )}
             </div>
           </div>
