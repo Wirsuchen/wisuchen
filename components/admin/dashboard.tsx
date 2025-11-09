@@ -35,6 +35,8 @@ import {
 } from 'lucide-react'
 import { JobImportManager } from './job-import'
 import { AffiliateImportManager } from './affiliate-import'
+import { UserManagement } from './user-management'
+import { RolePermissions } from './role-permissions'
 import { useIsMobile } from '@/hooks/use-mobile'
 
 interface DashboardStats {
@@ -179,12 +181,16 @@ export function AdminDashboard() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-2">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="jobs">Job Import</TabsTrigger>
-          <TabsTrigger value="affiliates">Affiliates</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto">
+          <TabsList className="inline-flex w-auto min-w-full md:grid md:grid-cols-6 gap-2">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="users">Users</TabsTrigger>
+            <TabsTrigger value="permissions">Permissions</TabsTrigger>
+            <TabsTrigger value="jobs">Job Import</TabsTrigger>
+            <TabsTrigger value="affiliates">Affiliates</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="overview" className="space-y-6">
           {/* Key Metrics */}
@@ -343,6 +349,14 @@ export function AdminDashboard() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="users">
+          <UserManagement />
+        </TabsContent>
+
+        <TabsContent value="permissions">
+          <RolePermissions />
         </TabsContent>
 
         <TabsContent value="jobs">
