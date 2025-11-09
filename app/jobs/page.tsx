@@ -296,37 +296,7 @@ function JobCard({ job }: { job: Job }) {
     return date.toLocaleDateString()
   }
 
-  const getSourceBadgeColor = (source: string) => {
-    // New primary sources (latest jobs)
-    if (source.includes('job-search-api')) return 'bg-indigo-100 text-indigo-700 border-indigo-200'
-    if (source.includes('jsearch')) return 'bg-violet-100 text-violet-700 border-violet-200'
-    
-    // Other sources
-    if (source.includes('glassdoor')) return 'bg-green-100 text-green-700 border-green-200'
-    if (source.includes('upwork')) return 'bg-blue-100 text-blue-700 border-blue-200'
-    if (source.includes('employment')) return 'bg-purple-100 text-purple-700 border-purple-200'
-    if (source.includes('job-posting')) return 'bg-orange-100 text-orange-700 border-orange-200'
-    if (source.includes('active-jobs')) return 'bg-pink-100 text-pink-700 border-pink-200'
-    if (source.includes('ycombinator')) return 'bg-red-100 text-red-700 border-red-200'
-    if (source.includes('freelancer')) return 'bg-cyan-100 text-cyan-700 border-cyan-200'
-    return 'bg-gray-100 text-gray-700 border-gray-200'
-  }
-
-  const getSourceName = (source: string) => {
-    // New primary sources
-    if (source.includes('job-search-api')) return '🔥 Latest Jobs (7 days)'
-    if (source.includes('jsearch')) return '⚡ Google Jobs'
-    
-    // Other sources
-    if (source.includes('glassdoor')) return 'Glassdoor'
-    if (source.includes('upwork')) return 'Upwork'
-    if (source.includes('employment')) return 'Employment Agency'
-    if (source.includes('job-posting')) return 'Job Postings'
-    if (source.includes('active-jobs')) return 'Active Jobs DB'
-    if (source.includes('ycombinator')) return 'Y Combinator'
-    if (source.includes('freelancer')) return 'Freelancer'
-    return 'RapidAPI'
-  }
+  
 
   const onOpenDetails = () => {
     try {
@@ -367,9 +337,6 @@ function JobCard({ job }: { job: Job }) {
         </div>
         
         <div className="flex sm:flex-col items-center sm:items-end gap-2 w-full sm:w-auto">
-          <Badge className={`border text-xs ${getSourceBadgeColor(job.source)}`}>
-            {getSourceName(job.source)}
-          </Badge>
           <span className="text-xs text-gray-500 ml-auto sm:ml-0">
             {formatDate(job.publishedAt)}
           </span>

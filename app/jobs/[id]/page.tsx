@@ -257,7 +257,6 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
                 </div>
                 <div className="flex items-center space-x-2 mt-4">
                   {jobType && <Badge variant="secondary" className="capitalize">{jobType}</Badge>}
-                  <Badge variant="outline">Source: {job.source}</Badge>
                 </div>
               </CardHeader>
               <CardContent>

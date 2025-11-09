@@ -284,7 +284,6 @@ export default function HomePage() {
                             <CardTitle className="text-lg">{job.title}</CardTitle>
                             <CardDescription>{job.company}</CardDescription>
                           </div>
-                          <Badge variant="secondary">{job.source}</Badge>
                         </div>
                       </CardHeader>
                       <CardContent>
