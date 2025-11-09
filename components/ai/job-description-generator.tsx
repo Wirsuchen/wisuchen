@@ -33,6 +33,30 @@ export function JobDescriptionGenerator({ onGenerated, initialData }: JobDescrip
   const [copied, setCopied] = useState(false)
   const { toast } = useToast()
 
+  const mdToHtmlBasic = (md: string) => {
+    const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    let html = esc(md)
+    html = html.replace(/^###\s+(.*)$/gm, '<h3>$1<\/h3>')
+    html = html.replace(/^##\s+(.*)$/gm, '<h2>$1<\/h2>')
+    html = html.replace(/^#\s+(.*)$/gm, '<h1>$1<\/h1>')
+    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1<\/strong>')
+    html = html.replace(/\*(.+?)\*/g, '<em>$1<\/em>')
+    const lines = html.split('\n')
+    let out: string[] = []
+    let inList = false
+    for (const line of lines) {
+      if (/^\-\s+/.test(line)) {
+        if (!inList) { out.push('<ul>'); inList = true }
+        out.push(`<li>${line.replace(/^\-\s+/, '')}<\/li>`)
+      } else {
+        if (inList) { out.push('<\/ul>'); inList = false }
+        if (line.trim().length) out.push(`<p>${line}<\/p>`)
+      }
+    }
+    if (inList) out.push('<\/ul>')
+    return out.join('\n')
+  }
+
   const handleGenerate = async () => {
     if (!jobTitle || !company) {
       toast({
@@ -233,9 +257,7 @@ export function JobDescriptionGenerator({ onGenerated, initialData }: JobDescrip
             </div>
           </CardHeader>
           <CardContent>
-            <div className="prose prose-sm max-w-none bg-muted/50 p-4 rounded-lg">
-              <div className="whitespace-pre-wrap">{generatedDescription}</div>
-            </div>
+            <div className="prose prose-sm max-w-none bg-muted/50 p-4 rounded-lg" dangerouslySetInnerHTML={{ __html: mdToHtmlBasic(generatedDescription) }} />
           </CardContent>
         </Card>
       )}

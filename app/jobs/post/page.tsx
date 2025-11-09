@@ -13,15 +13,20 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
-import { Upload, Eye, CreditCard, CheckCircle, Sparkles } from "lucide-react"
+import { Upload, Eye, CreditCard, CheckCircle, Sparkles, Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { JobDescriptionGenerator } from "@/components/ai/job-description-generator"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { useToast } from "@/hooks/use-toast"
 
 export default function PostJobPage() {
   const router = useRouter()
   const [step, setStep] = useState(1)
   const [showAIGenerator, setShowAIGenerator] = useState(false)
+  const [showPreview, setShowPreview] = useState(false)
+  const [genReqLoading, setGenReqLoading] = useState(false)
+  const [genBenLoading, setGenBenLoading] = useState(false)
+  const { toast } = useToast()
   const [formData, setFormData] = useState({
     title: "",
     company: "",
@@ -43,6 +48,107 @@ export default function PostJobPage() {
 
   const handleInputChange = (field: string, value: string | boolean | File | null) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
+  }
+
+  const parseStreamToText = async (res: Response, onChunk: (t: string) => void) => {
+    if (!res.body) throw new Error('No response body')
+    const reader = res.body.getReader()
+    const decoder = new TextDecoder()
+    let buffer = ''
+    while (true) {
+      const { value, done } = await reader.read()
+      if (done) break
+      buffer += decoder.decode(value, { stream: true })
+      const parts = buffer.split('\n\n')
+      buffer = parts.pop() || ''
+      for (const msg of parts) {
+        const line = msg.split('\n').find(l => l.startsWith('data: ')) || ''
+        if (line) {
+          try {
+            const payload = JSON.parse(line.replace('data: ', ''))
+            if (payload?.text) onChunk(payload.text)
+          } catch {}
+        }
+      }
+    }
+  }
+
+  const handleGenerateRequirements = async () => {
+    try {
+      setGenReqLoading(true)
+      setFormData(prev => ({ ...prev, requirements: '' }))
+      const res = await fetch('/api/ai/generate-requirements', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: formData.title,
+          company: formData.company,
+          location: formData.location,
+          employmentType: formData.jobType,
+        })
+      })
+      let acc = ''
+      await parseStreamToText(res, (t) => {
+        acc += t
+        setFormData(prev => ({ ...prev, requirements: acc }))
+      })
+      toast({ title: 'Requirements generated' })
+    } catch (e) {
+      toast({ title: 'Generation failed', variant: 'destructive' })
+    } finally {
+      setGenReqLoading(false)
+    }
+  }
+
+  const handleGenerateBenefits = async () => {
+    try {
+      setGenBenLoading(true)
+      setFormData(prev => ({ ...prev, benefits: '' }))
+      const res = await fetch('/api/ai/generate-benefits', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: formData.title,
+          company: formData.company,
+          location: formData.location,
+          employmentType: formData.jobType,
+        })
+      })
+      let acc = ''
+      await parseStreamToText(res, (t) => {
+        acc += t
+        setFormData(prev => ({ ...prev, benefits: acc }))
+      })
+      toast({ title: 'Benefits & perks generated' })
+    } catch (e) {
+      toast({ title: 'Generation failed', variant: 'destructive' })
+    } finally {
+      setGenBenLoading(false)
+    }
+  }
+
+  const mdToHtmlBasic = (md: string) => {
+    const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    let html = esc(md)
+    html = html.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>')
+    html = html.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>')
+    html = html.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>')
+    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    html = html.replace(/\*(.+?)\*/g, '<em>$1</em>')
+    const lines = html.split('\n')
+    let out: string[] = []
+    let inList = false
+    for (const line of lines) {
+      if (/^\-\s+/.test(line)) {
+        if (!inList) { out.push('<ul>'); inList = true }
+        out.push(`<li>${line.replace(/^\-\s+/, '')}</li>`)
+      } else {
+        if (inList) { out.push('</ul>'); inList = false }
+        if (line.trim().length) out.push(`<p>${line}</p>`)
+      }
+    }
+    if (inList) out.push('</ul>')
+    return out.join('\n')
   }
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -254,6 +360,7 @@ export default function PostJobPage() {
                       onGenerated={(description) => {
                         handleInputChange("description", description)
                         setShowAIGenerator(false)
+                        setShowPreview(true)
                       }}
                     />
                   </CardContent>
@@ -272,23 +379,41 @@ export default function PostJobPage() {
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div>
-                    <Label htmlFor="description">Job Description *</Label>
-                    <Textarea
-                      id="description"
-                      placeholder="Describe the role, responsibilities, and what you're looking for..."
-                      className="min-h-32"
-                      value={formData.description}
-                      onChange={(e) => handleInputChange("description", e.target.value)}
-                    />
-                    {formData.description && (
-                      <p className="text-sm text-muted-foreground mt-2">
-                        {formData.description.length} characters
-                      </p>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="description">Job Description *</Label>
+                      <Button type="button" variant="outline" size="sm" onClick={() => setShowPreview(!showPreview)} className="bg-transparent">
+                        {showPreview ? 'Edit Description' : 'Preview'}
+                      </Button>
+                    </div>
+                    {!showPreview ? (
+                      <>
+                        <Textarea
+                          id="description"
+                          placeholder="Describe the role, responsibilities, and what you're looking for..."
+                          className="min-h-32"
+                          value={formData.description}
+                          onChange={(e) => handleInputChange("description", e.target.value)}
+                        />
+                        {formData.description && (
+                          <p className="text-sm text-muted-foreground mt-2">
+                            {formData.description.length} characters
+                          </p>
+                        )}
+                      </>
+                    ) : (
+                      formData.description && (
+                        <div className="mt-2 p-4 border rounded-lg bg-muted/40 prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: mdToHtmlBasic(formData.description) }} />
+                      )
                     )}
                   </div>
 
                   <div>
-                    <Label htmlFor="requirements">Requirements</Label>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="requirements">Requirements</Label>
+                      <Button type="button" variant="outline" size="sm" onClick={handleGenerateRequirements} disabled={genReqLoading} className="bg-transparent">
+                        {genReqLoading ? (<><Loader2 className="h-4 w-4 mr-2 animate-spin" />Generating…</>) : (<><Sparkles className="h-4 w-4 mr-2" />AI Generate</>)}
+                      </Button>
+                    </div>
                     <Textarea
                       id="requirements"
                       placeholder="List the required skills, experience, and qualifications..."
@@ -299,7 +424,12 @@ export default function PostJobPage() {
                   </div>
 
                   <div>
-                    <Label htmlFor="benefits">Benefits & Perks</Label>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="benefits">Benefits & Perks</Label>
+                      <Button type="button" variant="outline" size="sm" onClick={handleGenerateBenefits} disabled={genBenLoading} className="bg-transparent">
+                        {genBenLoading ? (<><Loader2 className="h-4 w-4 mr-2 animate-spin" />Generating…</>) : (<><Sparkles className="h-4 w-4 mr-2" />AI Generate</>)}
+                      </Button>
+                    </div>
                     <Textarea
                       id="benefits"
                       placeholder="Describe the benefits, perks, and what makes your company great..."
