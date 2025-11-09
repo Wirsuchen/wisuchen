@@ -506,7 +506,10 @@ export default function PostJobPage() {
                             <Badge>{formData.category}</Badge>
                             {formData.featured && <Badge className="bg-accent text-accent-foreground">Featured</Badge>}
                           </div>
-                          <p className="text-sm mt-3 line-clamp-3">{formData.description}</p>
+                          <div
+                            className="text-sm mt-3 prose prose-sm max-w-none"
+                            dangerouslySetInnerHTML={{ __html: mdToHtmlBasic(formData.description) }}
+                          />
                         </div>
                       </div>
                     </div>
