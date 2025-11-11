@@ -133,9 +133,21 @@ export class APIAggregator {
       console.log('🎯 [Aggregator] Checking cache:', cacheKey)
       const cached = await cache.get<{ jobs: AggregatedJob[], sources: Record<string, number>, total: number }>(cacheKey)
       if (cached) {
-        console.log('✅ [Aggregator] Cache HIT')
-        logger.info('Jobs cache hit', { params })
-        return { ...cached, cached: true }
+        console.log(`✅ [Aggregator] Cache HIT - ${cached.jobs.length} jobs found`)
+        logger.info('Jobs cache hit', { params, cachedJobs: cached.jobs.length })
+        
+        // Apply pagination to cached results
+        const page = params.page || 1
+        const limit = params.limit || 100
+        const startIndex = (page - 1) * limit
+        const paginatedJobs = cached.jobs.slice(startIndex, startIndex + limit)
+        
+        return {
+          jobs: paginatedJobs,
+          sources: cached.sources,
+          total: cached.total,
+          cached: true
+        }
       }
       console.log('❌ [Aggregator] Cache MISS')
     }
@@ -192,9 +204,26 @@ export class APIAggregator {
     // Deduplicate based on title and company
     const uniqueJobs = this.deduplicateJobs(results)
 
-    // Apply pagination
+    // Cache ALL unique jobs (not just the page) for maximum reuse
+    const fullDataset = {
+      jobs: uniqueJobs, // Store ALL jobs in cache
+      sources: sourceCounts,
+      total: uniqueJobs.length,
+      cached: false
+    }
+
+    // Cache the full dataset
+    if (CACHE_CONFIG.jobs.enabled) {
+      await cache.set(cacheKey, fullDataset, {
+        ttl: CACHE_CONFIG.jobs.ttl, // 1 hour in testing, configurable for 24h in production
+        tags: ['jobs']
+      })
+      console.log(`✅ [Aggregator] Cached ${uniqueJobs.length} jobs for key: ${cacheKey}`)
+    }
+
+    // Apply pagination AFTER caching all jobs
     const page = params.page || 1
-    const limit = params.limit || 20
+    const limit = params.limit || 100 // Default to 100 for maximum jobs per request
     const startIndex = (page - 1) * limit
     const paginatedJobs = uniqueJobs.slice(startIndex, startIndex + limit)
 
@@ -203,14 +232,6 @@ export class APIAggregator {
       sources: sourceCounts,
       total: uniqueJobs.length,
       cached: false
-    }
-
-    // Cache the results
-    if (CACHE_CONFIG.jobs.enabled) {
-      await cache.set(cacheKey, response, {
-        ttl: CACHE_CONFIG.jobs.ttl,
-        tags: ['jobs']
-      })
     }
 
     timer.log('Jobs aggregation completed', {

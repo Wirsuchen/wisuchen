@@ -20,7 +20,7 @@ const searchJobsSchema = z.object({
   salaryMin: z.coerce.number().positive().optional(),
   salaryMax: z.coerce.number().positive().optional(),
   page: z.coerce.number().positive().default(1),
-  limit: z.coerce.number().positive().max(100).default(20),
+  limit: z.coerce.number().positive().max(500).default(100),
   sources: z.string().optional().transform(val => val?.split(',').filter(Boolean)),
   useCache: z.enum(['true', 'false']).optional().transform(val => val !== 'false'),
   // DACH/location controls
@@ -87,7 +87,8 @@ async function handler(req: NextRequest) {
       }
     }, { status: 200 })
 
-    res.headers.set('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=60')
+    // Cache for 1 hour (3600s) for maximum jobs, revalidate in background for 5 minutes
+    res.headers.set('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=300')
     return res
 
   } catch (error: any) {

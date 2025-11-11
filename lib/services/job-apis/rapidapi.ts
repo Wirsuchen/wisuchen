@@ -692,7 +692,8 @@ export class RapidAPIService {
               query: params.query,
               location: params.location,
               date_posted: 'week', // Last 7 days for freshness
-              page: params.page,
+              page: params.page || 1,
+              num_pages: 10, // Fetch 10 pages for maximum jobs
               employment_types: params.employment_type
             })
             break
@@ -704,10 +705,16 @@ export class RapidAPIService {
             jobs = await this.searchEmploymentAgencyJobs(params)
             break
           case 'glassdoor':
-            jobs = await this.searchGlassdoorRealTimeJobs(params)
+            jobs = await this.searchGlassdoorRealTimeJobs({
+              ...params,
+              limit: 50 // Request maximum 50 jobs
+            })
             break
           case 'upwork':
-            jobs = await this.searchUpworkJobs(params)
+            jobs = await this.searchUpworkJobs({
+              ...params,
+              limit: 50 // Request maximum 50 jobs
+            })
             break
           case 'active-jobs':
             jobs = await this.searchActiveJobs(params)
