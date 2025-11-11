@@ -29,7 +29,7 @@ export default function JobsPage() {
   const loadJobs = () => {
     search({
       // Don't specify sources to use all enabled sources
-      limit: 50,
+      limit: 500, // Request all available jobs (maximum limit)
       page: 1,
       useCache: true
     })
@@ -42,7 +42,7 @@ export default function JobsPage() {
       location: location || undefined,
       employmentType: employmentType || undefined,
       // Don't specify sources to use all enabled sources
-      limit: 50,
+      limit: 500, // Request all available jobs (maximum limit)
       page: 1,
       useCache: false // Fresh results for searches
     })
@@ -55,7 +55,7 @@ export default function JobsPage() {
         location: location || undefined,
         employmentType: employmentType || undefined,
         // Don't specify sources to use all enabled sources
-        limit: 50,
+        limit: 500, // Request all available jobs (maximum limit)
         page: pagination.page + 1
       })
     }
