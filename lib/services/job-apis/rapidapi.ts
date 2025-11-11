@@ -189,24 +189,117 @@ export class RapidAPIService {
     }
   }
 
-  // Upwork Jobs API
+  // Upwork Jobs API v2 - Active freelance jobs from last 1 hour
   async searchUpworkJobs(params: {
     q?: string
     skills?: string
     budget_min?: number
     budget_max?: number
     page?: number
+    limit?: number
   }): Promise<RapidAPIJob[]> {
     try {
+      console.log('💼 [Upwork] Starting search:', params)
+      
       const data = await this.makeRequest(
-        'upwork-jobs-api.p.rapidapi.com',
-        'jobs',
-        params
+        'upwork-jobs-api2.p.rapidapi.com',
+        'active-freelance-1h',
+        {
+          limit: params.limit || 10
+        }
       )
-      return data.jobs || []
+
+      console.log('📊 [Upwork] Response received:', {
+        dataKeys: Object.keys(data || {}),
+        jobsCount: Array.isArray(data) ? data.length : (data.jobs?.length || 0)
+      })
+
+      // Handle different response formats
+      let jobs = []
+      if (Array.isArray(data)) {
+        jobs = data
+      } else if (data.jobs) {
+        jobs = data.jobs
+      } else if (data.data) {
+        jobs = data.data
+      }
+
+      // Map Upwork API format to RapidAPIJob format
+      const mappedJobs: RapidAPIJob[] = jobs.map((job: any) => {
+        // Parse date
+        const postedDate = job.date_posted || new Date().toISOString()
+        
+        // Format salary from hourly rates
+        let salaryText = ''
+        if (job.project_budget_hourly_min && job.project_budget_hourly_max) {
+          const currency = job.project_budget_currency === 'USD' ? '$' : '€'
+          salaryText = `${currency}${job.project_budget_hourly_min}-${job.project_budget_hourly_max}/hr`
+        } else if (job.salary_raw?.value) {
+          const minVal = job.salary_raw.value.minValue
+          const maxVal = job.salary_raw.value.maxValue
+          const currency = job.salary_raw.currency === 'USD' ? '$' : '€'
+          const unit = job.salary_raw.value.unitText === 'HOUR' ? '/hr' : ''
+          if (minVal && maxVal) {
+            salaryText = `${currency}${minVal}-${maxVal}${unit}`
+          }
+        } else if (job.project_budget_total > 0) {
+          const currency = job.project_budget_currency === 'USD' ? '$' : '€'
+          salaryText = `${currency}${job.project_budget_total} (Fixed)`
+        }
+
+        // Extract skills from multiple sources
+        const skills: string[] = []
+        if (job.skills_additional && Array.isArray(job.skills_additional)) {
+          skills.push(...job.skills_additional)
+        }
+        if (job.skills_ontology) {
+          Object.values(job.skills_ontology).forEach((skillGroup: any) => {
+            if (typeof skillGroup === 'object' && !Array.isArray(skillGroup)) {
+              Object.values(skillGroup).forEach((skillList: any) => {
+                if (Array.isArray(skillList)) {
+                  skills.push(...skillList)
+                }
+              })
+            }
+          })
+        }
+        if (job.skills_occupation) {
+          skills.push(job.skills_occupation)
+        }
+
+        // Determine location - prefer client_country or fallback to worldwide
+        let location = 'Remote (Worldwide)'
+        if (job.client_country) {
+          location = job.client_country
+        } else if (job.location?.worldRegion) {
+          location = `Remote (${job.location.worldRegion})`
+        }
+
+        // Build company/client name
+        const company = job.client_company_size 
+          ? `Upwork Client (${job.client_company_size} employees)` 
+          : 'Upwork Client'
+
+        return {
+          id: job.id?.toString() || `upwork-${Math.random()}`,
+          title: job.title || 'Freelance Project',
+          company: company,
+          location: location,
+          description: job.description_text || job.description || '',
+          salary: salaryText,
+          employment_type: 'freelance',
+          posted_date: postedDate,
+          apply_url: job.url || `https://www.upwork.com/jobs/~${job.id}`,
+          skills: skills.filter((s, i, arr) => arr.indexOf(s) === i), // Remove duplicates
+          experience_level: job.weekly_hours || job.project_type
+        }
+      })
+
+      console.log('✅ [Upwork] Mapped jobs:', mappedJobs.length)
+      return mappedJobs
     } catch (error) {
-      console.error('Upwork API error:', error)
-      throw error
+      console.error('❌ [Upwork] API error:', error)
+      return [] // Return empty array instead of throwing to prevent breaking aggregate search
     }
   }
 
@@ -467,7 +560,8 @@ export class RapidAPIService {
       ? params.sources 
       : [
           'jsearch',     // Google for Jobs aggregator (LinkedIn, Indeed, etc.) - SUBSCRIBED
-          'glassdoor'    // Real-Time Glassdoor API - Fresh job data with salaries - SUBSCRIBED
+          'glassdoor',   // Real-Time Glassdoor API - Fresh job data with salaries - SUBSCRIBED
+          'upwork'       // Upwork Jobs API v2 - Active freelance jobs from last 1 hour - SUBSCRIBED
         ]
     console.log('🌐 [Aggregate] Using sources:', sources)
     
