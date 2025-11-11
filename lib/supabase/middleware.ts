@@ -6,9 +6,17 @@ export async function updateSession(request: NextRequest) {
     request,
   })
 
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  // If environment variables are missing, bypass session handling gracefully
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return NextResponse.next({ request })
+  }
+
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ngvuyarcqezvugfqfopg.supabase.co',
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ndnV5YXJjcWV6dnVnZnFmb3BnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc4NDM4MTEsImV4cCI6MjA3MzQxOTgxMX0.Lez0u7JeCBD0oyIYkYL2yAa4G6Kn5W2jV7jMyd5lX10',
+    supabaseUrl,
+    supabaseAnonKey,
     {
       cookies: {
         getAll() {
@@ -35,14 +43,12 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith('/login') &&
-    !request.nextUrl.pathname.startsWith('/auth') &&
-    !request.nextUrl.pathname.startsWith('/register') &&
-    request.nextUrl.pathname !== '/'
-  ) {
-    // no user, potentially respond by redirecting the user to the login page
+  // Redirect to login ONLY for protected areas
+  const pathname = request.nextUrl.pathname
+  const PROTECTED_PREFIXES = ['/dashboard', '/account', '/profile', '/settings', '/admin', '/app']
+  const requiresAuth = PROTECTED_PREFIXES.some((p) => pathname.startsWith(p))
+
+  if (!user && requiresAuth) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)

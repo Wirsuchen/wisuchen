@@ -1,4 +1,5 @@
 import { updateSession } from '@/lib/supabase/middleware'
+import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 // Simple token-bucket rate limiting per IP for API routes
@@ -31,6 +32,9 @@ export async function middleware(request: NextRequest) {
 
     bucket.tokens -= 1
     ipBuckets.set(ip, bucket)
+
+    // IMPORTANT: For API routes, skip Supabase session handling to ensure pure JSON responses
+    return NextResponse.next()
   }
 
   return await updateSession(request)
