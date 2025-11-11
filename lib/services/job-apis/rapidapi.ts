@@ -422,7 +422,7 @@ export class RapidAPIService {
     }
   }
 
-  // Freelancer API
+  // Freelancer API - Find active freelance jobs
   async searchFreelancerJobs(params: {
     query?: string
     skills?: string[]
@@ -432,18 +432,68 @@ export class RapidAPIService {
     page?: number
   }): Promise<RapidAPIJob[]> {
     try {
+      console.log('💻 [Freelancer] Starting search:', params)
+      
       const data = await this.makeRequest(
         'freelancer-api.p.rapidapi.com',
-        'projects',
-        {
-          ...params,
-          skills: params.skills?.join(',')
-        }
+        'api/find-job',
+        {}
       )
-      return data.projects || []
+
+      console.log('📊 [Freelancer] Response received:', {
+        dataKeys: Object.keys(data || {}),
+        postsCount: data.posts?.length || 0
+      })
+
+      if (!data.posts || !Array.isArray(data.posts)) {
+        console.warn('⚠️ [Freelancer] No posts in response')
+        return []
+      }
+
+      // Map Freelancer API format to RapidAPIJob format
+      const mappedJobs: RapidAPIJob[] = data.posts.map((project: any) => {
+        // Parse budget/price
+        let salaryText = project['project-price'] || ''
+        
+        // Extract skills from tags
+        const skills = project['project-tags'] 
+          ? project['project-tags'].split(' ').filter((s: string) => s.length > 0)
+          : []
+
+        // Clean title (remove "days left" and "Verified" suffixes)
+        let title = project['project-title'] || 'Freelance Project'
+        title = title.replace(/\d+\s+days?\s+left/gi, '').replace(/Verified/gi, '').trim()
+
+        // Parse description (truncate if too long)
+        let description = project['project-description'] || ''
+        if (description.length > 500) {
+          description = description.substring(0, 497) + '...'
+        }
+
+        // Determine if payment is verified
+        const isVerified = project['payment']?.includes('Verified') || false
+        const paymentStatus = isVerified ? ' (Payment Verified)' : ''
+
+        return {
+          id: project['project-link']?.split('/').pop() || `freelancer-${Math.random()}`,
+          title: title,
+          company: `Freelancer.com${paymentStatus}`,
+          location: 'Remote (Worldwide)',
+          description: description,
+          salary: salaryText,
+          employment_type: 'freelance',
+          posted_date: new Date().toISOString(), // API doesn't provide exact date
+          apply_url: project['project-link'] || '',
+          skills: skills,
+          experience_level: project['freelancers-bids']
+        }
+      })
+
+      console.log('✅ [Freelancer] Mapped jobs:', mappedJobs.length)
+      return mappedJobs
     } catch (error) {
-      console.error('Freelancer API error:', error)
-      throw error
+      console.error('❌ [Freelancer] API error:', error)
+      return [] // Return empty array instead of throwing to prevent breaking aggregate search
     }
   }
 
@@ -619,7 +669,8 @@ export class RapidAPIService {
           'jsearch',       // Google for Jobs aggregator (LinkedIn, Indeed, etc.) - SUBSCRIBED
           'glassdoor',     // Real-Time Glassdoor API - Fresh job data with salaries - SUBSCRIBED
           'upwork',        // Upwork Jobs API v2 - Active freelance jobs from last 1 hour - SUBSCRIBED
-          'y-combinator'   // Y Combinator Jobs - Active startup jobs from last 7 days - SUBSCRIBED
+          'y-combinator',  // Y Combinator Jobs - Active startup jobs from last 7 days - SUBSCRIBED
+          'freelancer'     // Freelancer.com - Active freelance projects - SUBSCRIBED
         ]
     console.log('🌐 [Aggregate] Using sources:', sources)
     
