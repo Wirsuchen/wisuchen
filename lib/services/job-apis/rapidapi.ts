@@ -116,22 +116,76 @@ export class RapidAPIService {
     }
   }
 
-  // Glassdoor Real-Time API
-  async searchGlassdoorJobs(params: {
+  // Real-Time Glassdoor API - Fresh job data from Glassdoor
+  async searchGlassdoorRealTimeJobs(params: {
     query?: string
     location?: string
+    employment_type?: string
     page?: number
+    limit?: number
   }): Promise<RapidAPIJob[]> {
     try {
+      console.log('🔍 [Glassdoor] Starting search:', params)
+      
       const data = await this.makeRequest(
-        'glassdoor-real-time-api.p.rapidapi.com',
-        'jobs',
-        params
+        'real-time-glassdoor-data.p.rapidapi.com',
+        'job-search',
+        {
+          query: params.query || 'developer',
+          location: params.location || 'germany',
+          location_type: 'ANY',
+          min_company_rating: 'ANY',
+          domain: 'www.glassdoor.com',
+          page: params.page || 1,
+          limit: params.limit || 10
+        }
       )
-      return data.data || []
+
+      console.log('📊 [Glassdoor] Response received:', {
+        status: data.status,
+        total: data.data?.total_count || 0,
+        jobsCount: data.data?.jobs?.length || 0
+      })
+
+      if (!data.data || !data.data.jobs) {
+        console.warn('⚠️ [Glassdoor] No jobs in response')
+        return []
+      }
+
+      // Map Glassdoor API format to RapidAPIJob format
+      const jobs: RapidAPIJob[] = data.data.jobs.map((job: any) => {
+        // Calculate age in days and convert to posted_date
+        const postedDate = new Date()
+        postedDate.setDate(postedDate.getDate() - (job.age_in_days || 0))
+        
+        // Format salary
+        let salaryText = ''
+        if (job.salary_min && job.salary_max) {
+          const currency = job.salary_currency === 'USD' ? '$' : '€'
+          const period = job.salary_period === 'ANNUAL' ? '/year' : '/hour'
+          salaryText = `${currency}${job.salary_min.toLocaleString()} - ${currency}${job.salary_max.toLocaleString()}${period}`
+        }
+
+        return {
+          id: job.job_id?.toString() || `glassdoor-${Math.random()}`,
+          title: job.job_title || 'Untitled Position',
+          company: job.company_name || 'Company',
+          location: job.location_name || params.location || 'Germany',
+          description: `${job.job_title} at ${job.company_name}. ${job.easy_apply ? 'Easy Apply available. ' : ''}Company rating: ${job.rating || 'Not rated'}.`,
+          salary: salaryText,
+          employment_type: params.employment_type || 'full_time',
+          posted_date: postedDate.toISOString(),
+          apply_url: job.job_link,
+          skills: [],
+          experience_level: undefined
+        }
+      })
+
+      console.log('✅ [Glassdoor] Mapped jobs:', jobs.length)
+      return jobs
     } catch (error) {
-      console.error('Glassdoor API error:', error)
-      throw error
+      console.error('❌ [Glassdoor] API error:', error)
+      return [] // Return empty array instead of throwing to prevent breaking aggregate search
     }
   }
 
@@ -409,11 +463,11 @@ export class RapidAPIService {
     
     // Use only WORKING and SUBSCRIBED RapidAPI job sources
     // Most free job APIs on RapidAPI have been deprecated/removed (404 errors)
-    // Only using jsearch (Google for Jobs) as it's the only subscribed API
     const sources = params.sources && params.sources.length > 0 
       ? params.sources 
       : [
-          'jsearch'  // Google for Jobs aggregator (LinkedIn, Indeed, etc.) - SUBSCRIBED
+          'jsearch',     // Google for Jobs aggregator (LinkedIn, Indeed, etc.) - SUBSCRIBED
+          'glassdoor'    // Real-Time Glassdoor API - Fresh job data with salaries - SUBSCRIBED
         ]
     console.log('🌐 [Aggregate] Using sources:', sources)
     
@@ -447,7 +501,7 @@ export class RapidAPIService {
             jobs = await this.searchEmploymentAgencyJobs(params)
             break
           case 'glassdoor':
-            jobs = await this.searchGlassdoorJobs(params)
+            jobs = await this.searchGlassdoorRealTimeJobs(params)
             break
           case 'upwork':
             jobs = await this.searchUpworkJobs(params)
