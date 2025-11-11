@@ -345,7 +345,7 @@ export class RapidAPIService {
     }
   }
 
-  // Y Combinator Jobs API
+  // Y Combinator Jobs API - Active jobs from last 7 days
   async searchYCombinatorJobs(params: {
     role?: string
     location?: string
@@ -353,15 +353,72 @@ export class RapidAPIService {
     page?: number
   }): Promise<RapidAPIJob[]> {
     try {
+      console.log('🚀 [Y Combinator] Starting search:', params)
+      
       const data = await this.makeRequest(
         'free-y-combinator-jobs-api.p.rapidapi.com',
-        'jobs',
-        params
+        'active-jb-7d',
+        {}
       )
-      return data.jobs || []
+
+      console.log('📊 [Y Combinator] Response received:', {
+        dataType: Array.isArray(data) ? 'array' : 'object',
+        jobsCount: Array.isArray(data) ? data.length : 0
+      })
+
+      // Handle response - should be an array
+      const jobs = Array.isArray(data) ? data : []
+
+      // Map Y Combinator API format to RapidAPIJob format
+      const mappedJobs: RapidAPIJob[] = jobs.map((job: any) => {
+        // Format salary
+        let salaryText = ''
+        if (job.salary_raw?.value) {
+          const minVal = job.salary_raw.value.minValue
+          const maxVal = job.salary_raw.value.maxValue
+          const currency = job.salary_raw.currency === 'USD' ? '$' : '€'
+          const unit = job.salary_raw.value.unitText === 'YEAR' ? '/year' : ''
+          if (minVal && maxVal) {
+            salaryText = `${currency}${minVal.toLocaleString()}-${maxVal.toLocaleString()}${unit}`
+          }
+        }
+
+        // Get location - use first from locations_derived or countries_derived
+        let location = 'Remote'
+        if (job.locations_derived && job.locations_derived.length > 0) {
+          location = job.locations_derived[0]
+        } else if (job.countries_derived && job.countries_derived.length > 0) {
+          location = job.countries_derived[0]
+        }
+
+        // Add remote indicator if applicable
+        if (job.remote_derived || job.location_type === 'TELECOMMUTE') {
+          location = `${location} (Remote)`
+        }
+
+        // Get employment type
+        const employmentType = job.employment_type?.[0]?.toLowerCase().replace('_', ' ') || 'full_time'
+
+        return {
+          id: job.id?.toString() || `yc-${Math.random()}`,
+          title: job.title || 'Position',
+          company: job.organization || 'Y Combinator Company',
+          location: location,
+          description: `${job.title} at ${job.organization}. ${job.organization_url ? `Company: ${job.organization_url}` : ''}`,
+          salary: salaryText,
+          employment_type: employmentType,
+          posted_date: job.date_posted || job.date_created || new Date().toISOString(),
+          apply_url: job.url || '',
+          skills: [],
+          experience_level: job.seniority || undefined
+        }
+      })
+
+      console.log('✅ [Y Combinator] Mapped jobs:', mappedJobs.length)
+      return mappedJobs
     } catch (error) {
-      console.error('Y Combinator API error:', error)
-      throw error
+      console.error('❌ [Y Combinator] API error:', error)
+      return [] // Return empty array instead of throwing to prevent breaking aggregate search
     }
   }
 
@@ -559,9 +616,10 @@ export class RapidAPIService {
     const sources = params.sources && params.sources.length > 0 
       ? params.sources 
       : [
-          'jsearch',     // Google for Jobs aggregator (LinkedIn, Indeed, etc.) - SUBSCRIBED
-          'glassdoor',   // Real-Time Glassdoor API - Fresh job data with salaries - SUBSCRIBED
-          'upwork'       // Upwork Jobs API v2 - Active freelance jobs from last 1 hour - SUBSCRIBED
+          'jsearch',       // Google for Jobs aggregator (LinkedIn, Indeed, etc.) - SUBSCRIBED
+          'glassdoor',     // Real-Time Glassdoor API - Fresh job data with salaries - SUBSCRIBED
+          'upwork',        // Upwork Jobs API v2 - Active freelance jobs from last 1 hour - SUBSCRIBED
+          'y-combinator'   // Y Combinator Jobs - Active startup jobs from last 7 days - SUBSCRIBED
         ]
     console.log('🌐 [Aggregate] Using sources:', sources)
     
