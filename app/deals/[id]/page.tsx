@@ -177,6 +177,7 @@ export default function DealDetailPage() {
   const colorVariants = deal.product_variants?.Color || []
   const offer = deal.offer
 
+  const sourceUrl = offer?.offer_page_url || deal.url
   const currentImage = photos[selectedImage] || deal.image
 
   const formatPrice = (price: string | number) => {
@@ -284,7 +285,16 @@ export default function DealDetailPage() {
                   <div>
                     <div className="flex items-start justify-between mb-4">
                       <div>
-                        <h1 className="text-2xl font-bold">{deal.title}</h1>
+                        <h1 className="text-2xl font-bold">
+                          <a
+                            href={sourceUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:underline"
+                          >
+                            {deal.title}
+                          </a>
+                        </h1>
                         <div className="flex items-center mt-2">
                           <div className="flex items-center">
                             <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
@@ -294,6 +304,12 @@ export default function DealDetailPage() {
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
+                        <Button variant="default" size="sm" asChild>
+                          <Link href={sourceUrl} target="_blank">
+                            <ExternalLink className="h-4 w-4 mr-1" />
+                            Visit Source
+                          </Link>
+                        </Button>
                         <Button 
                           variant="outline" 
                           size="sm"
@@ -516,13 +532,22 @@ export default function DealDetailPage() {
                 <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {offer && (
+                {offer ? (
                   <Button className="w-full" size="lg" asChild>
                     <Link href={offer.offer_page_url} target="_blank">
                       <ShoppingBag className="h-4 w-4 mr-2" />
                       Buy Now - {formatPrice(offer.price)}
                     </Link>
                   </Button>
+                ) : (
+                  sourceUrl && (
+                    <Button className="w-full" size="lg" asChild>
+                      <Link href={sourceUrl} target="_blank">
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        Visit Source
+                      </Link>
+                    </Button>
+                  )
                 )}
                 <Button variant="outline" className="w-full bg-transparent">
                   <Heart className="h-4 w-4 mr-2" />
