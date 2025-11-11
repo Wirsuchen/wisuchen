@@ -91,11 +91,18 @@ export default function HomePage() {
 
   const fetchStats = async () => {
     try {
-      // Fetch jobs count
-      const jobsResponse = await fetch('/api/v1/jobs/search?limit=1&useCache=true&countries=de,at,ch')
+      // Fetch actual total jobs count from all sources (cached)
+      // Request with limit=500 to get maximum jobs and use the total count
+      const jobsResponse = await fetch('/api/v1/jobs/search?limit=500&useCache=true')
       const jobsData = await jobsResponse.json()
-      const totalJobs = jobsData?.data?.total || jobsData?.data?.totalCount || 0
-      console.log('📊 Jobs API response:', { total: totalJobs, data: jobsData })
+      
+      // Get the actual total count from all aggregated sources
+      const totalJobs = jobsData?.data?.pagination?.total || jobsData?.data?.total || 0
+      console.log('📊 Jobs API response:', { 
+        total: totalJobs, 
+        sources: jobsData?.data?.meta?.sources,
+        cached: jobsData?.data?.meta?.cached 
+      })
 
       // Fetch deals count - get larger sample since API might not return total count
       const dealsResponse = await fetch('/api/deals?page=1&limit=50')
@@ -109,11 +116,11 @@ export default function HomePage() {
       const totalUsers = usersData?.count || 25
       console.log('👥 Users API response:', { count: totalUsers })
 
-      // Use reasonable minimums for display
+      // Show actual counts (no artificial minimums)
       setStats({
-        activeJobs: Math.max(totalJobs, 50), // Minimum 50 for display
-        dailyDeals: Math.max(totalDeals, 100), // Minimum 100 for display
-        happyUsers: Math.max(totalUsers, 25) // Minimum 25 for display
+        activeJobs: totalJobs || 50, // Show actual count, fallback to 50 if API fails
+        dailyDeals: totalDeals || 100, // Show actual count, fallback to 100 if API fails
+        happyUsers: totalUsers || 25 // Show actual count, fallback to 25 if API fails
       })
     } catch (error) {
       console.error('Error fetching stats:', error)
