@@ -43,101 +43,6 @@ export default function HomePage() {
     happyUsers: 25
   })
 
-  const sampleDeals: Deal[] = [
-    {
-      id: 'sample-deal-1',
-      title: 'Wireless Headphones',
-      currentPrice: 59.99,
-      originalPrice: 99.99,
-      discount: 40,
-      store: 'Sample Store',
-      rating: 4.6,
-      image: 'https://images.unsplash.com/photo-1518441902110-0f3aa04ed569?q=80&w=800&auto=format&fit=crop'
-    },
-    {
-      id: 'sample-deal-2',
-      title: 'Mechanical Keyboard',
-      currentPrice: 79.0,
-      originalPrice: 129.0,
-      discount: 39,
-      store: 'Sample Store',
-      rating: 4.8,
-      image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=800&auto=format&fit=crop'
-    },
-    {
-      id: 'sample-deal-3',
-      title: '4K Monitor 27"',
-      currentPrice: 249.0,
-      originalPrice: 349.0,
-      discount: 29,
-      store: 'Sample Store',
-      rating: 4.5,
-      image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=800&auto=format&fit=crop'
-    }
-  ]
-
-  const sampleJobs: Job[] = [
-    {
-      id: 'sample-job-1',
-      externalId: 'sample-job-1',
-      title: 'Frontend Developer',
-      description: 'Build modern UIs with React and TypeScript.',
-      company: 'Acme GmbH',
-      location: 'Berlin, Germany',
-      salary: { text: '€60,000-€80,000' },
-      employmentType: 'full_time',
-      experienceLevel: 'mid',
-      skills: ['React', 'TypeScript', 'CSS'],
-      applicationUrl: '#',
-      source: 'sample',
-      publishedAt: new Date().toISOString()
-    } as Job,
-    {
-      id: 'sample-job-2',
-      externalId: 'sample-job-2',
-      title: 'Backend Engineer',
-      description: 'Design APIs with Node.js and PostgreSQL.',
-      company: 'Globex AG',
-      location: 'Munich, Germany',
-      salary: { text: '€65,000-€85,000' },
-      employmentType: 'full_time',
-      experienceLevel: 'mid',
-      skills: ['Node.js', 'PostgreSQL', 'REST'],
-      applicationUrl: '#',
-      source: 'sample',
-      publishedAt: new Date().toISOString()
-    } as Job,
-    {
-      id: 'sample-job-3',
-      externalId: 'sample-job-3',
-      title: 'Data Analyst',
-      description: 'Analyze business data and create dashboards.',
-      company: 'Innotech GmbH',
-      location: 'Zurich, Switzerland',
-      salary: { text: 'CHF 80,000-CHF 100,000' },
-      employmentType: 'full_time',
-      experienceLevel: 'mid',
-      skills: ['SQL', 'Python', 'BI'],
-      applicationUrl: '#',
-      source: 'sample',
-      publishedAt: new Date().toISOString()
-    } as Job,
-    {
-      id: 'sample-job-4',
-      externalId: 'sample-job-4',
-      title: 'Marketing Specialist',
-      description: 'Drive growth with performance marketing.',
-      company: 'DACH Media',
-      location: 'Vienna, Austria',
-      salary: { text: '€45,000-€60,000' },
-      employmentType: 'full_time',
-      experienceLevel: 'mid',
-      skills: ['SEO', 'SEM', 'Analytics'],
-      applicationUrl: '#',
-      source: 'sample',
-      publishedAt: new Date().toISOString()
-    } as Job
-  ]
 
   useEffect(() => {
     fetchTopDeals()
@@ -156,10 +61,10 @@ export default function HomePage() {
         60 * 60 * 1000
       )
       const deals: Deal[] = data?.deals || []
-      setTopDeals(deals.length > 0 ? deals.slice(0, 3) : sampleDeals)
+      setTopDeals(deals.length > 0 ? deals.slice(0, 3) : [])
     } catch (error) {
       console.error('Error fetching deals:', error)
-      setTopDeals(sampleDeals)
+      setTopDeals([])
     } finally {
       setDealsLoading(false)
     }
@@ -176,10 +81,10 @@ export default function HomePage() {
         60 * 60 * 1000
       )
       const jobs: Job[] = data?.data?.jobs || []
-      setTopJobs(jobs.length > 0 ? jobs.slice(0, 4) : sampleJobs)
+      setTopJobs(jobs.length > 0 ? jobs.slice(0, 4) : [])
     } catch (e) {
       console.error('Error fetching jobs:', e)
-      setTopJobs(sampleJobs)
+      setTopJobs([])
     } finally {
       setJobsLoading(false)
     }
@@ -370,9 +275,6 @@ export default function HomePage() {
                   )
 
                   const jobType = job.employmentType ? job.employmentType.replace('_', ' ') : undefined
-                  // i18n fallback: if translation key is missing, show plain text
-                  const notAvail = t('common.notAvailable')
-                  const notAvailableText = notAvail && notAvail !== 'common.notAvailable' ? notAvail : 'Not available'
                   const key = `${job.source}-${job.externalId || job.id}`
 
                   const handleOpen = () => {
@@ -399,7 +301,7 @@ export default function HomePage() {
                             {job.location}
                           </div>
                           <div className="flex items-center justify-between">
-                            <span className="font-semibold text-accent">{salaryText || notAvailableText}</span>
+                            {salaryText && <span className="font-semibold text-accent">{salaryText}</span>}
                             {jobType && <Badge variant="outline" className="capitalize">{jobType}</Badge>}
                           </div>
                         </div>

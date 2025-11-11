@@ -151,6 +151,12 @@ async function handler(request: NextRequest) {
     
     return NextResponse.json({ 
       deals: [], 
+      pagination: {
+        page: 1,
+        limit: 0,
+        total: 0,
+        pages: 0
+      },
       error: isTimeout ? 'Request timeout' : 'Failed to load deals',
       message: error instanceof Error ? error.message : 'Unknown error',
       help: isTimeout 
