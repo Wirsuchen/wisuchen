@@ -327,7 +327,6 @@ export default function DealsPage() {
                             {deal.title}
                           </h3>
                         </Link>
-                        <p className="text-sm text-muted-foreground mt-1">{deal.brand}</p>
 
                         <div className="flex items-center mt-2">
                           <div className="flex items-center">
@@ -380,7 +379,6 @@ export default function DealsPage() {
                                   {deal.title}
                                 </h3>
                               </Link>
-                              <p className="text-muted-foreground">{deal.brand}</p>
                               <div className="flex items-center mt-1">
                                 <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
                                 <span className="text-sm">{deal.rating}</span>

@@ -373,8 +373,7 @@ export default function HomePage() {
                           <span className="text-2xl font-bold text-accent">{formatEuro(deal.currentPrice)}</span>
                           <span className="text-sm text-muted-foreground line-through">{formatEuro(deal.originalPrice)}</span>
                         </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-muted-foreground truncate">{deal.store}</span>
+                        <div className="flex items-center justify-end">
                           <div className="flex items-center">
                             <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
                             <span className="text-sm">{deal.rating}</span>

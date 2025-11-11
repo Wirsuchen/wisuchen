@@ -285,7 +285,6 @@ export default function DealDetailPage() {
                     <div className="flex items-start justify-between mb-4">
                       <div>
                         <h1 className="text-2xl font-bold">{deal.title}</h1>
-                        <p className="text-lg text-muted-foreground">{deal.brand}</p>
                         <div className="flex items-center mt-2">
                           <div className="flex items-center">
                             <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
@@ -348,7 +347,6 @@ export default function DealDetailPage() {
 
                       <div className="flex items-center space-x-2">
                         <Badge variant="outline">{deal.category}</Badge>
-                        {deal.brand && <Badge variant="secondary">{deal.brand}</Badge>}
                       </div>
 
                       {/* Size & Color Variants */}
@@ -547,12 +545,6 @@ export default function DealDetailPage() {
                   <span className="text-muted-foreground">Category</span>
                   <Badge variant="outline">{deal.category}</Badge>
                 </div>
-                {deal.brand && (
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Brand</span>
-                    <span className="font-medium">{deal.brand}</span>
-                  </div>
-                )}
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Rating</span>
                   <div className="flex items-center">
@@ -560,10 +552,6 @@ export default function DealDetailPage() {
                     <span className="font-medium">{deal.rating}</span>
                     <span className="text-muted-foreground ml-1">({deal.reviews})</span>
                   </div>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Source</span>
-                  <span className="font-medium capitalize">{deal.source}</span>
                 </div>
               </CardContent>
             </Card>
