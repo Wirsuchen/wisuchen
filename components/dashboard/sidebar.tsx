@@ -17,12 +17,14 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  Shield,
 } from "lucide-react"
 
 export function DashboardSidebar() {
   const [collapsed, setCollapsed] = useState(false)
   const pathname = usePathname()
   const { user } = useAuth()
+  const isAdmin = !!(user && ((['admin','supervisor','moderator'] as any).includes((user as any).role) || user.email === 'admin@wirsuchen.com'))
 
   const navigation = [
     {
@@ -101,6 +103,22 @@ export function DashboardSidebar() {
                 </li>
               )
             })}
+            {isAdmin && (
+              <li>
+                <Link
+                  href="/admin"
+                  className={cn(
+                    "flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                    pathname === "/admin"
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                  )}
+                >
+                  <Shield className="h-4 w-4 shrink-0" />
+                  {!collapsed && <span className="ml-3">Admin</span>}
+                </Link>
+              </li>
+            )}
           </ul>
         </nav>
 

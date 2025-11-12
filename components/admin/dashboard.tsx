@@ -74,7 +74,9 @@ export function AdminDashboard() {
     totalViews: 0,
     totalClicks: 0
   })
+  const [realSourceData, setRealSourceData] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [loadingSources, setLoadingSources] = useState(false)
   const isMobile = useIsMobile()
 
   // Mock data for charts
@@ -107,6 +109,7 @@ export function AdminDashboard() {
 
   useEffect(() => {
     fetchDashboardStats()
+    fetchSourceData()
   }, [])
 
   const fetchDashboardStats = async () => {
@@ -131,6 +134,20 @@ export function AdminDashboard() {
       console.error('Error fetching dashboard stats:', error)
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const fetchSourceData = async () => {
+    setLoadingSources(true)
+    try {
+      const res = await fetch('/api/admin/sources', { cache: 'no-store' })
+      if (!res.ok) throw new Error('Failed to load source data')
+      const data = await res.json()
+      setRealSourceData(data)
+    } catch (error) {
+      console.error('Error fetching source data:', error)
+    } finally {
+      setLoadingSources(false)
     }
   }
 
@@ -182,8 +199,9 @@ export function AdminDashboard() {
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <div className="overflow-x-auto">
-          <TabsList className="inline-flex w-auto min-w-full md:grid md:grid-cols-6 gap-2">
+          <TabsList className="inline-flex w-auto min-w-full md:grid md:grid-cols-7 gap-2">
             <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="database">Database</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="permissions">Permissions</TabsTrigger>
             <TabsTrigger value="jobs">Job Import</TabsTrigger>
@@ -349,6 +367,181 @@ export function AdminDashboard() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="database" className="space-y-6">
+          {loadingSources ? (
+            <div className="text-center py-12">
+              <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-accent" />
+              <p className="text-muted-foreground">Loading database statistics...</p>
+            </div>
+          ) : realSourceData ? (
+            <>
+              {/* Database Overview */}
+              <div className="grid gap-4 md:grid-cols-3">
+                <StatCard
+                  title="Total Jobs"
+                  value={realSourceData.totals.jobs}
+                  description="From all API sources"
+                  icon={Briefcase}
+                  color="text-blue-600"
+                />
+                <StatCard
+                  title="Total Deals"
+                  value={realSourceData.totals.deals}
+                  description="Affiliate products"
+                  icon={DollarSign}
+                  color="text-green-600"
+                />
+                <StatCard
+                  title="API Sources"
+                  value={realSourceData.totals.sources}
+                  description="Active integrations"
+                  icon={Building}
+                  color="text-purple-600"
+                />
+              </div>
+
+              {/* Job Sources Breakdown */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Job Sources Breakdown</CardTitle>
+                  <CardDescription>Real-time data from all API sources</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {Object.entries(realSourceData.jobSources || {})
+                      .sort((a: any, b: any) => b[1] - a[1])
+                      .map(([source, count]: [string, any]) => {
+                        const percentage = ((count / realSourceData.totals.jobs) * 100).toFixed(1)
+                        return (
+                          <div key={source} className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Badge variant="outline">{source}</Badge>
+                                <span className="text-sm font-medium">{count.toLocaleString()} jobs</span>
+                              </div>
+                              <span className="text-sm text-muted-foreground">{percentage}%</span>
+                            </div>
+                            <div className="h-2 bg-muted rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-blue-600"
+                                style={{ width: `${percentage}%` }}
+                              />
+                            </div>
+                          </div>
+                        )
+                      })}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Deal Sources Breakdown */}
+              {realSourceData.dealSources && Object.keys(realSourceData.dealSources).length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Deal Sources Breakdown</CardTitle>
+                    <CardDescription>Affiliate products from all sources</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {Object.entries(realSourceData.dealSources || {})
+                        .sort((a: any, b: any) => b[1] - a[1])
+                        .map(([source, count]: [string, any]) => {
+                          const percentage = ((count / realSourceData.totals.deals) * 100).toFixed(1)
+                          return (
+                            <div key={source} className="space-y-2">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <Badge variant="outline">{source}</Badge>
+                                  <span className="text-sm font-medium">{count.toLocaleString()} deals</span>
+                                </div>
+                                <span className="text-sm text-muted-foreground">{percentage}%</span>
+                              </div>
+                              <div className="h-2 bg-muted rounded-full overflow-hidden">
+                                <div
+                                  className="h-full bg-green-600"
+                                  style={{ width: `${percentage}%` }}
+                                />
+                              </div>
+                            </div>
+                          )
+                        })}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Pie Chart for Sources */}
+              <div className="grid gap-6 md:grid-cols-2">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Job Sources Distribution</CardTitle>
+                    <CardDescription>Visual breakdown of job sources</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={isMobile ? 220 : 300}>
+                      <PieChart>
+                        <Pie
+                          data={Object.entries(realSourceData.jobSources || {}).map(([name, value]) => ({ name, value }))}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
+                          outerRadius={80}
+                          fill="#8884d8"
+                          dataKey="value"
+                        >
+                          {Object.entries(realSourceData.jobSources || {}).map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Deal Sources Distribution</CardTitle>
+                    <CardDescription>Visual breakdown of deal sources</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {realSourceData.dealSources && Object.keys(realSourceData.dealSources).length > 0 ? (
+                      <ResponsiveContainer width="100%" height={isMobile ? 220 : 300}>
+                        <PieChart>
+                          <Pie
+                            data={Object.entries(realSourceData.dealSources || {}).map(([name, value]) => ({ name, value }))}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
+                            outerRadius={80}
+                            fill="#8884d8"
+                            dataKey="value"
+                          >
+                            {Object.entries(realSourceData.dealSources || {}).map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="text-center py-12 text-muted-foreground">
+                        No deal sources available
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </>
+          ) : (
+            <div className="text-center py-12 text-muted-foreground">
+              No data available
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="users">
