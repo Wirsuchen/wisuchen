@@ -25,6 +25,7 @@ import Link from "next/link"
 import { formatEuroText } from "@/lib/utils"
 import { useSearchParams } from "next/navigation"
 import type { Job } from "@/hooks/use-jobs"
+import { fetchWithCache } from "@/lib/utils/client-cache"
 
 export default function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const [isImproving, setIsImproving] = useState(false)
@@ -45,6 +46,8 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
   }
 
   const [job, setJob] = useState<ExtJob | null>(null)
+  const [relatedJobs, setRelatedJobs] = useState<Job[]>([])
+  const [loadingRelated, setLoadingRelated] = useState(false)
 
   // Unwrap params
   useEffect(() => {
@@ -64,32 +67,43 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
     } catch {}
   }, [jobId, searchParams])
 
-  const relatedJobs = [
-    {
-      id: 2,
-      title: "Frontend Developer",
-      company: "StartupXYZ",
-      location: "Munich, Germany",
-      salary: "€55,000 - €70,000",
-      type: "Full-time",
-    },
-    {
-      id: 3,
-      title: "React Developer",
-      company: "WebTech Solutions",
-      location: "Hamburg, Germany",
-      salary: "€60,000 - €75,000",
-      type: "Full-time",
-    },
-    {
-      id: 4,
-      title: "Full Stack Developer",
-      company: "DigitalCorp",
-      location: "Frankfurt, Germany",
-      salary: "€65,000 - €85,000",
-      type: "Full-time",
-    },
-  ]
+  // Fetch similar jobs when job is loaded
+  useEffect(() => {
+    if (!job) return
+    
+    const fetchSimilarJobs = async () => {
+      setLoadingRelated(true)
+      try {
+        // Extract location city (first part before comma)
+        const locationParts = job.location?.split(',') || []
+        const city = locationParts[0]?.trim()
+        
+        // Build query params for similar jobs
+        const params = new URLSearchParams()
+        if (city) params.append('location', city)
+        if (job.employmentType) params.append('employmentType', job.employmentType)
+        params.append('limit', '6')
+        params.append('page', '1')
+        
+        const url = `/api/v1/jobs/search?${params.toString()}`
+        const data = await fetchWithCache<any>(url, undefined, { city, type: job.employmentType }, 60 * 60 * 1000)
+        
+        if (data.success && data.data.jobs) {
+          // Filter out the current job and limit to 3
+          const filtered = data.data.jobs
+            .filter((j: Job) => j.id !== job.id && j.externalId !== job.externalId)
+            .slice(0, 3)
+          setRelatedJobs(filtered)
+        }
+      } catch (error) {
+        console.error('Error fetching similar jobs:', error)
+      } finally {
+        setLoadingRelated(false)
+      }
+    }
+    
+    fetchSimilarJobs()
+  }, [job])
 
   const handleImproveDescription = () => {
     setIsImproving(true)
@@ -414,18 +428,41 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
                 <CardTitle>Similar Jobs</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {relatedJobs.map((relatedJob) => (
-                  <div key={relatedJob.id} className="border rounded-lg p-3">
-                    <Link href={`/jobs/${relatedJob.id}`}>
-                      <h4 className="font-medium hover:text-accent transition-colors">{relatedJob.title}</h4>
-                    </Link>
-                    <p className="text-sm text-muted-foreground">{relatedJob.company}</p>
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="text-sm text-muted-foreground">{relatedJob.location}</span>
-                      <span className="text-sm font-medium text-accent">{formatEuroText(relatedJob.salary)}</span>
-                    </div>
-                  </div>
-                ))}
+                {loadingRelated ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">Loading similar jobs...</p>
+                ) : relatedJobs.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">No similar jobs found</p>
+                ) : (
+                  relatedJobs.map((relatedJob) => {
+                    const salaryText = relatedJob.salary?.text || (
+                      relatedJob.salary?.min || relatedJob.salary?.max
+                        ? `€${relatedJob.salary?.min?.toLocaleString() || ''} - €${relatedJob.salary?.max?.toLocaleString() || ''}`
+                        : null
+                    )
+                    return (
+                      <div key={`${relatedJob.source}-${relatedJob.externalId || relatedJob.id}`} className="border rounded-lg p-3 hover:bg-muted/50 transition-colors">
+                        <Link 
+                          href={`/jobs/${encodeURIComponent(relatedJob.externalId || relatedJob.id)}?source=${encodeURIComponent(relatedJob.source)}`}
+                          onClick={() => {
+                            try {
+                              const key = `job:${relatedJob.source}:${relatedJob.externalId || relatedJob.id}`
+                              sessionStorage.setItem(key, JSON.stringify(relatedJob))
+                            } catch {}
+                          }}
+                        >
+                          <h4 className="font-medium hover:text-accent transition-colors">{relatedJob.title}</h4>
+                        </Link>
+                        <p className="text-sm text-muted-foreground">{relatedJob.company}</p>
+                        <div className="flex items-center justify-between mt-2">
+                          <span className="text-sm text-muted-foreground truncate">{relatedJob.location}</span>
+                          {salaryText && (
+                            <span className="text-sm font-medium text-accent">{salaryText}</span>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })
+                )}
                 <Button variant="outline" className="w-full bg-transparent" asChild>
                   <Link href="/jobs">View All Jobs</Link>
                 </Button>
