@@ -193,30 +193,30 @@ export default function DealDetailPage() {
     <div className="min-h-screen">
       <Header />
 
-      <main className="pt-24 container mx-auto px-4 py-8">
+      <main className="pt-20 sm:pt-24 container mx-auto px-3 sm:px-4 py-4 sm:py-8">
         {/* Back Button */}
-        <div className="mb-6">
-          <Button variant="ghost" asChild className="p-0 h-auto font-normal text-muted-foreground hover:text-foreground">
+        <div className="mb-4 sm:mb-6">
+          <Button variant="ghost" asChild className="p-0 h-auto font-normal text-muted-foreground hover:text-foreground text-sm sm:text-base">
             <Link href="/deals" className="inline-flex items-center">
-              <ArrowLeft className="mr-2 h-4 w-4" />
+              <ArrowLeft className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
               Back to Deals
             </Link>
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2">
             <Card>
-              <CardContent className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <CardContent className="p-4 sm:p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   {/* Product Images & Videos */}
                   <div>
                     <div className="relative mb-4">
                       <img
                         src={currentImage || "/placeholder.svg?height=400&width=400"}
                         alt={deal.title}
-                        className="w-full h-80 object-contain bg-muted rounded-lg"
+                        className="w-full h-48 sm:h-64 md:h-80 object-contain bg-muted rounded-lg"
                       />
                       <div className="absolute top-4 left-4">
                         <Badge className="bg-red-600 text-white">-{deal.discount}%</Badge>
@@ -283,9 +283,9 @@ export default function DealDetailPage() {
 
                   {/* Product Info */}
                   <div>
-                    <div className="flex items-start justify-between mb-4">
+                    <div className="space-y-4">
                       <div>
-                        <h1 className="text-2xl font-bold">
+                        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold leading-tight">
                           <a
                             href={sourceUrl}
                             target="_blank"
@@ -303,16 +303,18 @@ export default function DealDetailPage() {
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <Button variant="default" size="sm" asChild>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Button variant="default" size="sm" className="flex-1 sm:flex-none" asChild>
                           <Link href={sourceUrl} target="_blank">
                             <ExternalLink className="h-4 w-4 mr-1" />
-                            Visit Source
+                            <span className="hidden sm:inline">Visit Source</span>
+                            <span className="sm:hidden">Visit</span>
                           </Link>
                         </Button>
                         <Button 
                           variant="outline" 
                           size="sm"
+                          className="flex-shrink-0"
                           onClick={async () => {
                             if (!deal) return
                             try {
@@ -343,26 +345,26 @@ export default function DealDetailPage() {
                         >
                           <Heart className="h-4 w-4" />
                         </Button>
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" className="flex-shrink-0">
                           <Share2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
 
-                    <div className="space-y-4">
+                    <div className="space-y-4 mt-4">
                       <div>
-                        <div className="flex items-center space-x-3">
-                          <span className="text-3xl font-bold text-accent">{formatEuro(deal.currentPrice)}</span>
-                          <span className="text-lg text-muted-foreground line-through">{formatEuro(deal.originalPrice)}</span>
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                          <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-accent">{formatEuro(deal.currentPrice)}</span>
+                          <span className="text-base sm:text-lg text-muted-foreground line-through">{formatEuro(deal.originalPrice)}</span>
                         </div>
                         <div className="flex items-center mt-2 text-green-600">
                           <TrendingDown className="h-4 w-4 mr-1" />
-                          <span className="font-medium">You save {formatEuro(deal.originalPrice - deal.currentPrice)}</span>
+                          <span className="text-sm sm:text-base font-medium">You save {formatEuro(deal.originalPrice - deal.currentPrice)}</span>
                         </div>
                       </div>
 
-                      <div className="flex items-center space-x-2">
-                        <Badge variant="outline">{deal.category}</Badge>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge variant="outline" className="text-xs sm:text-sm">{deal.category}</Badge>
                       </div>
 
                       {/* Size & Color Variants */}
@@ -407,29 +409,29 @@ export default function DealDetailPage() {
                       )}
 
                       {offer && (
-                        <div className="bg-muted/50 p-4 rounded-lg">
-                          <h3 className="font-semibold mb-2 flex items-center">
+                        <div className="bg-muted/50 p-3 sm:p-4 rounded-lg">
+                          <h3 className="text-sm sm:text-base font-semibold mb-3 flex items-center">
                             <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
                             {offer.offer_badge || 'Available at'}
                           </h3>
-                          <div className="flex items-center justify-between">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                             <div className="flex items-center space-x-2">
                               {offer.store_favicon && (
                                 <img
                                   src={offer.store_favicon}
                                   alt={offer.store_name}
-                                  className="w-6 h-6 rounded"
+                                  className="w-6 h-6 rounded flex-shrink-0"
                                 />
                               )}
-                              <div>
-                                <span className="font-medium block">{offer.store_name}</span>
-                                <div className="flex items-center text-sm text-muted-foreground">
+                              <div className="min-w-0">
+                                <span className="font-medium block text-sm sm:text-base truncate">{offer.store_name}</span>
+                                <div className="flex items-center text-xs sm:text-sm text-muted-foreground">
                                   <Star className="h-3 w-3 fill-yellow-400 text-yellow-400 mr-1" />
                                   {offer.store_rating} ({offer.store_review_count} reviews)
                                 </div>
                               </div>
                             </div>
-                            <Button asChild>
+                            <Button asChild className="w-full sm:w-auto flex-shrink-0">
                               <Link href={offer.offer_page_url} target="_blank">
                                 <ExternalLink className="h-4 w-4 mr-2" />
                                 Buy Now
@@ -445,11 +447,11 @@ export default function DealDetailPage() {
                 <Separator className="my-6" />
 
                 {/* Description */}
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   <div>
-                    <h2 className="text-xl font-semibold mb-3">Product Description</h2>
+                    <h2 className="text-lg sm:text-xl font-semibold mb-3">Product Description</h2>
                     <div className="prose prose-sm max-w-none">
-                      <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed">{deal.description}</pre>
+                      <pre className="whitespace-pre-wrap font-sans text-sm sm:text-base leading-relaxed">{deal.description}</pre>
                     </div>
                   </div>
 
@@ -459,8 +461,8 @@ export default function DealDetailPage() {
                       
                       {/* Product Attributes */}
                       <div>
-                        <h2 className="text-xl font-semibold mb-3">Product Attributes</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <h2 className="text-lg sm:text-xl font-semibold mb-3">Product Attributes</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3">
                           {Object.entries(attributes).slice(0, 20).map(([key, value]) => (
                             <div key={key} className="flex justify-between py-2 border-b">
                               <span className="font-medium text-sm">{key}</span>

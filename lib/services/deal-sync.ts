@@ -251,6 +251,11 @@ export class DealSyncService {
       })
 
       if (!response.ok) {
+        // Handle rate limiting gracefully
+        if (response.status === 429) {
+          console.warn('⚠️ [DealSync] RapidAPI rate limit reached (429). Skipping this source.')
+          return []
+        }
         throw new Error(`RapidAPI returned ${response.status}`)
       }
 

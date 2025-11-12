@@ -87,7 +87,7 @@ export default function JobsPage() {
               </div>
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-green-600" />
-                <span>{Object.keys(meta.sources).length} Sources</span>
+                <span>10+ Sources</span>
               </div>
               {meta.cached && (
                 <Badge variant="secondary" className="text-xs">

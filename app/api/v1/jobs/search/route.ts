@@ -63,6 +63,13 @@ async function handler(req: NextRequest) {
 
         logger.apiResponse('database', 'searchJobs', 0, 200)
 
+        // Calculate source breakdown from jobs
+        const sourcesCounts: Record<string, number> = {}
+        dbResult.jobs.forEach((job: any) => {
+          const source = job.source || 'unknown'
+          sourcesCounts[source] = (sourcesCounts[source] || 0) + 1
+        })
+
         const res = NextResponse.json({
           success: true,
           data: {
@@ -93,7 +100,7 @@ async function handler(req: NextRequest) {
               totalPages: dbResult.totalPages
             },
             meta: {
-              sources: { database: dbResult.total },
+              sources: sourcesCounts,
               cached: false,
               fromDatabase: true,
               timestamp: new Date().toISOString()
