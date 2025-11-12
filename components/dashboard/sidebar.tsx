@@ -18,13 +18,20 @@ import {
   ChevronLeft,
   ChevronRight,
   Shield,
+  UserCheck,
+  Gavel,
+  ClipboardList,
+  Megaphone,
+  PenSquare,
+  BarChart2,
 } from "lucide-react"
 
 export function DashboardSidebar() {
   const [collapsed, setCollapsed] = useState(false)
   const pathname = usePathname()
   const { user } = useAuth()
-  const isAdmin = !!(user && ((['admin','supervisor','moderator'] as any).includes((user as any).role) || user.email === 'admin@wirsuchen.com'))
+  const role = (user as any)?.role
+  const isAdmin = !!(user && ((['admin','supervisor','moderator'] as any).includes(role) || user.email === 'admin@wirsuchen.com'))
 
   const navigation = [
     {
@@ -116,6 +123,83 @@ export function DashboardSidebar() {
                 >
                   <Shield className="h-4 w-4 shrink-0" />
                   {!collapsed && <span className="ml-3">Admin</span>}
+                </Link>
+              </li>
+            )}
+            {role === 'supervisor' && (
+              <li>
+                <Link href="/supervisor" className={cn(
+                  "flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                  pathname === "/supervisor" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                )}>
+                  <UserCheck className="h-4 w-4 shrink-0" />
+                  {!collapsed && <span className="ml-3">Supervisor</span>}
+                </Link>
+              </li>
+            )}
+            {role === 'moderator' && (
+              <li>
+                <Link href="/moderator" className={cn(
+                  "flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                  pathname === "/moderator" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                )}>
+                  <Gavel className="h-4 w-4 shrink-0" />
+                  {!collapsed && <span className="ml-3">Moderator</span>}
+                </Link>
+              </li>
+            )}
+            {role === 'lister' && (
+              <li>
+                <Link href="/lister" className={cn(
+                  "flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                  pathname === "/lister" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                )}>
+                  <ClipboardList className="h-4 w-4 shrink-0" />
+                  {!collapsed && <span className="ml-3">Lister</span>}
+                </Link>
+              </li>
+            )}
+            {role === 'publisher' && (
+              <li>
+                <Link href="/publisher" className={cn(
+                  "flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                  pathname === "/publisher" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                )}>
+                  <Megaphone className="h-4 w-4 shrink-0" />
+                  {!collapsed && <span className="ml-3">Publisher</span>}
+                </Link>
+              </li>
+            )}
+            {role === 'blogger' && (
+              <li>
+                <Link href="/blogger" className={cn(
+                  "flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                  pathname === "/blogger" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                )}>
+                  <PenSquare className="h-4 w-4 shrink-0" />
+                  {!collapsed && <span className="ml-3">Blogger</span>}
+                </Link>
+              </li>
+            )}
+            {role === 'editor' && (
+              <li>
+                <Link href="/editor" className={cn(
+                  "flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                  pathname === "/editor" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                )}>
+                  <PenSquare className="h-4 w-4 shrink-0" />
+                  {!collapsed && <span className="ml-3">Editor</span>}
+                </Link>
+              </li>
+            )}
+            {role === 'analyst' && (
+              <li>
+                <Link href="/analyst" className={cn(
+                  "flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                  pathname === "/analyst" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                )}>
+                  <BarChart2 className="h-4 w-4 shrink-0" />
+                  {!collapsed && <span className="ml-3">Analyst</span>}
                 </Link>
               </li>
             )}
