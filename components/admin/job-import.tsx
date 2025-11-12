@@ -94,6 +94,11 @@ export function JobImportManager() {
           source: importForm.source,
           params: {
             ...importForm.params,
+            // Map UI 'any' selection to undefined so backend treats it as not filtered
+            employment_type:
+              importForm.params.employment_type && importForm.params.employment_type !== 'any'
+                ? importForm.params.employment_type
+                : undefined,
             salary_min: importForm.params.salary_min ? parseInt(importForm.params.salary_min) : undefined,
             salary_max: importForm.params.salary_max ? parseInt(importForm.params.salary_max) : undefined
           },
@@ -312,7 +317,7 @@ export function JobImportManager() {
                       <SelectValue placeholder="Any type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Any type</SelectItem>
+                      <SelectItem value="any">Any type</SelectItem>
                       <SelectItem value="full_time">Full Time</SelectItem>
                       <SelectItem value="part_time">Part Time</SelectItem>
                       <SelectItem value="contract">Contract</SelectItem>
