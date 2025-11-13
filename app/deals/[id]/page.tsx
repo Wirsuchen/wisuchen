@@ -29,6 +29,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { formatEuro, formatEuroText } from "@/lib/utils"
+import { useToast } from "@/hooks/use-toast"
 
 interface DealDetail {
   id: string
@@ -89,6 +90,7 @@ export default function DealDetailPage() {
   const [selectedColor, setSelectedColor] = useState<string | null>(null)
   const [dealId, setDealId] = useState<string | null>(null)
   const routeParams = useParams<{ id: string }>()
+  const { toast } = useToast()
 
   useEffect(() => {
     if (!routeParams) return
@@ -187,6 +189,106 @@ export default function DealDetailPage() {
       return `€${numPrice.toFixed(2)}`
     }
     return `€${price.toFixed(2)}`
+  }
+
+  const handleShareDeal = async () => {
+    if (!deal || typeof window === 'undefined') return
+
+    const shareUrl = `${window.location.origin}/deals/${deal.id}`
+    const shareTitle = `${deal.title} - ${formatEuro(deal.currentPrice)}`
+    const shareText = `Check out this great deal: ${deal.title} for ${formatEuro(deal.currentPrice)} (${deal.discount}% off!)`
+
+    // Try Web Share API first (mobile/native)
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share({
+          title: shareTitle,
+          text: shareText,
+          url: shareUrl,
+        })
+        toast({
+          title: 'Shared!',
+          description: 'Deal shared successfully',
+        })
+        return
+      } catch (error: any) {
+        // User cancelled or error occurred, fall through to clipboard
+        if (error.name !== 'AbortError') {
+          console.error('Error sharing:', error)
+        }
+      }
+    }
+
+    // Fallback to clipboard
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      try {
+        await navigator.clipboard.writeText(`${shareTitle}\n${shareText}\n${shareUrl}`)
+        toast({
+          title: 'Link copied!',
+          description: 'Deal link has been copied to your clipboard',
+        })
+      } catch (error) {
+        console.error('Error copying to clipboard:', error)
+        // Final fallback: show URL in alert
+        const fallbackText = `${shareTitle}\n${shareText}\n${shareUrl}`
+        if (window.prompt('Copy this link:', fallbackText)) {
+          toast({
+            title: 'Link ready',
+            description: 'Please copy the link manually',
+          })
+        }
+      }
+    } else {
+      // Fallback for browsers without clipboard API
+      const fallbackText = `${shareTitle}\n${shareText}\n${shareUrl}`
+      if (window.prompt('Copy this link:', fallbackText)) {
+        toast({
+          title: 'Link ready',
+          description: 'Please copy the link manually',
+        })
+      }
+    }
+  }
+
+  const handleSaveDeal = async () => {
+    if (!deal) return
+    try {
+      const response = await fetch('/api/saved/deals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: deal.id,
+          title: deal.title,
+          description: deal.description || '',
+          currentPrice: deal.currentPrice,
+          originalPrice: deal.originalPrice,
+          image: deal.image,
+          url: deal.url,
+          store: deal.store,
+          category: deal.category,
+        }),
+      })
+      const data = await response.json()
+      if (data.success) {
+        toast({
+          title: 'Deal saved!',
+          description: 'This deal has been added to your saved deals',
+        })
+      } else {
+        toast({
+          title: 'Error',
+          description: data.error || 'Failed to save deal',
+          variant: 'destructive',
+        })
+      }
+    } catch (error) {
+      console.error('Error saving deal:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to save deal. Please try again.',
+        variant: 'destructive',
+      })
+    }
   }
 
   return (
@@ -345,7 +447,12 @@ export default function DealDetailPage() {
                         >
                           <Heart className="h-4 w-4" />
                         </Button>
-                        <Button variant="outline" size="sm" className="flex-shrink-0">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="flex-shrink-0"
+                          onClick={handleShareDeal}
+                        >
                           <Share2 className="h-4 w-4" />
                         </Button>
                       </div>
@@ -551,11 +658,19 @@ export default function DealDetailPage() {
                     </Button>
                   )
                 )}
-                <Button variant="outline" className="w-full bg-transparent">
+                <Button 
+                  variant="outline" 
+                  className="w-full bg-transparent"
+                  onClick={handleSaveDeal}
+                >
                   <Heart className="h-4 w-4 mr-2" />
                   Save Deal
                 </Button>
-                <Button variant="outline" className="w-full bg-transparent">
+                <Button 
+                  variant="outline" 
+                  className="w-full bg-transparent"
+                  onClick={handleShareDeal}
+                >
                   <Share2 className="h-4 w-4 mr-2" />
                   Share Deal
                 </Button>
