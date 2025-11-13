@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -33,6 +33,35 @@ export function DashboardSidebar() {
   const { user, logout } = useAuth()
   const role = (user as any)?.role
   const isAdmin = !!(user && ((['admin','supervisor','moderator'] as any).includes(role) || user.email === 'admin@wirsuchen.com'))
+
+  useEffect(() => {
+    let created = false
+    const tryInit = () => {
+      const w: any = window as any
+      if (w.google?.translate?.TranslateElement && !created) {
+        try {
+          new w.google.translate.TranslateElement({
+            pageLanguage: 'en',
+            autoDisplay: false,
+            includedLanguages: 'de,en,fr,it',
+            layout: w.google.translate.TranslateElement.InlineLayout.SIMPLE,
+          }, 'google_translate_element_sidebar')
+          created = true
+        } catch {}
+      }
+    }
+    try {
+      const existing = document.querySelector('script[src*="translate_a/element.js"]')
+      if (!existing) {
+        const s = document.createElement('script')
+        s.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit'
+        document.body.appendChild(s)
+      }
+    } catch {}
+    const id = window.setInterval(tryInit, 500)
+    tryInit()
+    return () => window.clearInterval(id)
+  }, [])
 
   const navigation = [
     {
@@ -247,6 +276,9 @@ export function DashboardSidebar() {
                   <LogOut className="h-4 w-4 mr-2" />
                   Logout
                 </Button>
+                <div className="mt-3">
+                  <div id="google_translate_element_sidebar" className="min-h-[38px]" />
+                </div>
               </CardContent>
             </Card>
           </div>
