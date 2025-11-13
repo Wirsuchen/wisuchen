@@ -24,12 +24,13 @@ import {
   Megaphone,
   PenSquare,
   BarChart2,
+  LogOut,
 } from "lucide-react"
 
 export function DashboardSidebar() {
   const [collapsed, setCollapsed] = useState(false)
   const pathname = usePathname()
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
   const role = (user as any)?.role
   const isAdmin = !!(user && ((['admin','supervisor','moderator'] as any).includes(role) || user.email === 'admin@wirsuchen.com'))
 
@@ -237,6 +238,15 @@ export function DashboardSidebar() {
                     Settings
                   </Button>
                 </Link>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full mt-2 bg-transparent"
+                  onClick={logout}
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
+                </Button>
               </CardContent>
             </Card>
           </div>

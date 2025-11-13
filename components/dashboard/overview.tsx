@@ -208,7 +208,7 @@ export function DashboardOverview() {
           <CardDescription>{t('dashboard.commonTasks', 'Common tasks and shortcuts')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <Button asChild className="h-auto p-4 flex-col space-y-2">
               <Link href="/jobs/post">
                 <Briefcase className="h-6 w-6" />
@@ -216,21 +216,9 @@ export function DashboardOverview() {
               </Link>
             </Button>
             <Button variant="outline" asChild className="h-auto p-4 flex-col space-y-2 bg-transparent">
-              <Link href="/dashboard/my-invoices">
-                <FileText className="h-6 w-6" />
-                <span>{t('dashboard.createInvoice', 'Create Invoice')}</span>
-              </Link>
-            </Button>
-            <Button variant="outline" asChild className="h-auto p-4 flex-col space-y-2 bg-transparent">
               <Link href="/dashboard/stats">
                 <TrendingUp className="h-6 w-6" />
                 <span>{t('dashboard.viewAnalytics', 'View Analytics')}</span>
-              </Link>
-            </Button>
-            <Button variant="outline" asChild className="h-auto p-4 flex-col space-y-2 bg-transparent border-blue-500/50 hover:bg-blue-500/10">
-              <Link href="/api-test">
-                <TestTube className="h-6 w-6 text-blue-600" />
-                <span>{t('dashboard.apiTesting', 'API Testing')}</span>
               </Link>
             </Button>
           </div>

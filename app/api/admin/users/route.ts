@@ -12,8 +12,8 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const role = searchParams.get('role') || undefined
 
-  let query = supabase.from('profiles').select('id, user_id, email, full_name, role, created_at').order('created_at', { ascending: false })
-  if (role) query = query.eq('role', role)
+  let query = supabase.from('profiles').select('id, user_id, email, full_name, role, created_at, is_subscribed, plan').order('created_at', { ascending: false })
+  if (role) query = query.eq('role', role as any)
 
   const { data, error } = await query
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
@@ -29,10 +29,16 @@ export async function PUT(request: NextRequest) {
   if (!me || !['supervisor', 'admin'].includes(me.role as string)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   const body = await request.json()
-  const { profile_id, role } = body
-  if (!profile_id || !role) return NextResponse.json({ error: 'Missing profile_id or role' }, { status: 400 })
+  const { profile_id, role, is_subscribed, plan } = body
+  if (!profile_id) return NextResponse.json({ error: 'Missing profile_id' }, { status: 400 })
 
-  const { error } = await supabase.from('profiles').update({ role }).eq('id', profile_id)
+  const update: Record<string, any> = {}
+  if (role) update.role = role
+  if (typeof is_subscribed === 'boolean') update.is_subscribed = is_subscribed
+  if (typeof plan === 'string' && plan.length > 0) update.plan = plan
+  if (Object.keys(update).length === 0) return NextResponse.json({ error: 'No fields to update' }, { status: 400 })
+
+  const { error } = await supabase.from('profiles').update(update).eq('id', profile_id)
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
   return NextResponse.json({ success: true })
 }

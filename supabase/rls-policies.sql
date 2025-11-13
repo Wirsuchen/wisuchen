@@ -180,9 +180,9 @@ CREATE POLICY "invoices_select_company" ON invoices
 CREATE POLICY "invoices_select_admin" ON invoices
     FOR SELECT USING (is_admin());
 
--- System can create invoices (for automated billing)
-CREATE POLICY "invoices_insert_system" ON invoices
-    FOR INSERT WITH CHECK (true);
+-- Only admins can create invoices (service role can still bypass RLS for webhooks)
+CREATE POLICY "invoices_insert_admin" ON invoices
+    FOR INSERT WITH CHECK (is_admin());
 
 -- Only admins can update invoices
 CREATE POLICY "invoices_update_admin" ON invoices

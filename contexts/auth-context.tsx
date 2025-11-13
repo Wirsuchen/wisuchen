@@ -12,6 +12,8 @@ interface User {
   company?: string
   role?: string
   avatar?: string
+  isSubscribed?: boolean
+  plan?: string
 }
 
 interface AuthContextType {
@@ -39,15 +41,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         if (session?.user) {
           setSupabaseUser(session.user)
-          // Map Supabase user to our User interface
-          setUser({
-            id: session.user.id,
-            email: session.user.email || '',
-            name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
-            avatar: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || undefined,
-            role: session.user.user_metadata?.role || 'user',
-            company: session.user.user_metadata?.company || undefined,
-          })
+          try {
+            const res = await fetch('/api/me', { cache: 'no-store' })
+            if (res.ok) {
+              const me = await res.json()
+              setUser({
+                id: me.id || session.user.id,
+                email: me.email || session.user.email || '',
+                name: me.name || session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
+                avatar: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || undefined,
+                role: me.role || session.user.user_metadata?.role || 'user',
+                company: session.user.user_metadata?.company || undefined,
+                isSubscribed: !!me.is_subscribed,
+                plan: me.plan || 'free',
+              })
+            } else {
+              setUser({
+                id: session.user.id,
+                email: session.user.email || '',
+                name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
+                avatar: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || undefined,
+                role: session.user.user_metadata?.role || 'user',
+                company: session.user.user_metadata?.company || undefined,
+                isSubscribed: false,
+                plan: 'free',
+              })
+            }
+          } catch {
+            setUser({
+              id: session.user.id,
+              email: session.user.email || '',
+              name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
+              avatar: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || undefined,
+              role: session.user.user_metadata?.role || 'user',
+              company: session.user.user_metadata?.company || undefined,
+              isSubscribed: false,
+              plan: 'free',
+            })
+          }
         } else {
           setUser(null)
           setSupabaseUser(null)
@@ -65,14 +96,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
         setSupabaseUser(session.user)
-        setUser({
-          id: session.user.id,
-          email: session.user.email || '',
-          name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
-          avatar: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || undefined,
-          role: session.user.user_metadata?.role || 'user',
-          company: session.user.user_metadata?.company || undefined,
-        })
+        try {
+          const res = await fetch('/api/me', { cache: 'no-store' })
+          if (res.ok) {
+            const me = await res.json()
+            setUser({
+              id: me.id || session.user.id,
+              email: me.email || session.user.email || '',
+              name: me.name || session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
+              avatar: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || undefined,
+              role: me.role || session.user.user_metadata?.role || 'user',
+              company: session.user.user_metadata?.company || undefined,
+              isSubscribed: !!me.is_subscribed,
+              plan: me.plan || 'free',
+            })
+          } else {
+            setUser({
+              id: session.user.id,
+              email: session.user.email || '',
+              name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
+              avatar: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || undefined,
+              role: session.user.user_metadata?.role || 'user',
+              company: session.user.user_metadata?.company || undefined,
+              isSubscribed: false,
+              plan: 'free',
+            })
+          }
+        } catch {
+          setUser({
+            id: session.user.id,
+            email: session.user.email || '',
+            name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
+            avatar: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || undefined,
+            role: session.user.user_metadata?.role || 'user',
+            company: session.user.user_metadata?.company || undefined,
+            isSubscribed: false,
+            plan: 'free',
+          })
+        }
       } else {
         setUser(null)
         setSupabaseUser(null)

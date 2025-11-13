@@ -26,12 +26,15 @@ import { formatEuroText } from "@/lib/utils"
 import { useSearchParams } from "next/navigation"
 import type { Job } from "@/hooks/use-jobs"
 import { fetchWithCache } from "@/lib/utils/client-cache"
+import { useAuth } from "@/contexts/auth-context"
 
 export default function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const [isImproving, setIsImproving] = useState(false)
   const [improvedDescription, setImprovedDescription] = useState("")
   const searchParams = useSearchParams()
   const [jobId, setJobId] = useState<string | null>(null)
+  const { user } = useAuth()
+  const canUseAI = !!(user && (user.isSubscribed || ['pro','premium'].includes(user.plan || '')))
 
   type ExtJob = Job & {
     logo?: string
@@ -283,20 +286,27 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
                   </div>
 
                   {/* AI Improve Description */}
-                  <div className="border rounded-lg p-4 bg-muted/50">
+                  <div className={`border rounded-lg p-4 bg-muted/50 ${!canUseAI ? 'opacity-60' : ''}`}>
                     <div className="flex items-center justify-between mb-3">
                       <h4 className="font-semibold flex items-center">
                         <Sparkles className="h-4 w-4 mr-2 text-accent" />
                         AI-Enhanced Description
                       </h4>
-                      <Button
-                        onClick={handleImproveDescription}
-                        disabled={isImproving}
-                        size="sm"
-                        className="bg-accent text-accent-foreground"
-                      >
-                        {isImproving ? "Improving..." : "Improve with AI"}
-                      </Button>
+                      <div className="flex items-center gap-3">
+                        {!canUseAI && (
+                          <Link href="/pricing" className="text-xs text-muted-foreground hover:underline">Upgrade to use</Link>
+                        )}
+                        <Button
+                          onClick={handleImproveDescription}
+                          disabled={isImproving || !canUseAI}
+                          size="sm"
+                          className="bg-accent text-accent-foreground"
+                          aria-disabled={!canUseAI}
+                          title={!canUseAI ? 'Available for subscribers only' : undefined}
+                        >
+                          {isImproving ? "Improving..." : "Improve with AI"}
+                        </Button>
+                      </div>
                     </div>
                     {improvedDescription ? (
                       <div className="prose prose-sm max-w-none">
@@ -306,8 +316,9 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
                       </div>
                     ) : (
                       <p className="text-sm text-muted-foreground">
-                        Click "Improve with AI" to see an enhanced version of this job description with better
-                        formatting and more engaging language.
+                        {canUseAI
+                          ? 'Click "Improve with AI" to see an enhanced version of this job description with better formatting and more engaging language.'
+                          : 'This feature is available for subscribers. Upgrade to unlock AI-enhanced descriptions.'}
                       </p>
                     )}
                   </div>
@@ -422,54 +433,57 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
               </CardContent>
             </Card>
 
-            {/* Related Jobs */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Similar Jobs</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {loadingRelated ? (
-                  <p className="text-sm text-muted-foreground text-center py-4">Loading similar jobs...</p>
-                ) : relatedJobs.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-4">No similar jobs found</p>
-                ) : (
-                  relatedJobs.map((relatedJob) => {
-                    const salaryText = relatedJob.salary?.text || (
-                      relatedJob.salary?.min || relatedJob.salary?.max
-                        ? `€${relatedJob.salary?.min?.toLocaleString() || ''} - €${relatedJob.salary?.max?.toLocaleString() || ''}`
-                        : null
-                    )
-                    return (
-                      <div key={`${relatedJob.source}-${relatedJob.externalId || relatedJob.id}`} className="border rounded-lg p-3 hover:bg-muted/50 transition-colors">
-                        <Link 
-                          href={`/jobs/${encodeURIComponent(relatedJob.externalId || relatedJob.id)}?source=${encodeURIComponent(relatedJob.source)}`}
-                          onClick={() => {
-                            try {
-                              const key = `job:${relatedJob.source}:${relatedJob.externalId || relatedJob.id}`
-                              sessionStorage.setItem(key, JSON.stringify(relatedJob))
-                            } catch {}
-                          }}
-                        >
-                          <h4 className="font-medium hover:text-accent transition-colors">{relatedJob.title}</h4>
-                        </Link>
-                        <p className="text-sm text-muted-foreground">{relatedJob.company}</p>
-                        <div className="flex items-center justify-between mt-2">
-                          <span className="text-sm text-muted-foreground truncate">{relatedJob.location}</span>
-                          {salaryText && (
-                            <span className="text-sm font-medium text-accent">{salaryText}</span>
-                          )}
-                        </div>
-                      </div>
-                    )
-                  })
-                )}
-                <Button variant="outline" className="w-full bg-transparent" asChild>
-                  <Link href="/jobs">View All Jobs</Link>
-                </Button>
-              </CardContent>
-            </Card>
+            {/* Related Jobs moved to full-width section below */}
           </div>
         </div>
+        {/* Recommended Jobs - full width, 3 in a row */}
+        <section className="mt-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">Recommended Jobs</h2>
+            <Button variant="outline" className="bg-transparent" asChild>
+              <Link href="/jobs">View All</Link>
+            </Button>
+          </div>
+          {loadingRelated ? (
+            <p className="text-sm text-muted-foreground text-center py-6">Loading recommended jobs...</p>
+          ) : relatedJobs.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-6">No recommendations available</p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {relatedJobs.map((relatedJob) => {
+                const salaryText = relatedJob.salary?.text || (
+                  relatedJob.salary?.min || relatedJob.salary?.max
+                    ? `€${relatedJob.salary?.min?.toLocaleString() || ''} - €${relatedJob.salary?.max?.toLocaleString() || ''}`
+                    : null
+                )
+                return (
+                  <Card key={`${relatedJob.source}-${relatedJob.externalId || relatedJob.id}`} className="hover:bg-muted/50 transition-colors">
+                    <CardContent className="p-4">
+                      <Link
+                        href={`/jobs/${encodeURIComponent(relatedJob.externalId || relatedJob.id)}?source=${encodeURIComponent(relatedJob.source)}`}
+                        onClick={() => {
+                          try {
+                            const key = `job:${relatedJob.source}:${relatedJob.externalId || relatedJob.id}`
+                            sessionStorage.setItem(key, JSON.stringify(relatedJob))
+                          } catch {}
+                        }}
+                      >
+                        <h4 className="font-medium hover:text-accent transition-colors line-clamp-2">{relatedJob.title}</h4>
+                      </Link>
+                      <p className="text-sm text-muted-foreground mt-1">{relatedJob.company}</p>
+                      <div className="flex items-center justify-between mt-2">
+                        <span className="text-sm text-muted-foreground truncate mr-2">{relatedJob.location}</span>
+                        {salaryText && (
+                          <span className="text-sm font-medium text-accent">{salaryText}</span>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+              })}
+            </div>
+          )}
+        </section>
       </main>
 
       <Footer />

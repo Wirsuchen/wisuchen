@@ -17,21 +17,34 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { LanguageSwitcher } from "@/components/ui/language-switcher"
-import { useLocale, useTranslation } from "@/contexts/i18n-context"
 
 export function Header() {
   const [searchType, setSearchType] = useState("jobs")
   const [isOpen, setIsOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const { user, logout } = useAuth()
-  const locale = useLocale()
-  const { t } = useTranslation()
+  const [translateLoaded, setTranslateLoaded] = useState(false)
+  const [showTranslate, setShowTranslate] = useState(false)
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20)
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
+
+  useEffect(() => {
+    ;(window as any).googleTranslateElementInit = () => {
+      try {
+        // @ts-ignore
+        new (window as any).google.translate.TranslateElement({
+          pageLanguage: 'en',
+          autoDisplay: false,
+          includedLanguages: 'de,en,fr,it',
+          layout: (window as any).google.translate.TranslateElement.InlineLayout.SIMPLE,
+        }, 'google_translate_element')
+        setTranslateLoaded(true)
+      } catch {}
+    }
   }, [])
 
   // Lock background scroll when mobile menu is open
@@ -51,11 +64,11 @@ export function Header() {
   }, [isOpen])
 
   const navigation = [
-    { name: t('nav.jobs'), href: "/jobs" },
-    { name: t('nav.deals'), href: "/deals" },
-    { name: t('nav.blog'), href: "/blog" },
-    { name: t('pricing.title'), href: "/pricing" },
-    { name: t('footer.support'), href: "/support" },
+    { name: 'Jobs', href: "/jobs" },
+    { name: 'Deals', href: "/deals" },
+    { name: 'Blog', href: "/blog" },
+    { name: 'Pricing', href: "/pricing" },
+    { name: 'Support', href: "/support" },
   ]
 
   // Inline style ensures a robust blur + saturation fallback (works better in Safari)
@@ -79,19 +92,19 @@ export function Header() {
           className={`transition-all duration-300 mx-0 ${isScrolled ? "my-2" : "my-4"
             } rounded-2xl bg-clip-padding bg-white/6 dark:bg-gray-900/30 backdrop-blur-md border border-white/10 dark:border-gray-800/30 shadow-sm`}
         >
-          <div className="flex h-14 sm:h-16 items-center justify-between px-4 sm:px-6">
+          <div className="flex h-20 sm:h-24 md:h-28 items-center justify-between px-4 sm:px-6">
             {/* Logo - Mobile First */}
             <Link href="/" className="flex items-center space-x-2 flex-shrink-0 relative z-10">
-  <div className="w-16 h-16 flex items-center justify-center overflow-hidden">
+  <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 flex items-center justify-center overflow-hidden">
     <Image
       src="/logo.png"
       alt="Logo"
-      width={120}
-      height={120}
+      width={192}
+      height={192}
       className="object-contain"
     />
   </div>
-  <span className="text-lg sm:text-xl font-bold tracking-tighter hidden xs:block text-foreground">
+  <span className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tighter hidden xs:block text-foreground">
     WIRsuchen
   </span>
 </Link>
@@ -143,11 +156,11 @@ export function Header() {
             </div>
 
             {/* Right Actions - Mobile First */}
-            <div className="flex items-center space-x-1">
+            <div className="flex items-center space-x-1 relative">
               <Link href="/saved" className="hidden md:block">
                 <Button variant="ghost" size="sm" className="h-8 px-3 text-foreground hover:bg-accent hover:text-accent-foreground">
                   <Heart className="h-4 w-4 mr-2" />
-                  <span className="hidden lg:inline">{t('jobs.save')}</span>
+                  <span className="hidden lg:inline">Save</span>
                 </Button>
               </Link>
 
@@ -156,7 +169,7 @@ export function Header() {
                   <Link href="/dashboard" className="hidden md:block">
                     <Button variant="ghost" size="sm" className="h-8 px-3 text-foreground hover:bg-accent hover:text-accent-foreground">
                       <ShoppingBag className="h-4 w-4 mr-2" />
-                      <span className="hidden lg:inline">{t('nav.dashboard')}</span>
+                      <span className="hidden lg:inline">Dashboard</span>
                     </Button>
                   </Link>
 
@@ -174,15 +187,15 @@ export function Header() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48 bg-white/6 dark:bg-gray-900/30 backdrop-blur-md border border-white/10 dark:border-gray-800/30">
                       <DropdownMenuItem asChild>
-                        <Link href="/dashboard/profile" className="text-foreground">{t('nav.profile')}</Link>
+                        <Link href="/dashboard/profile" className="text-foreground">Profile</Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
-                        <Link href="/dashboard" className="text-foreground">{t('nav.dashboard')}</Link>
+                        <Link href="/dashboard" className="text-foreground">Dashboard</Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={logout} className="text-foreground">
                         <LogOut className="h-4 w-4 mr-2" />
-                        {t('nav.logout')}
+                        Logout
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -192,20 +205,45 @@ export function Header() {
                   <Link href="/login" className="hidden md:block">
                     <Button variant="outline" size="sm" className="h-8 px-3 bg-transparent text-foreground border-white/10 dark:border-gray-800/30 hover:bg-accent hover:text-accent-foreground">
                       <User className="h-4 w-4 mr-2" />
-                      <span className="hidden lg:inline">{t('nav.login')}</span>
+                      <span className="hidden lg:inline">Login</span>
                     </Button>
                   </Link>
                   <Link href="/register" className="hidden md:block">
                     <Button size="sm" className="h-8 px-3 bg-primary text-primary-foreground hover:bg-primary/90">
-                      <span className="hidden lg:inline">{t('nav.register')}</span>
-                      <span className="lg:hidden">{t('nav.register')}</span>
+                      <span className="hidden lg:inline">Register</span>
+                      <span className="lg:hidden">Register</span>
                     </Button>
                   </Link>
                 </>
               )}
 
-              {/* Language Switcher */}
-              <LanguageSwitcher currentLocale={locale} variant="ghost" />
+
+
+              <div className="relative">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 px-3 text-foreground hover:bg-accent hover:text-accent-foreground"
+                  onClick={() => {
+                    try {
+                      const existing = document.querySelector('script[src*="translate_a/element.js"]')
+                      if (!existing) {
+                        const s = document.createElement('script')
+                        s.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit'
+                        document.body.appendChild(s)
+                      }
+                    } catch {}
+                    setShowTranslate((v) => !v)
+                  }}
+                >
+                  Translate
+                </Button>
+                {showTranslate && (
+                  <div className="absolute right-0 mt-2 w-[220px] rounded-md border bg-background p-2 shadow-lg z-50">
+                    <div id="google_translate_element" className="min-h-[38px]" />
+                  </div>
+                )}
+              </div>
 
               {/* Mobile Menu */}
               <Sheet open={isOpen} onOpenChange={setIsOpen}>

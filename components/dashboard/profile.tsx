@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 import { Upload, Save, Camera } from "lucide-react"
+import { toast } from "@/hooks/use-toast"
 
 export function Profile() {
   const [loading, setLoading] = useState(false)
@@ -23,6 +24,10 @@ export function Profile() {
     github_url: "",
     avatar_url: "",
   })
+
+  const [subscription, setSubscription] = useState<{ isSubscribed: boolean; plan: string }>({ isSubscribed: false, plan: 'free' })
+  const [paypalSubId, setPaypalSubId] = useState("")
+  const [unsubscribing, setUnsubscribing] = useState(false)
 
   useEffect(() => {
     ;(async () => {
@@ -41,6 +46,18 @@ export function Profile() {
           github_url: profile.github_url || '',
           avatar_url: profile.avatar_url || '',
         })
+      } catch {}
+    })()
+  }, [])
+
+  useEffect(() => {
+    ;(async () => {
+      try {
+        const res = await fetch('/api/me', { cache: 'no-store' })
+        if (res.ok) {
+          const me = await res.json()
+          setSubscription({ isSubscribed: !!me.is_subscribed, plan: me.plan || 'free' })
+        }
       } catch {}
     })()
   }, [])
@@ -70,6 +87,25 @@ export function Profile() {
   const handleAccountUpdate = () => {
     // Simulate account settings update
     console.log("Updating account settings:", accountSettings)
+  }
+
+  const handleUnsubscribe = async () => {
+    if (!window.confirm('Are you sure you want to unsubscribe and switch to the free plan?')) return
+    setUnsubscribing(true)
+    try {
+      const res = await fetch('/api/subscription', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paypalSubscriptionId: paypalSubId || undefined }),
+      })
+      if (!res.ok) throw new Error('Failed to unsubscribe')
+      setSubscription({ isSubscribed: false, plan: 'free' })
+      toast({ title: 'Unsubscribed', description: 'Your plan was changed to Free.' })
+    } catch (e) {
+      toast({ title: 'Error', description: 'Could not unsubscribe', variant: 'destructive' })
+    } finally {
+      setUnsubscribing(false)
+    }
   }
 
   return (
@@ -347,6 +383,30 @@ export function Profile() {
             <Save className="h-4 w-4 mr-2" />
             {loading ? 'Saving...' : 'Save Settings'}
           </Button>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Subscription</CardTitle>
+          <CardDescription>Manage your subscription plan</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="md:col-span-2">
+              <p className="font-medium">Current Plan</p>
+              <p className="text-sm text-muted-foreground">{subscription.isSubscribed ? (subscription.plan || 'pro') : 'free'}</p>
+            </div>
+            <div>
+              <Label htmlFor="paypalSubId">PayPal Subscription ID (optional)</Label>
+              <Input id="paypalSubId" value={paypalSubId} onChange={(e) => setPaypalSubId(e.target.value)} placeholder="I-XXXX..." />
+            </div>
+          </div>
+          <div className="flex justify-end">
+            <Button variant="outline" className="bg-transparent" disabled={unsubscribing} onClick={handleUnsubscribe}>
+              {unsubscribing ? 'Unsubscribing...' : 'Unsubscribe'}
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>

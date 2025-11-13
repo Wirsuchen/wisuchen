@@ -30,6 +30,7 @@ import {
 } from '@/components/ui/dialog'
 import { useToast } from '@/hooks/use-toast'
 import { Search, UserCog, Shield, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Switch } from '@/components/ui/switch'
 import { format } from 'date-fns'
 
 interface User {
@@ -39,6 +40,8 @@ interface User {
   full_name: string | null
   role: string
   created_at: string
+  is_subscribed?: boolean
+  plan?: string
 }
 
 const ROLES = [
@@ -67,6 +70,7 @@ export function UserManagement() {
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 10
   const { toast } = useToast()
+  const PLANS = ['free','pro','premium']
 
   useEffect(() => {
     fetchUsers()
@@ -93,6 +97,42 @@ export function UserManagement() {
     } finally {
       setLoading(false)
     }
+
+  const updateSubscription = async (profileId: string, next: boolean) => {
+    setUpdating(true)
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ profile_id: profileId, is_subscribed: next })
+      })
+      if (!res.ok) throw new Error('Failed to update subscription')
+      toast({ title: next ? 'Subscribed' : 'Unsubscribed' })
+      fetchUsers()
+    } catch (e) {
+      toast({ title: 'Error', description: 'Could not update subscription', variant: 'destructive' })
+    } finally {
+      setUpdating(false)
+    }
+  }
+
+  const updatePlan = async (profileId: string, plan: string) => {
+    setUpdating(true)
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ profile_id: profileId, plan })
+      })
+      if (!res.ok) throw new Error('Failed to update plan')
+      toast({ title: 'Plan Updated', description: plan })
+      fetchUsers()
+    } catch (e) {
+      toast({ title: 'Error', description: 'Could not update plan', variant: 'destructive' })
+    } finally {
+      setUpdating(false)
+    }
+  }
   }
 
   const filterUsers = () => {
@@ -266,6 +306,8 @@ export function UserManagement() {
                       <TableHead>User</TableHead>
                       <TableHead>Email</TableHead>
                       <TableHead>Role</TableHead>
+                      <TableHead>Subscription</TableHead>
+                      <TableHead>Plan</TableHead>
                       <TableHead>Joined</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
@@ -278,6 +320,25 @@ export function UserManagement() {
                         </TableCell>
                         <TableCell>{user.email}</TableCell>
                         <TableCell>{getRoleBadge(user.role)}</TableCell>
+                        <TableCell>
+                          <Switch
+                            checked={!!user.is_subscribed}
+                            onCheckedChange={(checked) => updateSubscription(user.id, checked)}
+                            disabled={updating}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Select value={user.plan || 'free'} onValueChange={(v) => updatePlan(user.id, v)}>
+                            <SelectTrigger className="w-[140px]">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {PLANS.map(p => (
+                                <SelectItem key={p} value={p}>{p}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
                         <TableCell className="text-muted-foreground">
                           {format(new Date(user.created_at), 'MMM d, yyyy')}
                         </TableCell>
