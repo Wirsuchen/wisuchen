@@ -100,44 +100,70 @@ export default function DealDetailPage() {
 
   useEffect(() => {
     if (!dealId) return
-    fetchDealDetails()
-  }, [dealId])
-
-  const fetchDealDetails = async () => {
-    try {
-      setLoading(true)
-      // Use cache with 1 hour TTL
-      const data = await fetchWithCache<any>(
-        `/api/deals?page=1&limit=50`,
-        undefined,
-        { page: 1, limit: 50 },
-        60 * 60 * 1000
-      )
-      
-      // Find the deal by ID (normalize by decoding both sides)
-      const safeDecode = (v: string) => {
-        try { return decodeURIComponent(v) } catch { return v }
+    
+    let cancelled = false
+    
+    const fetchDealDetails = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        
+        // Use cache with 1 hour TTL
+        const data = await fetchWithCache<any>(
+          `/api/deals?page=1&limit=50`,
+          undefined,
+          { page: 1, limit: 50 },
+          60 * 60 * 1000
+        )
+        
+        // Check if component was unmounted
+        if (cancelled) return
+        
+        // Validate data structure
+        if (!data || typeof data !== 'object') {
+          throw new Error('Invalid response data')
+        }
+        
+        // Find the deal by ID (normalize by decoding both sides)
+        const safeDecode = (v: string) => {
+          try { return decodeURIComponent(v) } catch { return v }
+        }
+        const routeRaw = dealId || ''
+        const routeDec = safeDecode(routeRaw)
+        const deals = Array.isArray(data.deals) ? data.deals : []
+        
+        let foundDeal = deals.find((d: any) => {
+          if (!d || typeof d !== 'object') return false
+          const did = String(d.id || '')
+          const didDec = safeDecode(did)
+          return did === routeRaw || did === routeDec || didDec === routeDec
+        })
+        
+        if (cancelled) return
+        
+        if (foundDeal) {
+          setDeal(foundDeal)
+        } else {
+          setError('Deal not found')
+        }
+      } catch (err: any) {
+        if (cancelled) return
+        console.error('Error fetching deal:', err)
+        setError(err?.message || 'Failed to load deal details')
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
+        }
       }
-      const routeRaw = dealId || ''
-      const routeDec = safeDecode(routeRaw)
-      let foundDeal = data.deals?.find((d: any) => {
-        const did = String(d.id)
-        const didDec = safeDecode(did)
-        return did === routeRaw || did === routeDec || didDec === routeDec
-      })
-      
-      if (foundDeal) {
-        setDeal(foundDeal)
-      } else {
-        setError('Deal not found')
-      }
-    } catch (err) {
-      console.error('Error fetching deal:', err)
-      setError('Failed to load deal details')
-    } finally {
-      setLoading(false)
     }
-  }
+    
+    fetchDealDetails()
+    
+    // Cleanup function to prevent state updates after unmount
+    return () => {
+      cancelled = true
+    }
+  }, [dealId])
 
   if (loading) {
     return (

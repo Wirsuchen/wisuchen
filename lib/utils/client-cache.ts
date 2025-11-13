@@ -193,6 +193,11 @@ export async function fetchWithCache<T>(
   params?: Record<string, any>,
   ttl?: number
 ): Promise<T> {
+  // Check if we're in browser environment
+  if (typeof window === 'undefined') {
+    throw new Error('fetchWithCache can only be used in browser environment')
+  }
+
   // Try to get from cache first
   const cached = getCache<T>(url, params)
   if (cached !== null) {
@@ -201,18 +206,37 @@ export async function fetchWithCache<T>(
 
   // Not in cache or expired, make API call
   console.log('🌐 [Client Cache] Cache MISS, fetching:', { url, params })
-  const response = await fetch(url, options)
   
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-  }
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: options?.signal || (typeof AbortController !== 'undefined' ? new AbortController().signal : undefined),
+    })
+    
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => response.statusText)
+      throw new Error(`HTTP ${response.status}: ${errorText || response.statusText}`)
+    }
 
-  const data = await response.json()
-  
-  // Cache the response
-  setCache(url, data, params, ttl)
-  
-  return data
+    const data = await response.json()
+    
+    // Validate data before caching
+    if (data !== null && data !== undefined) {
+      // Cache the response
+      setCache(url, data, params, ttl)
+    }
+    
+    return data
+  } catch (error: any) {
+    // Re-throw with more context
+    if (error.name === 'AbortError') {
+      throw new Error('Request was aborted')
+    }
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new Error('Network error: Unable to reach server')
+    }
+    throw error
+  }
 }
 
 // Auto-clear expired cache on load
