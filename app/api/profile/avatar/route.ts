@@ -11,6 +11,16 @@ export async function POST(request: NextRequest) {
     const file = formData.get('file') as File | null
     if (!file) return NextResponse.json({ error: 'Missing file' }, { status: 400 })
 
+    // Validate size and mime type (bucket limited to 2MB)
+    const MAX_BYTES = 2 * 1024 * 1024
+    if (file.size > MAX_BYTES) {
+      return NextResponse.json({ error: 'File too large. Max 2MB allowed.' }, { status: 413 })
+    }
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/gif']
+    if (file.type && !allowedTypes.includes(file.type.toLowerCase())) {
+      return NextResponse.json({ error: 'Unsupported file type. Use PNG, JPG, WEBP or GIF.' }, { status: 400 })
+    }
+
     const { data: profile } = await supabase
       .from('profiles')
       .select('id')
@@ -48,6 +58,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
+
 
 
 
