@@ -27,6 +27,7 @@ import { useSearchParams } from "next/navigation"
 import type { Job } from "@/hooks/use-jobs"
 import { fetchWithCache } from "@/lib/utils/client-cache"
 import { useAuth } from "@/contexts/auth-context"
+import { toast } from "@/hooks/use-toast"
 
 export default function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const [isImproving, setIsImproving] = useState(false)
@@ -147,7 +148,7 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
     return (
       <div className="min-h-screen">
         <Header />
-        <main className="pt-24 container mx-auto px-4 py-16 text-center">
+        <main className="pt-28 md:pt-32 lg:pt-36 container mx-auto px-4 py-16 text-center">
           <h1 className="text-2xl font-bold mb-2">Job not found</h1>
           <p className="text-muted-foreground mb-6">Open a job from the jobs list to view its details.</p>
           <Button asChild variant="outline" className="bg-transparent">
@@ -172,7 +173,7 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
     <div className="min-h-screen">
       <Header />
 
-      <main className="pt-24 container mx-auto px-4 py-8">
+      <main className="pt-28 md:pt-32 lg:pt-36 container mx-auto px-4 py-8">
         {/* Back Button */}
         <div className="mb-6">
           <Button variant="ghost" asChild className="p-0 h-auto font-normal text-muted-foreground hover:text-foreground">
@@ -257,11 +258,24 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
                           })
                           const data = await response.json()
                           if (data.success) {
-                            alert('Job saved successfully!')
+                            toast({ 
+                              title: 'Job saved', 
+                              description: 'This job has been added to your saved items.' 
+                            })
+                          } else {
+                            toast({ 
+                              title: 'Failed to save job', 
+                              description: data.error || 'Please try again.', 
+                              variant: 'destructive' 
+                            })
                           }
                         } catch (error) {
                           console.error('Error saving job:', error)
-                          alert('Failed to save job')
+                          toast({ 
+                            title: 'Error', 
+                            description: 'Failed to save job. Please try again.', 
+                            variant: 'destructive' 
+                          })
                         }
                       }}
                     >
@@ -287,20 +301,25 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
 
                   {/* AI Improve Description */}
                   <div className={`border rounded-lg p-4 bg-muted/50 ${!canUseAI ? 'opacity-60' : ''}`}>
-                    <div className="flex items-center justify-between mb-3">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-3">
                       <h4 className="font-semibold flex items-center">
                         <Sparkles className="h-4 w-4 mr-2 text-accent" />
                         AI-Enhanced Description
                       </h4>
-                      <div className="flex items-center gap-3">
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3 w-full sm:w-auto">
                         {!canUseAI && (
-                          <Link href="/pricing" className="text-xs text-muted-foreground hover:underline">Upgrade to use</Link>
+                          <Link
+                            href="/pricing"
+                            className="text-xs text-muted-foreground hover:underline text-left sm:text-right"
+                          >
+                            Upgrade to use
+                          </Link>
                         )}
                         <Button
                           onClick={handleImproveDescription}
                           disabled={isImproving || !canUseAI}
                           size="sm"
-                          className="bg-accent text-accent-foreground"
+                          className="w-full sm:w-auto bg-accent text-accent-foreground"
                           aria-disabled={!canUseAI}
                           title={!canUseAI ? 'Available for subscribers only' : undefined}
                         >
@@ -387,11 +406,24 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
                       })
                       const data = await response.json()
                       if (data.success) {
-                        alert('Job saved successfully!')
+                        toast({ 
+                          title: 'Job saved', 
+                          description: 'This job has been added to your saved items.' 
+                        })
+                      } else {
+                        toast({ 
+                          title: 'Failed to save job', 
+                          description: data.error || 'Please try again.', 
+                          variant: 'destructive' 
+                        })
                       }
                     } catch (error) {
                       console.error('Error saving job:', error)
-                      alert('Failed to save job')
+                      toast({ 
+                        title: 'Error', 
+                        description: 'Failed to save job. Please try again.', 
+                        variant: 'destructive' 
+                      })
                     }
                   }}
                 >

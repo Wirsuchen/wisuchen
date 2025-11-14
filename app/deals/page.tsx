@@ -14,6 +14,7 @@ import Link from "next/link"
 import { filterDeals, sortDeals } from "@/lib/filters"
 import { formatEuro, formatEuroText } from "@/lib/utils"
 import { fetchWithCache } from "@/lib/utils/client-cache"
+import { toast } from "@/hooks/use-toast"
 
 export default function DealsPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -324,11 +325,24 @@ export default function DealsPage() {
                                 })
                                 const data = await response.json()
                                 if (data.success) {
-                                  alert('Deal saved successfully!')
+                                  toast({ 
+                                    title: 'Deal saved', 
+                                    description: 'This deal has been added to your saved items.' 
+                                  })
+                                } else {
+                                  toast({ 
+                                    title: 'Failed to save deal', 
+                                    description: data.error || 'Please try again.', 
+                                    variant: 'destructive' 
+                                  })
                                 }
                               } catch (error) {
                                 console.error('Error saving deal:', error)
-                                alert('Failed to save deal')
+                                toast({ 
+                                  title: 'Error', 
+                                  description: 'Failed to save deal. Please try again.', 
+                                  variant: 'destructive' 
+                                })
                               }
                             }}
                           >

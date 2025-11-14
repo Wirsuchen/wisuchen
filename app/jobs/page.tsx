@@ -422,10 +422,12 @@ function JobCard({ job }: { job: Job }) {
             </h3>
           </a>
           <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-sm text-gray-600">
-            <span className="flex items-center gap-1">
-              <Briefcase className="w-4 h-4" />
-              <span className="truncate max-w-[150px] sm:max-w-none">{job.company}</span>
-            </span>
+            {job.company && (
+              <span className="flex items-center gap-1">
+                <Briefcase className="w-4 h-4" />
+                <span className="truncate max-w-[150px] sm:max-w-none">{job.company}</span>
+              </span>
+            )}
             <span className="flex items-center gap-1">
               <MapPin className="w-4 h-4" />
               <span className="truncate max-w-[150px] sm:max-w-none">{job.location}</span>

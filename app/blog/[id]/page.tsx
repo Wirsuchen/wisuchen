@@ -76,7 +76,7 @@ export default async function BlogPostPage({ params }: { params: { id: string } 
   return (
     <div className="min-h-screen">
       <Header />
-      <main className="pt-24">
+      <main className="pt-28 md:pt-32 lg:pt-36">
         <BlogPost post={post} />
       </main>
       <Footer />

@@ -57,11 +57,11 @@ export default function PaymentPage() {
         }
       } finally {
         if (!cancelled) {
-          setIsLoading(false)
+        setIsLoading(false)
         }
       }
     }
-
+    
     checkAuth()
     return () => {
       cancelled = true

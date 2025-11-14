@@ -121,3 +121,28 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Google Translate cleanup: hide injected toolbar/menus and reset layout offsets */
+#goog-gt-tt,
+.goog-te-banner-frame,
+.goog-te-menu-frame,
+.goog-te-gadget-simple,
+.goog-te-gadget,
+.goog-te-gadget-icon,
+.goog-te-combo,
+.skiptranslate {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* Remove top offset Google sometimes injects on body */
+html, body {
+  top: 0 !important;
+  margin-top: 0 !important;
+}
+
+/* Remove highlight styles Google might add */
+.goog-text-highlight, .goog-tooltip {
+  background: inherit !important;
+  box-shadow: none !important;
+}

@@ -481,7 +481,7 @@ export default function PostJobPage() {
     <div className="min-h-screen">
       <Header />
 
-      <main className="pt-24 container mx-auto px-4 py-8">
+      <main className="pt-28 md:pt-32 lg:pt-36 container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           {/* Progress Steps */}
           <div className="flex items-center justify-center mb-8">
@@ -896,50 +896,50 @@ export default function PostJobPage() {
 
               {/* Payment - Only show if payment is required */}
               {requiresPayment && (
-                <div>
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center">
-                        <CreditCard className="h-5 w-5 mr-2" />
-                        Payment
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="space-y-2">
+              <div>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <CreditCard className="h-5 w-5 mr-2" />
+                      Payment
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span>Job Posting (30 days)</span>
+                        <span>€5.00</span>
+                      </div>
+                      {formData.featured && (
                         <div className="flex justify-between">
-                          <span>Job Posting (30 days)</span>
-                          <span>€5.00</span>
+                          <span>Featured Listing</span>
+                          <span>€10.00</span>
                         </div>
-                        {formData.featured && (
-                          <div className="flex justify-between">
-                            <span>Featured Listing</span>
-                            <span>€10.00</span>
-                          </div>
-                        )}
-                        <div className="border-t pt-2 flex justify-between font-semibold">
-                          <span>Total</span>
-                          <span>€{formData.featured ? "15.00" : "5.00"}</span>
-                        </div>
+                      )}
+                      <div className="border-t pt-2 flex justify-between font-semibold">
+                        <span>Total</span>
+                        <span>€{formData.featured ? "15.00" : "5.00"}</span>
                       </div>
+                    </div>
 
-                      <div className="space-y-3">
+                    <div className="space-y-3">
+                      <div>
+                        <Label htmlFor="cardNumber">Card Number</Label>
+                        <Input id="cardNumber" placeholder="1234 5678 9012 3456" />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <Label htmlFor="cardNumber">Card Number</Label>
-                          <Input id="cardNumber" placeholder="1234 5678 9012 3456" />
+                          <Label htmlFor="expiry">Expiry</Label>
+                          <Input id="expiry" placeholder="MM/YY" />
                         </div>
-                        <div className="grid grid-cols-2 gap-3">
-                          <div>
-                            <Label htmlFor="expiry">Expiry</Label>
-                            <Input id="expiry" placeholder="MM/YY" />
-                          </div>
-                          <div>
-                            <Label htmlFor="cvv">CVV</Label>
-                            <Input id="cvv" placeholder="123" />
-                          </div>
+                        <div>
+                          <Label htmlFor="cvv">CVV</Label>
+                          <Input id="cvv" placeholder="123" />
                         </div>
                       </div>
+                    </div>
 
-                      <div className="flex flex-col space-y-2">
+                    <div className="flex flex-col space-y-2">
                         <Button 
                           onClick={handleSubmit} 
                           className="w-full"
@@ -953,18 +953,18 @@ export default function PostJobPage() {
                           ) : (
                             'Pay & Publish Job'
                           )}
-                        </Button>
-                        <Button variant="outline" onClick={handleBack} className="w-full bg-transparent">
-                          Back to Edit
-                        </Button>
-                      </div>
+                      </Button>
+                      <Button variant="outline" onClick={handleBack} className="w-full bg-transparent">
+                        Back to Edit
+                      </Button>
+                    </div>
 
-                      <p className="text-xs text-muted-foreground text-center">
-                        Your job will be live immediately after payment confirmation
-                      </p>
-                    </CardContent>
-                  </Card>
-                </div>
+                    <p className="text-xs text-muted-foreground text-center">
+                      Your job will be live immediately after payment confirmation
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
               )}
 
               {/* Post Button - Show when free jobs are available or user is paid */}

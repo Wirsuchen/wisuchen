@@ -52,18 +52,18 @@ export function DashboardSidebar() {
     }
     try {
       if (typeof document !== 'undefined') {
-        const existing = document.querySelector('script[src*="translate_a/element.js"]')
-        if (!existing) {
-          const s = document.createElement('script')
-          s.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit'
-          document.body.appendChild(s)
+      const existing = document.querySelector('script[src*="translate_a/element.js"]')
+      if (!existing) {
+        const s = document.createElement('script')
+        s.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit'
+        document.body.appendChild(s)
         }
       }
     } catch {}
     if (typeof window !== 'undefined') {
-      const id = window.setInterval(tryInit, 500)
-      tryInit()
-      return () => window.clearInterval(id)
+    const id = window.setInterval(tryInit, 500)
+    tryInit()
+    return () => window.clearInterval(id)
     }
     return () => {}
   }, [])
@@ -175,20 +175,20 @@ export function DashboardSidebar() {
                     {!collapsed && <span className="ml-3">Create Blog</span>}
                   </Link>
                 </li>
-                <li>
-                  <Link
-                    href="/admin"
-                    className={cn(
-                      "flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                      pathname === "/admin"
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-                    )}
-                  >
-                    <Shield className="h-4 w-4 shrink-0" />
-                    {!collapsed && <span className="ml-3">Admin</span>}
-                  </Link>
-                </li>
+              <li>
+                <Link
+                  href="/admin"
+                  className={cn(
+                    "flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                    pathname === "/admin"
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                  )}
+                >
+                  <Shield className="h-4 w-4 shrink-0" />
+                  {!collapsed && <span className="ml-3">Admin</span>}
+                </Link>
+              </li>
               </>
             )}
             {role === 'supervisor' && (

@@ -169,7 +169,7 @@ export default function DealDetailPage() {
     return (
       <div className="min-h-screen">
         <Header />
-        <main className="pt-24 container mx-auto px-4 py-8">
+        <main className="pt-28 md:pt-32 lg:pt-36 container mx-auto px-4 py-8">
           <div className="flex items-center justify-center h-96">
             <Loader2 className="h-8 w-8 animate-spin text-accent" />
           </div>
@@ -183,7 +183,7 @@ export default function DealDetailPage() {
     return (
       <div className="min-h-screen">
         <Header />
-        <main className="pt-24 container mx-auto px-4 py-8">
+        <main className="pt-28 md:pt-32 lg:pt-36 container mx-auto px-4 py-8">
           <div className="text-center py-12">
             <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h2 className="text-2xl font-bold mb-2">Deal Not Found</h2>
@@ -321,7 +321,7 @@ export default function DealDetailPage() {
     <div className="min-h-screen">
       <Header />
 
-      <main className="pt-20 sm:pt-24 container mx-auto px-3 sm:px-4 py-4 sm:py-8">
+      <main className="pt-28 md:pt-32 lg:pt-36 container mx-auto px-3 sm:px-4 py-4 sm:py-8">
         {/* Back Button */}
         <div className="mb-4 sm:mb-6">
           <Button variant="ghost" asChild className="p-0 h-auto font-normal text-muted-foreground hover:text-foreground text-sm sm:text-base">
@@ -463,11 +463,24 @@ export default function DealDetailPage() {
                               })
                               const data = await response.json()
                               if (data.success) {
-                                alert('Deal saved successfully!')
+                                toast({ 
+                                  title: 'Deal saved', 
+                                  description: 'This deal has been added to your saved items.' 
+                                })
+                              } else {
+                                toast({ 
+                                  title: 'Failed to save deal', 
+                                  description: data.error || 'Please try again.', 
+                                  variant: 'destructive' 
+                                })
                               }
                             } catch (error) {
                               console.error('Error saving deal:', error)
-                              alert('Failed to save deal')
+                              toast({ 
+                                title: 'Error', 
+                                description: 'Failed to save deal. Please try again.', 
+                                variant: 'destructive' 
+                              })
                             }
                           }}
                         >

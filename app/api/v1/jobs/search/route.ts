@@ -78,7 +78,8 @@ async function handler(req: NextRequest) {
               externalId: job.external_id,
               title: job.title,
               description: job.description,
-              company: job.company_id ? 'Company' : 'Various Companies',
+              // Prefer real company name when available; otherwise omit
+              company: (job as any).company?.name || '',
               location: job.location,
               salary: {
                 min: job.salary_min,

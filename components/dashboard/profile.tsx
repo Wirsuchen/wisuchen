@@ -10,6 +10,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator"
 import { Upload, Save, Camera } from "lucide-react"
 import { toast } from "@/hooks/use-toast"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 export function Profile() {
   const [loading, setLoading] = useState(false)
@@ -29,6 +39,7 @@ export function Profile() {
   const [paypalSubId, setPaypalSubId] = useState("")
   const [unsubscribing, setUnsubscribing] = useState(false)
   const [avatarUploading, setAvatarUploading] = useState(false)
+  const [showUnsubscribeDialog, setShowUnsubscribeDialog] = useState(false)
 
   useEffect(() => {
     ;(async () => {
@@ -63,6 +74,28 @@ export function Profile() {
     })()
   }, [])
 
+  // Load account settings from database
+  useEffect(() => {
+    ;(async () => {
+      try {
+        const res = await fetch('/api/profile/settings', { cache: 'no-store' })
+        if (res.ok) {
+          const { settings } = await res.json()
+          if (settings) {
+            setAccountSettings({
+              language: settings.language || 'en',
+              timezone: settings.timezone || 'Europe/Berlin',
+              emailNotifications: settings.emailNotifications ?? true,
+              marketingEmails: settings.marketingEmails ?? false,
+              jobAlerts: settings.jobAlerts ?? true,
+              dealAlerts: settings.dealAlerts ?? true,
+            })
+          }
+        }
+      } catch {}
+    })()
+  }, [])
+
   const [accountSettings, setAccountSettings] = useState({
     language: "en",
     timezone: "Europe/Berlin",
@@ -71,27 +104,74 @@ export function Profile() {
     jobAlerts: true,
     dealAlerts: true,
   })
+  
 
   const handleProfileUpdate = async () => {
     setLoading(true)
     try {
-      await fetch('/api/profile', {
+      const res = await fetch('/api/profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(profileData),
+      })
+      if (res.ok) {
+        toast({ 
+          title: 'Profile updated', 
+          description: 'Your profile information has been saved successfully.' 
+        })
+      } else {
+        const data = await res.json().catch(() => ({}))
+        toast({ 
+          title: 'Update failed', 
+          description: (data as any)?.error || 'Failed to update profile. Please try again.', 
+          variant: 'destructive' 
+        })
+      }
+    } catch (error: any) {
+      toast({ 
+        title: 'Error', 
+        description: error?.message || 'An unexpected error occurred. Please try again.', 
+        variant: 'destructive' 
       })
     } finally {
       setLoading(false)
     }
   }
 
-  const handleAccountUpdate = () => {
-    // Simulate account settings update
-    console.log("Updating account settings:", accountSettings)
+  const handleAccountUpdate = async () => {
+    setLoading(true)
+    try {
+      const res = await fetch('/api/profile/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(accountSettings),
+      })
+      if (res.ok) {
+        toast({ 
+          title: 'Settings saved', 
+          description: 'Your account settings have been saved successfully.' 
+        })
+      } else {
+        const data = await res.json().catch(() => ({}))
+        toast({ 
+          title: 'Update failed', 
+          description: (data as any)?.error || 'Failed to save settings. Please try again.', 
+          variant: 'destructive' 
+        })
+      }
+    } catch (error: any) {
+      toast({ 
+        title: 'Error', 
+        description: error?.message || 'An unexpected error occurred. Please try again.', 
+        variant: 'destructive' 
+      })
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleUnsubscribe = async () => {
-    if (!window.confirm('Are you sure you want to unsubscribe and switch to the free plan?')) return
+    setShowUnsubscribeDialog(false)
     setUnsubscribing(true)
     try {
       const res = await fetch('/api/subscription', {
@@ -315,7 +395,7 @@ export function Profile() {
                   <SelectItem value="en">English</SelectItem>
                   <SelectItem value="de">Deutsch</SelectItem>
                   <SelectItem value="fr">Français</SelectItem>
-                  <SelectItem value="es">Español</SelectItem>
+                  <SelectItem value="it">Italiano</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -418,12 +498,33 @@ export function Profile() {
             </div>
           </div>
           <div className="flex justify-end">
-            <Button variant="outline" className="bg-transparent" disabled={unsubscribing} onClick={handleUnsubscribe}>
+            <Button variant="outline" className="bg-transparent" disabled={unsubscribing} onClick={() => setShowUnsubscribeDialog(true)}>
               {unsubscribing ? 'Unsubscribing...' : 'Unsubscribe'}
             </Button>
           </div>
         </CardContent>
       </Card>
+
+      <AlertDialog open={showUnsubscribeDialog} onOpenChange={setShowUnsubscribeDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Unsubscribe from Plan</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to unsubscribe and switch to the free plan? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={unsubscribing}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleUnsubscribe}
+              disabled={unsubscribing}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {unsubscribing ? 'Unsubscribing...' : 'Unsubscribe'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

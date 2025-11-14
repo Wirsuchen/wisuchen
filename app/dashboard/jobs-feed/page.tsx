@@ -294,10 +294,12 @@ function JobCard({ job }: { job: Job }) {
             {job.title}
           </h3>
           <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600">
-            <span className="flex items-center gap-1">
-              <Briefcase className="w-4 h-4" />
-              {job.company}
-            </span>
+            {job.company && (
+              <span className="flex items-center gap-1">
+                <Briefcase className="w-4 h-4" />
+                {job.company}
+              </span>
+            )}
             <span className="flex items-center gap-1">
               <MapPin className="w-4 h-4" />
               {job.location}

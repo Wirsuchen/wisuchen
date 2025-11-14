@@ -25,7 +25,7 @@ export function PageLayout({
     <div className="min-h-screen">
       <Header />
 
-      <main className={`pt-24 ${mainClassName}`}>
+      <main className={`pt-28 md:pt-32 lg:pt-36 ${mainClassName}`}>
         {/* Back Button - conditionally shown */}
         {showBackButton && !isHomePage && (
           <div className="mb-6">

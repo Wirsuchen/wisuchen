@@ -18,6 +18,7 @@ import {
 import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'
 import type { OfferWithRelations } from '@/lib/types/database'
+import { toast } from '@/hooks/use-toast'
 
 interface JobCardProps {
   job: OfferWithRelations & { is_external?: boolean; application_url?: string | null; source?: string | null }
@@ -312,11 +313,24 @@ export function JobCard({ job, variant = 'default', showCompany = true }: JobCar
                   })
                   const data = await response.json()
                   if (data.success) {
-                    alert('Job saved successfully!')
+                    toast({ 
+                      title: 'Job saved', 
+                      description: 'This job has been added to your saved items.' 
+                    })
+                  } else {
+                    toast({ 
+                      title: 'Failed to save job', 
+                      description: data.error || 'Please try again.', 
+                      variant: 'destructive' 
+                    })
                   }
                 } catch (error) {
                   console.error('Error saving job:', error)
-                  alert('Failed to save job')
+                  toast({ 
+                    title: 'Error', 
+                    description: 'Failed to save job. Please try again.', 
+                    variant: 'destructive' 
+                  })
                 }
               }}
             >

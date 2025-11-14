@@ -46,7 +46,7 @@ export default function BlogPage() {
         categorySlug: p.categories?.slug || 'general',
         tags: [],
         image: p.featured_image_url || '/blog-market-trends.png',
-        featured: false,
+      featured: false,
         views: p.views_count || 0,
       }))
       setPosts(mapped)
@@ -139,7 +139,7 @@ export default function BlogPage() {
     <div className="min-h-screen">
       <Header />
 
-      <main className="pt-24 container mx-auto px-4 py-8">
+      <main className="pt-28 md:pt-32 lg:pt-36 container mx-auto px-4 py-8">
         {/* Back Button */}
         <div className="mb-6">
           <Button variant="ghost" asChild className="p-0 h-auto font-normal text-muted-foreground hover:text-foreground">
