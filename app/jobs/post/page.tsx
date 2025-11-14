@@ -37,6 +37,9 @@ export default function PostJobPage() {
   // Check if user has a paid plan (pro, professional, or business - covers legacy and new values)
   const isPaidUser = !!(user && (user.isSubscribed || ['pro', 'professional', 'business'].includes(user.plan || '')))
   const isFreeUser = user && !isPaidUser && user.role === 'job_seeker'
+  // Check if free user has used all 5 free jobs
+  const requiresPayment = isFreeUser && userJobCount !== null && userJobCount >= 5
+  const hasFreeJobsRemaining = isFreeUser && userJobCount !== null && userJobCount < 5
   const [formData, setFormData] = useState({
     title: "",
     company: "",
@@ -216,10 +219,12 @@ export default function PostJobPage() {
 
   const handleSubmit = async () => {
     // Check free user limit before submitting
-    if (isFreeUser && userJobCount !== null && userJobCount >= 5) {
+    if (requiresPayment) {
+      // Payment is required but not processed yet
+      // TODO: Integrate payment processing here
       toast({
-        title: 'Job Limit Reached',
-        description: 'Free users can create up to 5 jobs. Please upgrade to create more jobs.',
+        title: 'Payment Required',
+        description: 'Please complete the payment to post your job. Payment processing will be integrated soon.',
         variant: 'destructive',
       })
       return
@@ -262,21 +267,136 @@ export default function PostJobPage() {
 
       // If company doesn't exist, create it
       if (!company_id) {
-        const createCompanyRes = await fetch('/api/companies', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: formData.company,
-            slug: formData.company.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-            is_active: true,
-          }),
-        })
-        if (createCompanyRes.ok) {
-          const newCompany = await createCompanyRes.json()
-          company_id = newCompany.company?.id || newCompany.id
-        } else {
-          throw new Error('Failed to create company')
+        try {
+          // Generate a unique slug to avoid conflicts
+          const baseSlug = formData.company.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+          const uniqueSlug = `${baseSlug}-${Date.now()}`
+          
+          const createCompanyRes = await fetch('/api/companies', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: formData.company.trim(),
+              slug: uniqueSlug,
+              is_active: true,
+            }),
+          })
+          
+          let companyResponse
+          try {
+            const responseText = await createCompanyRes.text()
+            if (!responseText) {
+              throw new Error('Empty response from server')
+            }
+            companyResponse = JSON.parse(responseText)
+          } catch (jsonError: any) {
+            console.error('Failed to parse company API response:', jsonError)
+            throw new Error(`Invalid response from server. Status: ${createCompanyRes.status}. Please try again.`)
+          }
+          
+          // Handle successful creation (201), existing company (200), or error
+          if (createCompanyRes.ok || createCompanyRes.status === 200 || createCompanyRes.status === 201) {
+            // Handle both new company creation and existing company cases
+            // API returns { company: { id, name, slug } } for new companies (status 201)
+            // API returns { company: { id }, message: 'Company already exists' } for existing (status 200)
+            company_id = companyResponse.company?.id || companyResponse.id
+            
+            if (!company_id) {
+              console.error('Company API response:', companyResponse)
+              console.error('Response status:', createCompanyRes.status)
+              throw new Error('Company created but no ID returned. Please try again.')
+            }
+            
+            // Success - company_id is now set
+            console.log('Company created/found successfully:', { company_id, name: formData.company })
+          } else {
+            // Extract the actual error message from the API response
+            const errorMessage = companyResponse?.error || companyResponse?.message || `HTTP ${createCompanyRes.status}: Failed to create company`
+            const errorDetails = companyResponse?.details || ''
+            const errorCode = companyResponse?.code || ''
+            
+            // Combine error message and details for better debugging
+            const fullErrorMessage = errorDetails 
+              ? `${errorMessage}: ${errorDetails}${errorCode ? ` (Code: ${errorCode})` : ''}`
+              : errorMessage
+            
+            // Provide more specific error messages based on status
+            if (createCompanyRes.status === 401) {
+              throw new Error('You must be logged in to create a company. Please log in and try again.')
+            } else if (createCompanyRes.status === 400) {
+              throw new Error(`Invalid company data: ${fullErrorMessage}`)
+            } else if (createCompanyRes.status === 409) {
+              // Conflict - company already exists, try to get the existing one
+              if (companyResponse.company?.id) {
+                company_id = companyResponse.company.id
+              } else {
+                // Try to fetch the company by name
+                const searchRes = await fetch(`/api/companies?search=${encodeURIComponent(formData.company.trim())}`)
+                if (searchRes.ok) {
+                  const searchData = await searchRes.json()
+                  const existingCompany = searchData.companies?.find(
+                    (c: any) => c.name.toLowerCase() === formData.company.toLowerCase()
+                  )
+                  if (existingCompany?.id) {
+                    company_id = existingCompany.id
+                  } else {
+                    throw new Error(`Company conflict detected but could not find existing company. Please try again.`)
+                  }
+                } else {
+                  throw new Error(`Failed to create company: ${fullErrorMessage}`)
+                }
+              }
+            } else if (createCompanyRes.status === 500) {
+              // Check if it's a duplicate slug error
+              if (errorMessage.includes('duplicate') || errorMessage.includes('unique') || errorCode === '23505' || errorDetails.includes('23505')) {
+                // Retry with a more unique slug
+                const retrySlug = `${baseSlug}-${Date.now()}-${Math.random().toString(36).substring(7)}`
+                const retryRes = await fetch('/api/companies', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    name: formData.company.trim(),
+                    slug: retrySlug,
+                    is_active: true,
+                  }),
+                })
+                const retryResponse = await retryRes.json()
+                if (retryRes.ok && retryResponse.company?.id) {
+                  company_id = retryResponse.company.id
+                } else {
+                  const retryErrorDetails = retryResponse?.details || ''
+                  const retryFullError = retryErrorDetails 
+                    ? `${retryResponse.error || errorMessage}: ${retryErrorDetails}`
+                    : retryResponse.error || errorMessage
+                  throw new Error(`Failed to create company: ${retryFullError}`)
+                }
+              } else {
+                throw new Error(`Failed to create company: ${fullErrorMessage}`)
+              }
+            } else {
+              throw new Error(`Failed to create company: ${fullErrorMessage}`)
+            }
+          }
+        } catch (error: any) {
+          console.error('Error creating company:', error)
+          // Re-throw if it's already our custom error
+          if (error.message && (
+              error.message.startsWith('Failed to create company') || 
+              error.message.startsWith('You must be logged in') ||
+              error.message.startsWith('Invalid company data') ||
+              error.message.startsWith('Company created but no ID') ||
+              error.message.startsWith('Invalid response from server')
+            )) {
+            throw error
+          }
+          // Otherwise wrap in a more user-friendly error
+          throw new Error(`Failed to create company: ${error.message || 'Unknown error occurred. Please try again.'}`)
         }
+      }
+      
+      // Ensure we have a company_id before proceeding
+      if (!company_id) {
+        throw new Error('Unable to get or create company. Please try again.')
       }
 
       if (!category_id) {
@@ -388,8 +508,8 @@ export default function PostJobPage() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle>Job Details</CardTitle>
-                    <CardDescription>Provide the basic information about your job posting</CardDescription>
+                <CardTitle>Job Details</CardTitle>
+                <CardDescription>Provide the basic information about your job posting</CardDescription>
                   </div>
                   {isFreeUser && userJobCount !== null && (
                     <Badge variant={userJobCount >= 5 ? "destructive" : "secondary"}>
@@ -713,7 +833,7 @@ export default function PostJobPage() {
                       Back
                     </Button>
                     <Button onClick={handleNext} disabled={!formData.description}>
-                      Preview & Pay
+                      {requiresPayment ? 'Preview & Pay' : 'Preview & Post'}
                     </Button>
                   </div>
                 </CardContent>
@@ -722,9 +842,9 @@ export default function PostJobPage() {
           )}
 
           {step === 3 && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className={`grid grid-cols-1 ${requiresPayment ? 'lg:grid-cols-3' : 'lg:grid-cols-1'} gap-8`}>
               {/* Preview */}
-              <div className="lg:col-span-2">
+              <div className={requiresPayment ? 'lg:col-span-2' : ''}>
                 <Card>
                   <CardHeader>
                     <div className="flex items-center">
@@ -774,81 +894,111 @@ export default function PostJobPage() {
                 </Card>
               </div>
 
-              {/* Payment */}
-              <div>
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <CreditCard className="h-5 w-5 mr-2" />
-                      Payment
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span>Job Posting (30 days)</span>
-                        <span>€5.00</span>
-                      </div>
-                      {formData.featured && (
+              {/* Payment - Only show if payment is required */}
+              {requiresPayment && (
+                <div>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center">
+                        <CreditCard className="h-5 w-5 mr-2" />
+                        Payment
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
                         <div className="flex justify-between">
-                          <span>Featured Listing</span>
-                          <span>€10.00</span>
+                          <span>Job Posting (30 days)</span>
+                          <span>€5.00</span>
                         </div>
-                      )}
-                      <div className="border-t pt-2 flex justify-between font-semibold">
-                        <span>Total</span>
-                        <span>€{formData.featured ? "15.00" : "5.00"}</span>
-                      </div>
-                    </div>
-
-                    <div className="space-y-3">
-                      <div>
-                        <Label htmlFor="cardNumber">Card Number</Label>
-                        <Input id="cardNumber" placeholder="1234 5678 9012 3456" />
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <Label htmlFor="expiry">Expiry</Label>
-                          <Input id="expiry" placeholder="MM/YY" />
-                        </div>
-                        <div>
-                          <Label htmlFor="cvv">CVV</Label>
-                          <Input id="cvv" placeholder="123" />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col space-y-2">
-                      <Button 
-                        onClick={handleSubmit} 
-                        className="w-full"
-                        disabled={submitting || (isFreeUser && userJobCount !== null && userJobCount >= 5)}
-                      >
-                        {submitting ? (
-                          <>
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            Creating Job...
-                          </>
-                        ) : (
-                          'Pay & Publish Job'
+                        {formData.featured && (
+                          <div className="flex justify-between">
+                            <span>Featured Listing</span>
+                            <span>€10.00</span>
+                          </div>
                         )}
-                      </Button>
-                      {isFreeUser && userJobCount !== null && userJobCount >= 5 && (
-                        <p className="text-xs text-destructive text-center">
-                          Upgrade to create more jobs
-                        </p>
-                      )}
-                      <Button variant="outline" onClick={handleBack} className="w-full bg-transparent">
-                        Back to Edit
-                      </Button>
-                    </div>
+                        <div className="border-t pt-2 flex justify-between font-semibold">
+                          <span>Total</span>
+                          <span>€{formData.featured ? "15.00" : "5.00"}</span>
+                        </div>
+                      </div>
 
-                    <p className="text-xs text-muted-foreground text-center">
-                      Your job will be live immediately after payment confirmation
-                    </p>
-                  </CardContent>
-                </Card>
-              </div>
+                      <div className="space-y-3">
+                        <div>
+                          <Label htmlFor="cardNumber">Card Number</Label>
+                          <Input id="cardNumber" placeholder="1234 5678 9012 3456" />
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <Label htmlFor="expiry">Expiry</Label>
+                            <Input id="expiry" placeholder="MM/YY" />
+                          </div>
+                          <div>
+                            <Label htmlFor="cvv">CVV</Label>
+                            <Input id="cvv" placeholder="123" />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col space-y-2">
+                        <Button 
+                          onClick={handleSubmit} 
+                          className="w-full"
+                          disabled={submitting}
+                        >
+                          {submitting ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Creating Job...
+                            </>
+                          ) : (
+                            'Pay & Publish Job'
+                          )}
+                        </Button>
+                        <Button variant="outline" onClick={handleBack} className="w-full bg-transparent">
+                          Back to Edit
+                        </Button>
+                      </div>
+
+                      <p className="text-xs text-muted-foreground text-center">
+                        Your job will be live immediately after payment confirmation
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+              {/* Post Button - Show when free jobs are available or user is paid */}
+              {(hasFreeJobsRemaining || isPaidUser || (!isFreeUser && user)) && (
+                <div className="flex flex-col space-y-2">
+                  {hasFreeJobsRemaining && userJobCount !== null && (
+                    <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <p className="text-sm text-blue-900">
+                        <strong>Free Job Posting Available!</strong> You have {5 - userJobCount} free job{5 - userJobCount > 1 ? 's' : ''} remaining.
+                      </p>
+                    </div>
+                  )}
+                  <Button 
+                    onClick={handleSubmit} 
+                    className="w-full"
+                    disabled={submitting}
+                  >
+                    {submitting ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Posting Job...
+                      </>
+                    ) : (
+                      'Post Job'
+                    )}
+                  </Button>
+                  <Button variant="outline" onClick={handleBack} className="w-full bg-transparent">
+                    Back to Edit
+                  </Button>
+                  <p className="text-xs text-muted-foreground text-center">
+                    Your job will be live immediately after posting
+                  </p>
+                </div>
+              )}
             </div>
           )}
 

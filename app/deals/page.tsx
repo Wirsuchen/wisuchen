@@ -442,10 +442,10 @@ export default function DealsPage() {
 
             {/* Pagination (hidden when only one page) */}
             {pagination.pages > 1 && (
-              <div className="flex items-center justify-center space-x-2 mt-8">
-                <Button variant="outline" disabled className="bg-transparent">
-                  Previous
-                </Button>
+            <div className="flex items-center justify-center space-x-2 mt-8">
+              <Button variant="outline" disabled className="bg-transparent">
+                Previous
+              </Button>
                 {Array.from({ length: pagination.pages }, (_, index) => {
                   const pageNumber = index + 1
                   const isActive = pageNumber === pagination.page
@@ -457,13 +457,13 @@ export default function DealsPage() {
                       disabled
                     >
                       {pageNumber}
-                    </Button>
+              </Button>
                   )
                 })}
                 <Button variant="outline" disabled className="bg-transparent">
-                  Next
-                </Button>
-              </div>
+                Next
+              </Button>
+            </div>
             )}
           </div>
         </div>

@@ -75,10 +75,10 @@ CREATE POLICY "companies_select_public" ON companies
 CREATE POLICY "companies_update_own" ON companies
     FOR UPDATE USING (created_by = (SELECT id FROM profiles WHERE user_id = (SELECT auth.uid())) OR is_admin());
 
--- Employers and above can create companies
+-- Employers, job seekers, and above can create companies
 CREATE POLICY "companies_insert_employer" ON companies
     FOR INSERT WITH CHECK (
-        get_user_role() IN ('supervisor', 'admin', 'moderator', 'lister', 'publisher', 'employer')
+        get_user_role() IN ('supervisor', 'admin', 'moderator', 'lister', 'publisher', 'employer', 'job_seeker')
     );
 
 -- CATEGORIES TABLE POLICIES

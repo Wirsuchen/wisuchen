@@ -182,13 +182,13 @@ export default function ApiTestPage() {
       const { category_id, company_id } = setupData.test_data
 
       // Step 2: Create test job with required data from database
-      const dummyJob = {
+    const dummyJob = {
         title: `[TEST] Senior Developer Position - ${Date.now()}`,
         description: 'This is a TEST job posting created via API testing interface. This job will be automatically deleted after 2 seconds. Lorem ipsum dolor sit amet, consectetur adipiscing elit. We are looking for an experienced developer to join our team.',
-        location: 'Berlin, Germany',
+      location: 'Berlin, Germany',
         employment_type: 'full_time', // Use enum value format (full_time, not full-time)
-        salary_min: 60000,
-        salary_max: 90000,
+      salary_min: 60000,
+      salary_max: 90000,
         salary_currency: 'EUR',
         salary_period: 'yearly',
         status: 'pending',
