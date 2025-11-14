@@ -26,6 +26,7 @@ export function Footer() {
     company: [
       { name: t('footer.aboutUs'), href: "/about" },
       { name: t('footer.support'), href: "/support" },
+      { name: 'API Documentation', href: "/api-docs" },
     ],
   }
 
