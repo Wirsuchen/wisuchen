@@ -5,7 +5,6 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { useAuth } from "@/contexts/auth-context"
 import {
   Sheet,
@@ -41,14 +40,12 @@ export function DashboardMobileMenu() {
       href: "/dashboard/my-ads",
       icon: Briefcase,
       current: pathname === "/dashboard/my-ads",
-      badge: "3",
     },
     {
       name: "My Deals",
       href: "/dashboard/my-deals",
       icon: ShoppingBag,
       current: pathname === "/dashboard/my-deals",
-      badge: "12",
     },
     {
       name: "My Invoices",
@@ -124,11 +121,6 @@ export function DashboardMobileMenu() {
                   >
                     <Icon className="h-5 w-5 shrink-0" />
                     <span className="ml-3">{item.name}</span>
-                    {item.badge && (
-                      <Badge variant="secondary" className="ml-auto">
-                        {item.badge}
-                      </Badge>
-                    )}
                   </Link>
                 </li>
               )

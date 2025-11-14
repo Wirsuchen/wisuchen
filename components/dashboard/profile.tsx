@@ -28,6 +28,7 @@ export function Profile() {
   const [subscription, setSubscription] = useState<{ isSubscribed: boolean; plan: string }>({ isSubscribed: false, plan: 'free' })
   const [paypalSubId, setPaypalSubId] = useState("")
   const [unsubscribing, setUnsubscribing] = useState(false)
+  const [avatarUploading, setAvatarUploading] = useState(false)
 
   useEffect(() => {
     ;(async () => {
@@ -136,16 +137,29 @@ export function Profile() {
                 <Camera className="h-4 w-4" />
               </Button>
             </div>
-            <Button variant="outline" className="w-full bg-transparent" onClick={async () => {
+            <Button variant="outline" className="w-full bg-transparent" disabled={avatarUploading} onClick={async () => {
               const input = document.createElement('input')
               input.type = 'file'
               input.accept = 'image/*'
               input.onchange = async () => {
                 if (!input.files || input.files.length === 0) return
-                const form = new FormData()
-                form.append('file', input.files[0])
-                await fetch('/api/profile/avatar', { method: 'POST', body: form })
-                location.reload()
+                setAvatarUploading(true)
+                try {
+                  const form = new FormData()
+                  form.append('file', input.files[0])
+                  const res = await fetch('/api/profile/avatar', { method: 'POST', body: form })
+                  const data = await res.json().catch(() => ({} as any))
+                  if (!res.ok || !(data as any)?.success) {
+                    toast({ title: 'Upload failed', description: (data as any)?.error || 'Could not upload avatar.', variant: 'destructive' })
+                    return
+                  }
+                  setProfileData((prev) => ({ ...prev, avatar_url: (data as any)?.url || prev.avatar_url }))
+                  toast({ title: 'Avatar updated', description: 'Your profile picture was updated.' })
+                } catch (e: any) {
+                  toast({ title: 'Error', description: e?.message || 'Unexpected error during upload', variant: 'destructive' })
+                } finally {
+                  setAvatarUploading(false)
+                }
               }
               input.click()
             }}>

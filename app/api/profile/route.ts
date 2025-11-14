@@ -35,6 +35,7 @@ export async function PUT(request: NextRequest) {
       website_url: body.website_url,
       linkedin_url: body.linkedin_url,
       github_url: body.github_url,
+      avatar_url: body.avatar_url,
     }
 
     const { data: profile } = await supabase
