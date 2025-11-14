@@ -38,9 +38,9 @@ export default function HomePage() {
   
   // Real counts from APIs
   const [stats, setStats] = useState({
-    activeJobs: 50,
+    activeJobs: 1000,
     dailyDeals: 100,
-    happyUsers: 20000 // Hardcoded to 20k+
+    happyUsers: 2000 // Hardcoded to 2k+
   })
 
 
@@ -116,7 +116,7 @@ export default function HomePage() {
       setStats({
         activeJobs: totalJobs || 50, // Show actual count, fallback to 50 if API fails
         dailyDeals: totalDeals || 100, // Show actual count, fallback to 100 if API fails
-        happyUsers: 20000 // Hardcoded to 20k+
+        happyUsers: 2000 // Hardcoded to 20k+
       })
     } catch (error) {
       console.error('Error fetching stats:', error)
@@ -233,7 +233,7 @@ export default function HomePage() {
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-accent">
-                  20k+
+                  2k+
                 </div>
                 <div className="text-sm text-muted-foreground">{t('home.happyUsers')}</div>
               </div>

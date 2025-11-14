@@ -27,6 +27,7 @@ export function MyInvoices() {
   const [isPreviewDialogOpen, setIsPreviewDialogOpen] = useState(false)
   const [selectedInvoice, setSelectedInvoice] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [canCreateInvoices, setCanCreateInvoices] = useState(false)
   const [invoices, setInvoices] = useState<any[]>([])
   const [invoiceData, setInvoiceData] = useState({
     clientName: "",
@@ -51,7 +52,7 @@ export function MyInvoices() {
         }
         const { data: profile } = await supabase
           .from('profiles')
-          .select('id')
+          .select('id, role')
           .eq('user_id', userId)
           .single()
 
@@ -59,6 +60,9 @@ export function MyInvoices() {
           setInvoices([])
           return
         }
+
+        const role = profile.role as string | null
+        setCanCreateInvoices(Boolean(role && ['admin', 'supervisor'].includes(role)))
 
         const { data } = await supabase
           .from('invoices')
@@ -98,6 +102,10 @@ export function MyInvoices() {
   const overdueAmount = invoices.filter((inv) => inv.status === "overdue").reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0)
 
   const handleCreateInvoice = async () => {
+    if (!canCreateInvoices) {
+      console.warn('Invoice creation is restricted to admin users.')
+      return
+    }
     const newInvoice = {
       id: `INV-${String(invoices.length + 1).padStart(3, "0")}`,
       clientName: invoiceData.clientName,
@@ -175,13 +183,14 @@ export function MyInvoices() {
           <h1 className="text-3xl font-bold">My Invoices</h1>
           <p className="text-muted-foreground">Create and manage your invoices</p>
         </div>
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Create Invoice
-            </Button>
-          </DialogTrigger>
+        {canCreateInvoices ? (
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Create Invoice
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>Create New Invoice</DialogTitle>
@@ -278,7 +287,12 @@ export function MyInvoices() {
               </Button>
             </div>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        ) : (
+          <Badge variant="outline" className="bg-muted text-muted-foreground">
+            Invoice creation available to admin users only
+          </Badge>
+        )}
       </div>
 
       {/* Stats Cards */}
