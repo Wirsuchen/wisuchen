@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { Facebook, Twitter, Instagram, Linkedin, Mail } from "lucide-react"
+import { Facebook, Instagram, Mail } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useTranslation } from "@/contexts/i18n-context"
@@ -62,17 +62,6 @@ export function Footer() {
               </Button>
               <Button variant="ghost" size="icon" className="rounded-full hover:text-primary" asChild>
                 <Link
-                  href="https://twitter.com"
-                  aria-label="Visit us on X (Twitter)"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Twitter className="size-7" aria-hidden="true" />
-                  <span className="sr-only">X (Twitter)</span>
-                </Link>
-              </Button>
-              <Button variant="ghost" size="icon" className="rounded-full hover:text-primary" asChild>
-                <Link
                   href="https://instagram.com"
                   aria-label="Visit us on Instagram"
                   target="_blank"
@@ -80,17 +69,6 @@ export function Footer() {
                 >
                   <Instagram className="size-7" aria-hidden="true" />
                   <span className="sr-only">Instagram</span>
-                </Link>
-              </Button>
-              <Button variant="ghost" size="icon" className="rounded-full hover:text-primary" asChild>
-                <Link
-                  href="https://linkedin.com"
-                  aria-label="Visit us on LinkedIn"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Linkedin className="size-7" aria-hidden="true" />
-                  <span className="sr-only">LinkedIn</span>
                 </Link>
               </Button>
             </div>

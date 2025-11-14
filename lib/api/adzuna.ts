@@ -1,5 +1,6 @@
 import { API_CONFIG, CACHE_CONFIG } from '@/lib/config/api-keys'
 import { cacheWrap } from '@/lib/api/cache'
+import { sanitizeSnippet } from '@/lib/utils/text'
 import { fetchWithRetry } from '@/lib/api/http'
 
 type AdzunaItem = {
@@ -85,7 +86,7 @@ function normalizeAdzunaItem(item: AdzunaItem, currency: AdzunaSearchParams['cur
     salary_currency: currency || 'EUR',
     salary_period: employment_type === 'hourly' ? 'hourly' : 'yearly',
     employment_type,
-    short_description: item.description || null,
+    short_description: sanitizeSnippet(item.description || ''),
     published_at: item.created || null,
     application_url: item.redirect_url || null,
     source: 'adzuna',

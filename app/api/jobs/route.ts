@@ -6,6 +6,7 @@ import { searchActiveJobsDb } from '@/lib/api/active-jobs-db'
 import { searchAdzunaJobs } from '@/lib/api/adzuna'
 import { cacheWrap } from '@/lib/api/cache'
 import { withRateLimit } from '@/lib/utils/rate-limiter'
+import { sanitizeSnippet } from '@/lib/utils/text'
 
 // Deduplicate external jobs by composite key: title + company + location (+ external_id when present)
 function normalizeText(v: unknown): string {
@@ -183,7 +184,16 @@ async function handler(request: NextRequest) {
 
     // Merge with external (Active Jobs DB first, then Adzuna, then DB jobs)
     const dedupedExternal = dedupeExternalJobs(externalJobs)
-    const combined = [...dedupedExternal, ...(jobs || [])]
+    const combinedRaw: any[] = [...dedupedExternal, ...(jobs || [])]
+
+    // Sanitize snippets to prevent merged words from stripped tags (e.g., "in it" -> "init")
+    const combined = combinedRaw.map((j) => {
+      const sd = j.short_description ?? j.description ?? ''
+      return {
+        ...j,
+        short_description: sanitizeSnippet(typeof sd === 'string' ? sd : ''),
+      }
+    })
 
     return {
       jobs: combined,
