@@ -1,10 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { PayPalCheckout } from '@/components/payment/paypal-checkout'
 import { PageLayout } from '@/components/layout/page-layout'
 import { Loader2 } from 'lucide-react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import Link from 'next/link'
 
 const PLANS = {
   professional: {
@@ -24,33 +27,46 @@ const PLANS = {
 }
 
 export default function PaymentPage() {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const [isAuth, setIsAuth] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [selectedPlan, setSelectedPlan] = useState<typeof PLANS[keyof typeof PLANS] | null>(null)
+  const [needsLogin, setNeedsLogin] = useState(false)
+  const [redirectPath, setRedirectPath] = useState('/payment')
 
   useEffect(() => {
-    // Check authentication via Supabase
+    if (typeof window !== 'undefined') {
+      setRedirectPath(window.location.pathname + window.location.search)
+    }
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
     const checkAuth = async () => {
       try {
-        const response = await fetch('/api/user/profile')
+        const response = await fetch('/api/user/profile', { cache: 'no-store' })
+        if (cancelled) return
         if (response.ok) {
           setIsAuth(true)
         } else {
-          const currentPath = window.location.pathname + window.location.search
-          router.push(`/login?redirect=${encodeURIComponent(currentPath)}`)
+          setNeedsLogin(true)
         }
-      } catch (error) {
-        const currentPath = window.location.pathname + window.location.search
-        router.push(`/login?redirect=${encodeURIComponent(currentPath)}`)
+      } catch {
+        if (!cancelled) {
+          setNeedsLogin(true)
+        }
       } finally {
-        setIsLoading(false)
+        if (!cancelled) {
+          setIsLoading(false)
+        }
       }
     }
-    
+
     checkAuth()
-  }, [router])
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   useEffect(() => {
     const planId = searchParams.get('plan') as keyof typeof PLANS
@@ -69,8 +85,28 @@ export default function PaymentPage() {
     )
   }
 
-  if (!isAuth) {
-    return null
+  if (needsLogin) {
+    return (
+      <PageLayout showBackButton={true} containerClassName="max-w-4xl">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Card className="max-w-md w-full text-center">
+            <CardHeader>
+              <CardTitle>Login Required</CardTitle>
+              <CardDescription>
+                Sign in to purchase or manage subscriptions.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild className="w-full">
+                <Link href={`/login?redirect=${encodeURIComponent(redirectPath)}`}>
+                  Go to Login
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </PageLayout>
+    )
   }
 
   return (

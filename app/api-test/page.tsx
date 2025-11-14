@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useAuth } from '@/contexts/auth-context'
-import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -24,16 +23,9 @@ interface TestResult {
 
 export default function ApiTestPage() {
   const { user, isLoading } = useAuth()
-  const router = useRouter()
   const [results, setResults] = useState<TestResult[]>([])
   const [testing, setTesting] = useState(false)
   const [currentTest, setCurrentTest] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (!isLoading && !user) {
-      router.push('/login')
-    }
-  }, [user, isLoading, router])
 
   if (isLoading) {
     return (
@@ -43,7 +35,25 @@ export default function ApiTestPage() {
     )
   }
 
-  if (!user) return null
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <Card className="max-w-md w-full text-center">
+          <CardHeader>
+            <CardTitle>Login Required</CardTitle>
+            <CardDescription>
+              You need to be signed in to use the API testing playground.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild className="w-full">
+              <Link href="/login?redirect=/api-test">Go to Login</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
 
   const addResult = (result: Omit<TestResult, 'timestamp'>) => {
     setResults(prev => [{

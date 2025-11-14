@@ -2,22 +2,13 @@
 
 import { DashboardOverview } from "@/components/dashboard/overview"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowLeft, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "@/contexts/auth-context"
-import { useRouter } from "next/navigation"
-import { useEffect } from "react"
 
 export default function DashboardPage() {
   const { user, isLoading } = useAuth()
-  const router = useRouter()
-
-  useEffect(() => {
-    // If user is not logged in, redirect to login
-    if (!isLoading && !user) {
-      router.push('/login')
-    }
-  }, [user, isLoading, router])
 
   // Show loading while checking auth state
   if (isLoading) {
@@ -28,9 +19,25 @@ export default function DashboardPage() {
     )
   }
 
-  // If no user, don't render dashboard (redirect is happening)
+  // If user is not logged in, show login prompt
   if (!user) {
-    return null
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <Card className="max-w-md w-full text-center">
+          <CardHeader>
+            <CardTitle>Login Required</CardTitle>
+            <CardDescription>
+              Please sign in to view your dashboard.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild className="w-full">
+              <Link href="/login?redirect=/dashboard">Go to Login</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   return (
