@@ -38,6 +38,7 @@ import { AffiliateImportManager } from './affiliate-import'
 import { UserManagement } from './user-management'
 import { RolePermissions } from './role-permissions'
 import { useIsMobile } from '@/hooks/use-mobile'
+import Link from 'next/link'
 
 interface DashboardStats {
   totalJobs: number
@@ -199,7 +200,7 @@ export function AdminDashboard() {
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <div className="overflow-x-auto">
-          <TabsList className="inline-flex w-auto min-w-full md:grid md:grid-cols-7 gap-2">
+          <TabsList className="inline-flex w-auto min-w-full md:grid md:grid-cols-9 gap-2">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="database">Database</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
@@ -207,10 +208,31 @@ export function AdminDashboard() {
             <TabsTrigger value="jobs">Job Import</TabsTrigger>
             <TabsTrigger value="affiliates">Affiliates</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="billing">Billing</TabsTrigger>
+            <TabsTrigger value="testing">API Testing</TabsTrigger>
           </TabsList>
         </div>
 
         <TabsContent value="overview" className="space-y-6">
+          {/* Quick Actions */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Quick Actions</CardTitle>
+              <CardDescription>Common admin shortcuts</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-2">
+                <Button asChild>
+                  <Link href="/api-test">Open API Testing</Link>
+                </Button>
+                <Button variant="outline" onClick={() => setActiveTab('billing')}>Open Billing</Button>
+                <Button variant="outline" onClick={fetchDashboardStats} disabled={isLoading}>
+                  <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+                  Refresh Stats
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
           {/* Key Metrics */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <StatCard
@@ -681,6 +703,43 @@ export function AdminDashboard() {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        <TabsContent value="billing" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Billing & Invoices</CardTitle>
+              <CardDescription>Create and manage invoices (UI coming soon)</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
+                The invoice creation UI is not wired yet in this project. If you want, I can add an
+                invoices page and API routes for creating and listing invoices.
+              </p>
+              <div className="flex gap-2">
+                <Button variant="outline" disabled>
+                  Create Invoice (coming soon)
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="testing" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>API Testing Playground</CardTitle>
+              <CardDescription>Run live tests against your API endpoints</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
+                Open the built-in API testing page to try endpoints like jobs, categories, imports and payments.
+              </p>
+              <Button asChild>
+                <Link href="/api-test">Open API Testing</Link>
+              </Button>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

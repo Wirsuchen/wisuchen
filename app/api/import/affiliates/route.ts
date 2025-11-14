@@ -301,21 +301,21 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ import_run: importRun })
     } else {
       // Get recent import runs for affiliate programs
+      // Note: import_runs.source_id references job_sources, not affiliate_programs
+      // So we can't directly join. For now, return empty array or fetch without join
       const { data: importRuns, error } = await supabase
         .from('import_runs')
-        .select(`
-          *,
-          affiliate_program:affiliate_programs(name, provider)
-        `)
-        .not('affiliate_program', 'is', null)
+        .select('*')
         .order('started_at', { ascending: false })
         .limit(20)
 
       if (error) {
+        console.error('Error fetching import runs:', error)
         return NextResponse.json({ error: 'Failed to fetch import runs' }, { status: 500 })
       }
 
-      return NextResponse.json({ import_runs: importRuns })
+      // Return empty array if no import runs, or return the runs without the join
+      return NextResponse.json({ import_runs: importRuns || [] })
     }
   } catch (error) {
     console.error('Affiliate import status API error:', error)

@@ -137,11 +137,16 @@ export default function ApiTestPage() {
   }
 
   const testImportAffiliates = async () => {
-    await testEndpoint('Get Affiliate Programs', '/api/import/affiliates', 'GET')
+    // Test with action=programs parameter to list affiliate programs
+    await testEndpoint('Get Affiliate Programs', '/api/import/affiliates?action=programs', 'GET')
+    // Test without action to get import runs (may return empty array)
+    await testEndpoint('Get Affiliate Import Runs', '/api/import/affiliates', 'GET')
   }
 
   const testPayment = async () => {
-    await testEndpoint('Get Payment Status', '/api/payment/paypal', 'GET')
+    // Payment status requires order_id or invoice_id - test without params to show expected error
+    // In a real scenario, you would provide: /api/payment/paypal?order_id=xxx or ?invoice_id=xxx
+    await testEndpoint('Get Payment Status (no params - expected 400)', '/api/payment/paypal', 'GET')
   }
 
   const testCreatePayment = async () => {
