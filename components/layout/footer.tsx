@@ -6,9 +6,64 @@ import { Facebook, Instagram, Mail } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useTranslation } from "@/contexts/i18n-context"
+import { useState } from "react"
+import { useToast } from "@/hooks/use-toast"
 
 export function Footer() {
   const { t } = useTranslation()
+  const { toast } = useToast()
+  const [email, setEmail] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!email || !email.includes('@')) {
+      toast({
+        title: 'Invalid email',
+        description: 'Please enter a valid email address',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    setIsSubmitting(true)
+    
+    try {
+      const response = await fetch('/api/newsletter/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        toast({
+          title: 'Subscribed!',
+          description: 'Thank you for subscribing to our newsletter',
+        })
+        setEmail('')
+      } else {
+        toast({
+          title: 'Error',
+          description: data.error || 'Failed to subscribe. Please try again.',
+          variant: 'destructive',
+        })
+      }
+    } catch (error) {
+      console.error('Newsletter subscription error:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to subscribe. Please try again later.',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
   
   const footerLinks = {
     explore: [
@@ -134,13 +189,21 @@ export function Footer() {
               <h3 className="font-semibold mb-2">{t('footer.subscribeNewsletter')}</h3>
               <p className="text-sm text-muted-foreground">{t('footer.newsletter')}</p>
             </div>
-            <div className="flex space-x-2 w-full md:w-auto">
-              <Input type="email" placeholder={t('footer.enterEmail')} className="md:w-64" />
-              <Button>
+            <form onSubmit={handleSubscribe} className="flex space-x-2 w-full md:w-auto">
+              <Input 
+                type="email" 
+                placeholder={t('footer.enterEmail')} 
+                className="md:w-64" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={isSubmitting}
+              />
+              <Button type="submit" disabled={isSubmitting}>
                 <Mail className="h-4 w-4 mr-2" />
-                {t('footer.subscribe')}
+                {isSubmitting ? 'Subscribing...' : t('footer.subscribe')}
               </Button>
-            </div>
+            </form>
           </div>
         </div>
 
