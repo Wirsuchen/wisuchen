@@ -26,6 +26,12 @@ export default function DealsPage() {
   const [loading, setLoading] = useState(true)
   const [categories, setCategories] = useState<string[]>([])
   const [brands, setBrands] = useState<string[]>([])
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 50,
+    total: 0,
+    pages: 1,
+  })
 
   const handleCategoryChange = (category: string, checked: boolean) => {
     if (checked) {
@@ -80,9 +86,23 @@ export default function DealsPage() {
         const uniqueBrands = [...new Set(mapped.map((d: any) => d.brand).filter(Boolean))]
         setCategories(uniqueCategories as string[])
         setBrands(uniqueBrands as string[])
+
+        const paginationData = data.pagination ?? {
+          page: 1,
+          limit: 50,
+          total: mapped.length,
+          pages: mapped.length ? 1 : 0,
+        }
+        setPagination({
+          page: paginationData.page ?? 1,
+          limit: paginationData.limit ?? 50,
+          total: paginationData.total ?? mapped.length,
+          pages: Math.max(paginationData.pages ?? (mapped.length ? 1 : 0), mapped.length ? 1 : 0),
+        })
       } catch (error) {
         console.error('Error loading deals:', error)
         setDeals([])
+        setPagination({ page: 1, limit: 50, total: 0, pages: 0 })
       } finally {
         setLoading(false)
       }
@@ -420,24 +440,31 @@ export default function DealsPage() {
               </div>
             )}
 
-            {/* Pagination */}
-            <div className="flex items-center justify-center space-x-2 mt-8">
-              <Button variant="outline" disabled className="bg-transparent">
-                Previous
-              </Button>
-              <Button variant="outline" className="bg-primary text-primary-foreground">
-                1
-              </Button>
-              <Button variant="outline" className="bg-transparent">
-                2
-              </Button>
-              <Button variant="outline" className="bg-transparent">
-                3
-              </Button>
-              <Button variant="outline" className="bg-transparent">
-                Next
-              </Button>
-            </div>
+            {/* Pagination (hidden when only one page) */}
+            {pagination.pages > 1 && (
+              <div className="flex items-center justify-center space-x-2 mt-8">
+                <Button variant="outline" disabled className="bg-transparent">
+                  Previous
+                </Button>
+                {Array.from({ length: pagination.pages }, (_, index) => {
+                  const pageNumber = index + 1
+                  const isActive = pageNumber === pagination.page
+                  return (
+                    <Button
+                      key={pageNumber}
+                      variant="outline"
+                      className={isActive ? "bg-primary text-primary-foreground" : "bg-transparent"}
+                      disabled
+                    >
+                      {pageNumber}
+                    </Button>
+                  )
+                })}
+                <Button variant="outline" disabled className="bg-transparent">
+                  Next
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </>
