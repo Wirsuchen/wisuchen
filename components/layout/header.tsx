@@ -79,28 +79,22 @@ export function Header() {
 
   return (
     <header
-      style={glassStyle}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
-        ? ""
-        : "bg-transparent"
-        }`}
+      className="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-background border-b"
     >
       <div className="container mx-auto px-4 sm:px-6">
-        {/* Outer pill that holds nav — it's the main glass card */}
+        {/* Outer container */}
         <div
-          style={glassStyle}
-          className={`transition-all duration-300 mx-0 ${isScrolled ? "my-2" : "my-4"
-            } rounded-2xl bg-clip-padding bg-white/6 dark:bg-gray-900/30 backdrop-blur-md border border-white/10 dark:border-gray-800/30 shadow-sm`}
+          className={`transition-all duration-300 mx-0 ${isScrolled ? "my-2" : "my-4"} rounded-2xl bg-background`}
         >
           <div className="flex h-20 sm:h-24 md:h-28 items-center justify-between px-4 sm:px-6">
             {/* Logo - Mobile First */}
             <Link href="/" className="flex items-center space-x-2 flex-shrink-0 relative z-10">
-  <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 flex items-center justify-center overflow-hidden">
+  <div className="w-30 h-30 sm:w-30 sm:h-30 md:w-30 md:h-30 flex items-center justify-center overflow-hidden">
     <Image
       src="/logo.png"
       alt="Logo"
-      width={192}
-      height={192}
+      width={292}
+      height={292}
       className="object-contain"
     />
   </div>
