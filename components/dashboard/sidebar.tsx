@@ -146,20 +146,36 @@ export function DashboardSidebar() {
               )
             })}
             {isAdmin && (
-              <li>
-                <Link
-                  href="/admin"
-                  className={cn(
-                    "flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                    pathname === "/admin"
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-                  )}
-                >
-                  <Shield className="h-4 w-4 shrink-0" />
-                  {!collapsed && <span className="ml-3">Admin</span>}
-                </Link>
-              </li>
+              <>
+                <li>
+                  <Link
+                    href="/dashboard/blog/create"
+                    className={cn(
+                      "flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                      pathname?.startsWith("/dashboard/blog")
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                    )}
+                  >
+                    <PenSquare className="h-4 w-4 shrink-0" />
+                    {!collapsed && <span className="ml-3">Create Blog</span>}
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin"
+                    className={cn(
+                      "flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                      pathname === "/admin"
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                    )}
+                  >
+                    <Shield className="h-4 w-4 shrink-0" />
+                    {!collapsed && <span className="ml-3">Admin</span>}
+                  </Link>
+                </li>
+              </>
             )}
             {role === 'supervisor' && (
               <li>

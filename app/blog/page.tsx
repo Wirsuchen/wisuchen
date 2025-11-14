@@ -8,9 +8,10 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, Calendar, Clock, ArrowRight, TrendingUp, ArrowLeft } from "lucide-react"
+import { Search, Calendar, Clock, ArrowRight, TrendingUp, ArrowLeft, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
+import { useToast } from "@/hooks/use-toast"
 
 export default function BlogPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -19,6 +20,9 @@ export default function BlogPage() {
   const [loading, setLoading] = useState(true)
   const [posts, setPosts] = useState<any[]>([])
   const [categories, setCategories] = useState<{ id: string; name: string; count: number }[]>([{ id: "all", name: "All Posts", count: 0 }])
+  const [newsletterEmail, setNewsletterEmail] = useState("")
+  const [isSubscribing, setIsSubscribing] = useState(false)
+  const { toast } = useToast()
 
   useEffect(() => {
     const supabase = createClient()

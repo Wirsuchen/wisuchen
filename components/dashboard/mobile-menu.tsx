@@ -21,12 +21,16 @@ import {
   BarChart3,
   User,
   Menu,
+  PenSquare,
+  Shield,
 } from "lucide-react"
 
 export function DashboardMobileMenu() {
   const [open, setOpen] = useState(false)
   const pathname = usePathname()
   const { user } = useAuth()
+  const role = (user as any)?.role
+  const isAdmin = !!(user && ((['admin','supervisor','moderator'] as any).includes(role) || user.email === 'admin@wirsuchen.com'))
 
   const navigation = [
     {
@@ -125,6 +129,40 @@ export function DashboardMobileMenu() {
                 </li>
               )
             })}
+            {isAdmin && (
+              <>
+                <li>
+                  <Link
+                    href="/dashboard/blog/create"
+                    onClick={() => setOpen(false)}
+                    className={cn(
+                      "flex items-center rounded-lg px-3 py-3 text-sm font-medium transition-colors",
+                      pathname?.startsWith("/dashboard/blog")
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                    )}
+                  >
+                    <PenSquare className="h-5 w-5 shrink-0" />
+                    <span className="ml-3">Create Blog</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin"
+                    onClick={() => setOpen(false)}
+                    className={cn(
+                      "flex items-center rounded-lg px-3 py-3 text-sm font-medium transition-colors",
+                      pathname === "/admin"
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                    )}
+                  >
+                    <Shield className="h-5 w-5 shrink-0" />
+                    <span className="ml-3">Admin</span>
+                  </Link>
+                </li>
+              </>
+            )}
           </ul>
         </nav>
       </SheetContent>
