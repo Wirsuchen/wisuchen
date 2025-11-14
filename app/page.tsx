@@ -40,7 +40,7 @@ export default function HomePage() {
   const [stats, setStats] = useState({
     activeJobs: 50,
     dailyDeals: 100,
-    happyUsers: 25
+    happyUsers: 20000 // Hardcoded to 20k+
   })
 
 
@@ -111,17 +111,12 @@ export default function HomePage() {
       const totalDeals = dealsData?.pagination?.total || dealsData?.deals?.length || 0
       console.log('🛍️ Deals API response:', { total: totalDeals, pagination: dealsData?.pagination, dealsCount: dealsData?.deals?.length })
 
-      // Fetch users count from database
-      const usersResponse = await fetch('/api/stats/users')
-      const usersData = await usersResponse.json()
-      const totalUsers = usersData?.count || 25
-      console.log('👥 Users API response:', { count: totalUsers })
-
       // Show actual counts (no artificial minimums)
+      // Note: happyUsers is hardcoded to 20000 (20k+)
       setStats({
         activeJobs: totalJobs || 50, // Show actual count, fallback to 50 if API fails
         dailyDeals: totalDeals || 100, // Show actual count, fallback to 100 if API fails
-        happyUsers: totalUsers || 25 // Show actual count, fallback to 25 if API fails
+        happyUsers: 20000 // Hardcoded to 20k+
       })
     } catch (error) {
       console.error('Error fetching stats:', error)
@@ -198,7 +193,6 @@ export default function HomePage() {
             {/* Quick Location Links */}
             <div className="max-w-2xl mx-auto mb-2 sm:mb-4">
               <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-sm">
-                <span className="text-muted-foreground">{t('home.popular')}:</span>
                 <Link
                   href="/jobs?location=Germany"
                   className="inline-flex items-center rounded-full border px-3 py-1 bg-background hover:bg-accent/50 transition-colors"
@@ -239,7 +233,7 @@ export default function HomePage() {
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-accent">
-                  <CountUp to={stats.happyUsers} from={0} duration={1.2} delay={0.2} />+
+                  20k+
                 </div>
                 <div className="text-sm text-muted-foreground">{t('home.happyUsers')}</div>
               </div>
