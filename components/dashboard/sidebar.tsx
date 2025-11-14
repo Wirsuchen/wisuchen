@@ -149,10 +149,24 @@ export function DashboardSidebar() {
               <>
                 <li>
                   <Link
+                    href="/dashboard/blog"
+                    className={cn(
+                      "flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                      pathname === "/dashboard/blog" || pathname?.startsWith("/dashboard/blog/edit")
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                    )}
+                  >
+                    <PenSquare className="h-4 w-4 shrink-0" />
+                    {!collapsed && <span className="ml-3">Manage Blogs</span>}
+                  </Link>
+                </li>
+                <li>
+                  <Link
                     href="/dashboard/blog/create"
                     className={cn(
                       "flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                      pathname?.startsWith("/dashboard/blog")
+                      pathname === "/dashboard/blog/create"
                         ? "bg-primary text-primary-foreground"
                         : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
                     )}

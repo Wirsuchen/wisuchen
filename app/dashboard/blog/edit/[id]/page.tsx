@@ -1,25 +1,28 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
+import { useParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { RichTextEditor } from '@/components/ui/rich-text-editor'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { BlogGenerator } from '@/components/ai/blog-generator'
 import { SEOGenerator } from '@/components/ai/seo-generator'
 import { TranslateButton } from '@/components/ai/translate-button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Sparkles, Save, Eye } from 'lucide-react'
+import { Save, Eye, Loader2, ArrowLeft } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
-import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import Link from 'next/link'
 
-export default function CreateBlogPage() {
+export default function EditBlogPage() {
+  const params = useParams()
   const router = useRouter()
   const { toast } = useToast()
-  const [showAI, setShowAI] = useState(true)
+  const postId = params.id as string
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [language, setLanguage] = useState<'de' | 'en' | 'fr' | 'it'>('en')
   const [formData, setFormData] = useState({
     title: '',
@@ -30,18 +33,58 @@ export default function CreateBlogPage() {
     tags: '',
     metaDescription: '',
     keywords: [] as string[],
+    status: 'draft' as 'draft' | 'published' | 'archived',
   })
   const [featuredImageUrl, setFeaturedImageUrl] = useState<string>('')
   const [uploadingImage, setUploadingImage] = useState(false)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
-  const handleAIGenerated = (content: string) => {
-    setFormData((prev) => ({ ...prev, content }))
-    setShowAI(false)
-    toast({
-      title: '✨ Content Generated!',
-      description: 'AI has created your blog article',
-    })
+  useEffect(() => {
+    loadPost()
+  }, [postId])
+
+  const loadPost = async () => {
+    try {
+      setLoading(true)
+      const res = await fetch(`/api/admin/blog/posts/${postId}`)
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ error: 'Failed to load' }))
+        throw new Error(error.error || 'Failed to load post')
+      }
+      const data = await res.json()
+      const post = data.post
+
+      // Map category slug back to form category
+      const categorySlugToForm: Record<string, string> = {
+        'career-tips': 'job-tips',
+        'industry-news': 'recruiting',
+      }
+      const formCategory = post.category_id 
+        ? categorySlugToForm[post.category?.slug || ''] || 'job-tips'
+        : 'job-tips'
+
+      setFormData({
+        title: post.title || '',
+        content: post.content || '',
+        excerpt: post.excerpt || '',
+        category: formCategory,
+        author: post.author?.full_name || '',
+        tags: '',
+        metaDescription: post.seo_description || '',
+        keywords: post.seo_keywords ? (typeof post.seo_keywords === 'string' ? post.seo_keywords.split(',').map(k => k.trim()) : post.seo_keywords) : [],
+        status: post.status || 'draft',
+      })
+      setFeaturedImageUrl(post.featured_image_url || '')
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to load blog post',
+        variant: 'destructive',
+      })
+      router.push('/dashboard/blog')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const onPickImage = () => fileInputRef.current?.click()
@@ -56,7 +99,6 @@ export default function CreateBlogPage() {
     setUploadingImage(true)
     try {
       const supabase = createClient()
-      const ext = file.name.split('.').pop() || 'png'
       const nameSanitized = file.name.replace(/[^a-zA-Z0-9_.-]+/g, '-')
       const path = `blog/featured/${Date.now()}-${Math.random().toString(36).slice(2)}-${nameSanitized}`
       const { error: uploadErr } = await supabase.storage.from('public-media').upload(path, file, {
@@ -70,7 +112,6 @@ export default function CreateBlogPage() {
       const publicUrl = pub?.publicUrl
       if (!publicUrl) throw new Error('Failed to generate public URL')
 
-      // Try setting uploaded_by to current profile if available
       let uploadedBy: string | null = null
       const { data: auth } = await supabase.auth.getUser()
       if (auth?.user) {
@@ -121,7 +162,7 @@ export default function CreateBlogPage() {
     }))
   }
 
-  const handleSave = async (status: 'draft' | 'published') => {
+  const handleSave = async (status?: 'draft' | 'published') => {
     const categoryMap: Record<string, string | null> = {
       'job-tips': 'career-tips',
       'recruiting': 'industry-news',
@@ -130,15 +171,18 @@ export default function CreateBlogPage() {
       'deals': null,
     }
     const categorySlug = categoryMap[formData.category] ?? null
+    const finalStatus = status || formData.status
+    
     try {
-      const res = await fetch('/api/admin/blog/posts', {
-        method: 'POST',
+      setSaving(true)
+      const res = await fetch(`/api/admin/blog/posts/${postId}`, {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: formData.title,
           content: formData.content,
           excerpt: formData.excerpt,
-          status,
+          status: finalStatus,
           seoTitle: formData.title,
           seoDescription: formData.metaDescription || formData.excerpt,
           seoKeywords: formData.keywords,
@@ -152,41 +196,50 @@ export default function CreateBlogPage() {
       }
       const data = await res.json()
       toast({
-        title: status === 'draft' ? 'Draft Saved' : 'Published!',
-        description: `Post ${status} with slug: ${data.slug}`,
+        title: finalStatus === 'draft' ? 'Draft Updated' : 'Published!',
+        description: `Post updated with slug: ${data.post.slug}`,
       })
       setTimeout(() => {
         router.push('/dashboard/blog')
       }, 1200)
     } catch (e: any) {
       toast({ title: 'Save failed', description: e?.message || 'Unable to save post', variant: 'destructive' })
+    } finally {
+      setSaving(false)
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    )
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Create Blog Article</h1>
-          <p className="text-muted-foreground">Use AI to generate content or write manually</p>
+          <div className="flex items-center gap-2 mb-2">
+            <Button variant="ghost" size="sm" asChild>
+              <Link href="/dashboard/blog">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Blogs
+              </Link>
+            </Button>
+          </div>
+          <h1 className="text-3xl font-bold">Edit Blog Article</h1>
+          <p className="text-muted-foreground">Update your blog post content and settings</p>
         </div>
-        <Button variant="outline" onClick={() => setShowAI(!showAI)}>
-          <Sparkles className="h-4 w-4 mr-2" />
-          {showAI ? 'Hide AI' : 'Show AI Generator'}
-        </Button>
       </div>
-
-      {/* AI Generator Section */}
-      {showAI && (
-        <BlogGenerator onGenerated={handleAIGenerated} />
-      )}
 
       {/* Manual Editor */}
       <Card>
         <CardHeader>
           <CardTitle>Blog Content</CardTitle>
           <CardDescription>
-            Write or edit your blog article {formData.content && `(Language: ${language.toUpperCase()})`}
+            Edit your blog article {formData.content && `(Language: ${language.toUpperCase()})`}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -220,13 +273,17 @@ export default function CreateBlogPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="author">Author</Label>
-              <Input
-                id="author"
-                value={formData.author}
-                onChange={(e) => setFormData((prev) => ({ ...prev, author: e.target.value }))}
-                placeholder="Author name"
-              />
+              <Label htmlFor="status">Status</Label>
+              <Select value={formData.status} onValueChange={(value: any) => setFormData((prev) => ({ ...prev, status: value }))}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="published">Published</SelectItem>
+                  <SelectItem value="archived">Archived</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
@@ -329,46 +386,58 @@ export default function CreateBlogPage() {
       )}
 
       {/* SEO Fields */}
-      {(formData.metaDescription || formData.keywords.length > 0) && (
-        <Card>
-          <CardHeader>
-            <CardTitle>SEO Metadata</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {formData.metaDescription && (
-              <div className="space-y-2">
-                <Label>Meta Description</Label>
-                <Textarea
-                  value={formData.metaDescription}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, metaDescription: e.target.value }))}
-                  rows={2}
-                />
-              </div>
-            )}
-            {formData.keywords.length > 0 && (
-              <div className="space-y-2">
-                <Label>SEO Keywords</Label>
-                <Input
-                  value={formData.keywords.join(', ')}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, keywords: e.target.value.split(',').map(k => k.trim()) }))}
-                />
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
+      <Card>
+        <CardHeader>
+          <CardTitle>SEO Metadata</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>Meta Description</Label>
+            <Textarea
+              value={formData.metaDescription}
+              onChange={(e) => setFormData((prev) => ({ ...prev, metaDescription: e.target.value }))}
+              rows={2}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>SEO Keywords</Label>
+            <Input
+              value={formData.keywords.join(', ')}
+              onChange={(e) => setFormData((prev) => ({ ...prev, keywords: e.target.value.split(',').map(k => k.trim()) }))}
+            />
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Actions */}
       <Card>
         <CardContent className="pt-6">
           <div className="flex gap-4 justify-end">
-            <Button variant="outline" onClick={() => handleSave('draft')}>
-              <Save className="h-4 w-4 mr-2" />
-              Save Draft
+            <Button variant="outline" onClick={() => handleSave('draft')} disabled={saving}>
+              {saving ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Draft
+                </>
+              )}
             </Button>
-            <Button onClick={() => handleSave('published')}>
-              <Eye className="h-4 w-4 mr-2" />
-              Publish
+            <Button onClick={() => handleSave('published')} disabled={saving}>
+              {saving ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Publishing...
+                </>
+              ) : (
+                <>
+                  <Eye className="h-4 w-4 mr-2" />
+                  Publish
+                </>
+              )}
             </Button>
           </div>
         </CardContent>

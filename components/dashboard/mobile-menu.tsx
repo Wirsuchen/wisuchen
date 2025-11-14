@@ -133,11 +133,26 @@ export function DashboardMobileMenu() {
               <>
                 <li>
                   <Link
+                    href="/dashboard/blog"
+                    onClick={() => setOpen(false)}
+                    className={cn(
+                      "flex items-center rounded-lg px-3 py-3 text-sm font-medium transition-colors",
+                      pathname === "/dashboard/blog" || pathname?.startsWith("/dashboard/blog/edit")
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                    )}
+                  >
+                    <PenSquare className="h-5 w-5 shrink-0" />
+                    <span className="ml-3">Manage Blogs</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link
                     href="/dashboard/blog/create"
                     onClick={() => setOpen(false)}
                     className={cn(
                       "flex items-center rounded-lg px-3 py-3 text-sm font-medium transition-colors",
-                      pathname?.startsWith("/dashboard/blog")
+                      pathname === "/dashboard/blog/create"
                         ? "bg-primary text-primary-foreground"
                         : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                     )}
