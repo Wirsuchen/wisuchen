@@ -235,15 +235,43 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get user profile to check permissions
+    // Get user profile to check permissions and plan
     const { data: profile } = await supabase
       .from('profiles')
-      .select('id, role')
+      .select('id, role, plan, is_subscribed')
       .eq('user_id', user.id)
       .single()
 
-    if (!profile || !['supervisor', 'admin', 'moderator', 'lister', 'publisher', 'employer'].includes(profile.role)) {
+    if (!profile) {
+      return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+    }
+
+    // Check if user has permission to create jobs
+    const allowedRoles = ['supervisor', 'admin', 'moderator', 'lister', 'publisher', 'employer', 'job_seeker']
+    if (!allowedRoles.includes(profile.role)) {
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
+    }
+
+    // Check job limit for free users (job_seeker role with free plan)
+    const isPaidUser = profile.is_subscribed || ['pro', 'professional', 'business'].includes(profile.plan || '')
+    const isFreeUser = profile.role === 'job_seeker' && !isPaidUser
+    
+    if (isFreeUser) {
+      // Count existing jobs created by this user
+      const { count: jobCount } = await supabase
+        .from('offers')
+        .select('*', { count: 'exact', head: true })
+        .eq('created_by', profile.id)
+        .eq('type', 'job')
+      
+      const maxJobsForFreeUsers = 5
+      if ((jobCount || 0) >= maxJobsForFreeUsers) {
+        return NextResponse.json({ 
+          error: `Free users can create up to ${maxJobsForFreeUsers} jobs. Please upgrade to create more jobs.`,
+          limit: maxJobsForFreeUsers,
+          current: jobCount || 0
+        }, { status: 403 })
+      }
     }
 
     const body = await request.json()

@@ -423,7 +423,7 @@ export function MyInvoices() {
             <div className="bg-white p-8 border rounded-lg">
               <div className="flex justify-between items-start mb-8">
                 <div>
-                  <h2 className="text-2xl font-bold text-red-600">TalentPlus</h2>
+                  <h2 className="text-2xl font-bold text-red-600">wirsuchen</h2>
                   <p className="text-sm text-gray-600">Professional Services</p>
                 </div>
                 <div className="text-right">

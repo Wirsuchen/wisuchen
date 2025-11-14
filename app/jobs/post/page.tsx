@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { Button } from "@/components/ui/button"
@@ -29,10 +29,14 @@ export default function PostJobPage() {
   const [showPreview, setShowPreview] = useState(false)
   const [genReqLoading, setGenReqLoading] = useState(false)
   const [genBenLoading, setGenBenLoading] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [userJobCount, setUserJobCount] = useState<number | null>(null)
+  const [loadingJobCount, setLoadingJobCount] = useState(false)
   const { toast } = useToast()
   
   // Check if user has a paid plan (pro, professional, or business - covers legacy and new values)
   const isPaidUser = !!(user && (user.isSubscribed || ['pro', 'professional', 'business'].includes(user.plan || '')))
+  const isFreeUser = user && !isPaidUser && user.role === 'job_seeker'
   const [formData, setFormData] = useState({
     title: "",
     company: "",
@@ -188,14 +192,169 @@ export default function PostJobPage() {
     if (step > 1) setStep(step - 1)
   }
 
-  const handleSubmit = () => {
-    // Simulate payment processing
-    setTimeout(() => {
+  // Load user's job count on mount if free user
+  useEffect(() => {
+    if (isFreeUser && user) {
+      loadUserJobCount()
+    }
+  }, [isFreeUser, user]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const loadUserJobCount = async () => {
+    try {
+      setLoadingJobCount(true)
+      const res = await fetch('/api/user/ads?limit=100')
+      if (res.ok) {
+        const data = await res.json()
+        setUserJobCount(data.ads?.length || 0)
+      }
+    } catch (error) {
+      console.error('Error loading job count:', error)
+    } finally {
+      setLoadingJobCount(false)
+    }
+  }
+
+  const handleSubmit = async () => {
+    // Check free user limit before submitting
+    if (isFreeUser && userJobCount !== null && userJobCount >= 5) {
+      toast({
+        title: 'Job Limit Reached',
+        description: 'Free users can create up to 5 jobs. Please upgrade to create more jobs.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    // Validate required fields
+    if (!formData.title || !formData.description || !formData.company || !formData.location || !formData.category || !formData.jobType) {
+      toast({
+        title: 'Missing Fields',
+        description: 'Please fill in all required fields',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    try {
+      setSubmitting(true)
+
+      // Map category name to category_id and company name to company_id
+      // First, fetch categories and companies
+      const [categoriesRes, companiesRes] = await Promise.all([
+        fetch('/api/categories?type=job'),
+        fetch('/api/companies'),
+      ])
+
+      const categoriesData = categoriesRes.ok ? await categoriesRes.json() : { categories: [] }
+      const companiesData = companiesRes.ok ? await companiesRes.json() : { companies: [] }
+
+      // Find matching category (case-insensitive)
+      const category = categoriesData.categories?.find(
+        (c: any) => c.name.toLowerCase() === formData.category.toLowerCase()
+      )
+      const category_id = category?.id
+
+      // Find or create company
+      let company = companiesData.companies?.find(
+        (c: any) => c.name.toLowerCase() === formData.company.toLowerCase()
+      )
+      let company_id = company?.id
+
+      // If company doesn't exist, create it
+      if (!company_id) {
+        const createCompanyRes = await fetch('/api/companies', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: formData.company,
+            slug: formData.company.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+            is_active: true,
+          }),
+        })
+        if (createCompanyRes.ok) {
+          const newCompany = await createCompanyRes.json()
+          company_id = newCompany.company?.id || newCompany.id
+        } else {
+          throw new Error('Failed to create company')
+        }
+      }
+
+      if (!category_id) {
+        throw new Error(`Category "${formData.category}" not found. Please select a valid category.`)
+      }
+
+      // Map job type to employment_type enum
+      const employmentTypeMap: Record<string, string> = {
+        'Full-time': 'full_time',
+        'Part-time': 'part_time',
+        'Contract': 'contract',
+        'Freelance': 'freelance',
+        'Internship': 'internship',
+      }
+      const employment_type = employmentTypeMap[formData.jobType] || 'full_time'
+
+      // Prepare job data
+      const jobData = {
+        title: formData.title,
+        description: formData.description + (formData.requirements ? `\n\n**Requirements:**\n${formData.requirements}` : '') + (formData.benefits ? `\n\n**Benefits:**\n${formData.benefits}` : ''),
+        category_id,
+        company_id,
+        location: formData.location,
+        employment_type,
+        salary_min: formData.salaryMin ? parseInt(formData.salaryMin) : null,
+        salary_max: formData.salaryMax ? parseInt(formData.salaryMax) : null,
+        salary_currency: 'EUR',
+        salary_period: 'yearly',
+        featured: formData.featured,
+      }
+
+      // Submit job
+      const res = await fetch('/api/jobs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(jobData),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        // Handle job limit error
+        if (res.status === 403 && data.error?.includes('Free users can create up to')) {
+          toast({
+            title: 'Job Limit Reached',
+            description: data.error || 'Free users can create up to 5 jobs. Please upgrade to create more.',
+            variant: 'destructive',
+          })
+          setUserJobCount(5) // Update local count
+          return
+        }
+        throw new Error(data.error || 'Failed to create job')
+      }
+
+      toast({
+        title: 'Job Created!',
+        description: 'Your job posting has been submitted successfully.',
+      })
+
+      // Update job count for free users
+      if (isFreeUser && userJobCount !== null) {
+        setUserJobCount(userJobCount + 1)
+      }
+
+      // Show success step
       setStep(4)
       setTimeout(() => {
         router.push("/jobs")
       }, 3000)
-    }, 2000)
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to create job. Please try again.',
+        variant: 'destructive',
+      })
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -227,8 +386,24 @@ export default function PostJobPage() {
           {step === 1 && (
             <Card>
               <CardHeader>
-                <CardTitle>Job Details</CardTitle>
-                <CardDescription>Provide the basic information about your job posting</CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Job Details</CardTitle>
+                    <CardDescription>Provide the basic information about your job posting</CardDescription>
+                  </div>
+                  {isFreeUser && userJobCount !== null && (
+                    <Badge variant={userJobCount >= 5 ? "destructive" : "secondary"}>
+                      {userJobCount}/5 jobs used
+                    </Badge>
+                  )}
+                </div>
+                {isFreeUser && userJobCount !== null && userJobCount >= 5 && (
+                  <div className="mt-2 p-3 bg-destructive/10 border border-destructive/20 rounded-md">
+                    <p className="text-sm text-destructive font-medium">
+                      You've reached the limit of 5 jobs for free users. Upgrade to create more jobs.
+                    </p>
+                  </div>
+                )}
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -644,9 +819,25 @@ export default function PostJobPage() {
                     </div>
 
                     <div className="flex flex-col space-y-2">
-                      <Button onClick={handleSubmit} className="w-full">
-                        Pay & Publish Job
+                      <Button 
+                        onClick={handleSubmit} 
+                        className="w-full"
+                        disabled={submitting || (isFreeUser && userJobCount !== null && userJobCount >= 5)}
+                      >
+                        {submitting ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Creating Job...
+                          </>
+                        ) : (
+                          'Pay & Publish Job'
+                        )}
                       </Button>
+                      {isFreeUser && userJobCount !== null && userJobCount >= 5 && (
+                        <p className="text-xs text-destructive text-center">
+                          Upgrade to create more jobs
+                        </p>
+                      )}
                       <Button variant="outline" onClick={handleBack} className="w-full bg-transparent">
                         Back to Edit
                       </Button>

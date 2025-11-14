@@ -8,16 +8,45 @@
 import { useEffect, useState } from 'react'
 import { useJobs, type Job } from '@/hooks/use-jobs'
 import { PageLayout } from '@/components/layout/page-layout'
-import { Loader2, Search, MapPin, Briefcase, DollarSign, ExternalLink, Filter, RefreshCw, TrendingUp } from 'lucide-react'
+import { Loader2, Search, MapPin, Briefcase, DollarSign, ExternalLink, Filter, RefreshCw, TrendingUp, Edit } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { useAuth } from '@/contexts/auth-context'
+import Link from 'next/link'
+
+interface UserPostedJob {
+  id: string
+  title: string
+  slug: string
+  location: string | null
+  employment_type: string | null
+  salary_min: number | null
+  salary_max: number | null
+  salary_currency: string | null
+  status: string
+  published_at: string | null
+  created_at: string
+  description: string | null
+  company?: {
+    name: string
+    logo_url: string | null
+  } | null
+  category?: {
+    name: string
+  } | null
+  views_count: number
+  applications_count: number
+}
 
 export default function JobsPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [location, setLocation] = useState('')
   const [employmentType, setEmploymentType] = useState<string>('')
   const [showFilters, setShowFilters] = useState(false)
+  const { user } = useAuth()
+  const [userJobs, setUserJobs] = useState<UserPostedJob[]>([])
+  const [loadingUserJobs, setLoadingUserJobs] = useState(false)
 
   const { jobs, loading, error, search, refresh, pagination, meta } = useJobs()
 
@@ -25,6 +54,50 @@ export default function JobsPage() {
   useEffect(() => {
     loadJobs()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Load user's posted jobs if authenticated
+  useEffect(() => {
+    if (user) {
+      loadUserJobs()
+    }
+  }, [user]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const loadUserJobs = async () => {
+    try {
+      setLoadingUserJobs(true)
+      const res = await fetch('/api/user/ads?limit=50')
+      if (!res.ok) {
+        if (res.status === 401) {
+          // User not authenticated, skip
+          return
+        }
+        throw new Error('Failed to load your jobs')
+      }
+      const data = await res.json()
+      
+      // Fetch full job details for each job
+      const jobsWithDetails = await Promise.all(
+        (data.ads || []).map(async (ad: any) => {
+          try {
+            const jobRes = await fetch(`/api/jobs/${ad.id}`)
+            if (jobRes.ok) {
+              const jobData = await jobRes.json()
+              return jobData.job || jobData
+            }
+            return null
+          } catch {
+            return null
+          }
+        })
+      )
+      
+      setUserJobs(jobsWithDetails.filter(Boolean))
+    } catch (error) {
+      console.error('Error loading user jobs:', error)
+    } finally {
+      setLoadingUserJobs(false)
+    }
+  }
 
   const loadJobs = () => {
     search({
@@ -97,6 +170,36 @@ export default function JobsPage() {
             </div>
           )}
         </div>
+
+        {/* My Posted Jobs Section */}
+        {user && (
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg shadow-md p-4 sm:p-6 border-2 border-blue-200">
+            <div className="mb-4">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <Briefcase className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
+                My Posted Jobs
+              </h2>
+              <p className="text-sm text-gray-600 mt-1">Jobs you've created and posted</p>
+            </div>
+
+            {loadingUserJobs ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+              </div>
+            ) : userJobs.length === 0 ? (
+              <div className="text-center py-8 bg-white rounded-lg border border-blue-100">
+                <Briefcase className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                <p className="text-gray-600">You haven't posted any jobs yet</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {userJobs.map((job) => (
+                  <UserJobCard key={job.id} job={job} />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Search Section */}
         <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 border">
@@ -393,6 +496,131 @@ function JobCard({ job }: { job: Job }) {
               </a>
             </Button>
           )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * User Posted Job Card Component
+ */
+function UserJobCard({ job }: { job: UserPostedJob }) {
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'Not published'
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
+    
+    if (diffInHours < 1) return 'Just now'
+    if (diffInHours < 24) return `${diffInHours}h ago`
+    if (diffInHours < 48) return 'Yesterday'
+    if (diffInHours < 168) return `${Math.floor(diffInHours / 24)} days ago`
+    return date.toLocaleDateString()
+  }
+
+  const getStatusBadge = (status: string) => {
+    const variants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+      active: 'default',
+      pending: 'outline',
+      expired: 'destructive',
+      archived: 'secondary',
+    }
+    return (
+      <Badge variant={variants[status] || 'secondary'} className="text-xs">
+        {status.charAt(0).toUpperCase() + status.slice(1)}
+      </Badge>
+    )
+  }
+
+  const salaryText = job.salary_min && job.salary_max
+    ? `${job.salary_currency || 'EUR'} ${job.salary_min.toLocaleString()} - ${job.salary_max.toLocaleString()}`
+    : job.salary_min
+    ? `From ${job.salary_currency || 'EUR'} ${job.salary_min.toLocaleString()}`
+    : null
+
+  return (
+    <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-4 border border-blue-100">
+      <div className="flex flex-col sm:flex-row items-start justify-between gap-3 mb-3">
+        <div className="flex-1 w-full sm:w-auto">
+          <Link
+            href={`/jobs/${job.id}`}
+            className="block"
+          >
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 hover:text-blue-600">
+              {job.title}
+            </h3>
+          </Link>
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-sm text-gray-600">
+            {job.company?.name && (
+              <span className="flex items-center gap-1">
+                <Briefcase className="w-4 h-4" />
+                <span className="truncate">{job.company.name}</span>
+              </span>
+            )}
+            {job.location && (
+              <span className="flex items-center gap-1">
+                <MapPin className="w-4 h-4" />
+                <span className="truncate">{job.location}</span>
+              </span>
+            )}
+            {salaryText && (
+              <span className="flex items-center gap-1 text-green-600 font-medium">
+                <DollarSign className="w-4 h-4" />
+                <span className="truncate">{salaryText}</span>
+              </span>
+            )}
+          </div>
+        </div>
+        
+        <div className="flex sm:flex-col items-center sm:items-end gap-2 w-full sm:w-auto">
+          {getStatusBadge(job.status)}
+          <span className="text-xs text-gray-500 ml-auto sm:ml-0">
+            {formatDate(job.published_at)}
+          </span>
+        </div>
+      </div>
+
+      {job.description && (
+        <p className="text-gray-700 mb-4 line-clamp-2">
+          {job.description.replace(/<[^>]*>/g, '').substring(0, 250)}...
+        </p>
+      )}
+
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div className="flex flex-wrap gap-2">
+          {job.employment_type && (
+            <Badge variant="secondary" className="text-xs">
+              {job.employment_type.replace('_', ' ')}
+            </Badge>
+          )}
+          {job.category?.name && (
+            <Badge variant="outline" className="text-xs">
+              {job.category.name}
+            </Badge>
+          )}
+          <Badge variant="outline" className="text-xs">
+            {job.views_count || 0} views
+          </Badge>
+          <Badge variant="outline" className="text-xs">
+            {job.applications_count || 0} applicants
+          </Badge>
+        </div>
+
+        <div className="flex gap-2 w-full sm:w-auto">
+          <Button asChild variant="outline" size="sm" className="flex-1 sm:flex-initial">
+            <Link href={`/jobs/${job.id}`}>
+              <span className="hidden sm:inline">View Details</span>
+              <span className="sm:hidden">Details</span>
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="sm" className="flex-1 sm:flex-initial">
+            <Link href={`/dashboard/my-ads`}>
+              <Edit className="w-4 h-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Manage</span>
+              <span className="sm:hidden">Edit</span>
+            </Link>
+          </Button>
         </div>
       </div>
     </div>

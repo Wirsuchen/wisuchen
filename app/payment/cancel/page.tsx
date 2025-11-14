@@ -104,8 +104,8 @@ export default async function PaymentCancelPage() {
                 <p className="font-medium">Still having trouble?</p>
                 <p className="text-muted-foreground">
                   Contact our support team at{' '}
-                  <a href="mailto:support@talentplus.com" className="text-primary hover:underline">
-                    support@talentplus.com
+                  <a href="mailto:support@wirsuchen.com" className="text-primary hover:underline">
+                    support@wirsuchen.com
                   </a>
                   {' '}or call us at +49 (0) 30 12345678
                 </p>

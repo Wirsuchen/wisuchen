@@ -1,4 +1,4 @@
-// i18n Configuration for TalentPlus
+// i18n Configuration for wirsuchen
 // Supports: German (DE), English (EN), French (FR), Italian (IT)
 
 export type Locale = 'de' | 'en' | 'fr' | 'it'

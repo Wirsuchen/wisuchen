@@ -221,7 +221,7 @@ export function AdminDashboard() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
         <div>
           <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-          <p className="text-muted-foreground">Manage your TalentPlus job portal</p>
+          <p className="text-muted-foreground">Manage your wirsuchen job portal</p>
         </div>
         <Button onClick={fetchDashboardStats} variant="outline" disabled={isLoading}>
           <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
