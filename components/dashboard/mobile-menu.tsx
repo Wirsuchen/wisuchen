@@ -23,12 +23,19 @@ import {
   Menu,
   PenSquare,
   Shield,
+  Settings,
+  LogOut,
+  UserCheck,
+  Gavel,
+  ClipboardList,
+  Megaphone,
+  BarChart2,
 } from "lucide-react"
 
 export function DashboardMobileMenu() {
   const [open, setOpen] = useState(false)
   const pathname = usePathname()
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
   const role = (user as any)?.role
   const isAdmin = !!(user && ((['admin','supervisor','moderator'] as any).includes(role) || user.email === 'admin@wirsuchen.com'))
 
@@ -79,7 +86,7 @@ export function DashboardMobileMenu() {
           Dashboard Menu
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-[280px] sm:w-[320px]">
+      <SheetContent side="left" className="w-[280px] sm:w-[320px] flex flex-col">
         <SheetHeader>
           <SheetTitle>Dashboard</SheetTitle>
         </SheetHeader>
@@ -107,7 +114,7 @@ export function DashboardMobileMenu() {
             </div>
           </div>
         )}
-        <nav className="mt-6">
+        <nav className="mt-6 flex-1 overflow-y-auto">
           <ul className="space-y-2">
             {navigation.map((item) => {
               const Icon = item.icon
@@ -178,8 +185,151 @@ export function DashboardMobileMenu() {
                 </li>
               </>
             )}
+            {role === 'supervisor' && (
+              <li>
+                <Link
+                  href="/supervisor"
+                  onClick={() => setOpen(false)}
+                  className={cn(
+                    "flex items-center rounded-lg px-3 py-3 text-sm font-medium transition-colors",
+                    pathname === "/supervisor"
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                  )}
+                >
+                  <UserCheck className="h-5 w-5 shrink-0" />
+                  <span className="ml-3">Supervisor</span>
+                </Link>
+              </li>
+            )}
+            {role === 'moderator' && (
+              <li>
+                <Link
+                  href="/moderator"
+                  onClick={() => setOpen(false)}
+                  className={cn(
+                    "flex items-center rounded-lg px-3 py-3 text-sm font-medium transition-colors",
+                    pathname === "/moderator"
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                  )}
+                >
+                  <Gavel className="h-5 w-5 shrink-0" />
+                  <span className="ml-3">Moderator</span>
+                </Link>
+              </li>
+            )}
+            {role === 'lister' && (
+              <li>
+                <Link
+                  href="/lister"
+                  onClick={() => setOpen(false)}
+                  className={cn(
+                    "flex items-center rounded-lg px-3 py-3 text-sm font-medium transition-colors",
+                    pathname === "/lister"
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                  )}
+                >
+                  <ClipboardList className="h-5 w-5 shrink-0" />
+                  <span className="ml-3">Lister</span>
+                </Link>
+              </li>
+            )}
+            {role === 'publisher' && (
+              <li>
+                <Link
+                  href="/publisher"
+                  onClick={() => setOpen(false)}
+                  className={cn(
+                    "flex items-center rounded-lg px-3 py-3 text-sm font-medium transition-colors",
+                    pathname === "/publisher"
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                  )}
+                >
+                  <Megaphone className="h-5 w-5 shrink-0" />
+                  <span className="ml-3">Publisher</span>
+                </Link>
+              </li>
+            )}
+            {role === 'blogger' && (
+              <li>
+                <Link
+                  href="/blogger"
+                  onClick={() => setOpen(false)}
+                  className={cn(
+                    "flex items-center rounded-lg px-3 py-3 text-sm font-medium transition-colors",
+                    pathname === "/blogger"
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                  )}
+                >
+                  <PenSquare className="h-5 w-5 shrink-0" />
+                  <span className="ml-3">Blogger</span>
+                </Link>
+              </li>
+            )}
+            {role === 'editor' && (
+              <li>
+                <Link
+                  href="/editor"
+                  onClick={() => setOpen(false)}
+                  className={cn(
+                    "flex items-center rounded-lg px-3 py-3 text-sm font-medium transition-colors",
+                    pathname === "/editor"
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                  )}
+                >
+                  <PenSquare className="h-5 w-5 shrink-0" />
+                  <span className="ml-3">Editor</span>
+                </Link>
+              </li>
+            )}
+            {role === 'analyst' && (
+              <li>
+                <Link
+                  href="/analyst"
+                  onClick={() => setOpen(false)}
+                  className={cn(
+                    "flex items-center rounded-lg px-3 py-3 text-sm font-medium transition-colors",
+                    pathname === "/analyst"
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                  )}
+                >
+                  <BarChart2 className="h-5 w-5 shrink-0" />
+                  <span className="ml-3">Analyst</span>
+                </Link>
+              </li>
+            )}
           </ul>
         </nav>
+
+        {/* User Actions */}
+        {user && (
+          <div className="mt-auto border-t pt-4 pb-4 px-4 space-y-2">
+            <Link href="/dashboard/profile" onClick={() => setOpen(false)}>
+              <Button variant="outline" size="sm" className="w-full bg-transparent">
+                <Settings className="h-4 w-4 mr-2" />
+                Settings
+              </Button>
+            </Link>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full bg-transparent"
+              onClick={() => {
+                logout()
+                setOpen(false)
+              }}
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Logout
+            </Button>
+          </div>
+        )}
       </SheetContent>
     </Sheet>
   )
