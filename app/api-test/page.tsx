@@ -60,7 +60,8 @@ export default function ApiTestPage() {
     name: string,
     endpoint: string,
     method: 'GET' | 'POST' | 'PUT' | 'DELETE',
-    body?: any
+    body?: any,
+    expectedStatus?: number // Optional: if provided, treat this status as success
   ) => {
     setCurrentTest(name)
     setTesting(true)
@@ -80,13 +81,18 @@ export default function ApiTestPage() {
       const response = await fetch(endpoint, options)
       const data = await response.json()
 
+      // Check if response matches expected status (for validation tests)
+      const isSuccess = expectedStatus 
+        ? response.status === expectedStatus 
+        : response.ok
+
       addResult({
         endpoint: name,
         method,
-        status: response.ok ? 'success' : 'error',
+        status: isSuccess ? 'success' : 'error',
         statusCode: response.status,
-        data: response.ok ? data : undefined,
-        error: response.ok ? undefined : JSON.stringify(data, null, 2)
+        data: isSuccess ? data : undefined,
+        error: isSuccess ? undefined : JSON.stringify(data, null, 2)
       })
     } catch (error: any) {
       addResult({
@@ -144,9 +150,36 @@ export default function ApiTestPage() {
   }
 
   const testPayment = async () => {
-    // Payment status requires order_id or invoice_id - test without params to show expected error
-    // In a real scenario, you would provide: /api/payment/paypal?order_id=xxx or ?invoice_id=xxx
-    await testEndpoint('Get Payment Status (no params - expected 400)', '/api/payment/paypal', 'GET')
+    // Test 1: Validation - should return 400 when no parameters provided
+    await testEndpoint(
+      'Get Payment Status (validation - no params)', 
+      '/api/payment/paypal', 
+      'GET',
+      undefined,
+      400 // Expected status code for validation error
+    )
+    
+    // Test 2: Create a payment order first, then test status retrieval
+    // This tests the full flow
+    const createResponse = await fetch('/api/payment/paypal', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        amount: 29.99,
+        currency: 'EUR',
+        description: 'Test Payment Status Check'
+      })
+    })
+    
+    if (createResponse.ok) {
+      const createData = await createResponse.json()
+      // Test getting payment status with the created order_id
+      await testEndpoint(
+        'Get Payment Status (with order_id)', 
+        `/api/payment/paypal?order_id=${createData.order_id}`, 
+        'GET'
+      )
+    }
   }
 
   const testCreatePayment = async () => {

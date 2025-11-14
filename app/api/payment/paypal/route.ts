@@ -42,6 +42,18 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
+    // Get base URL from request headers or environment variable
+    const getBaseUrl = () => {
+      if (process.env.NEXT_PUBLIC_APP_URL) {
+        return process.env.NEXT_PUBLIC_APP_URL
+      }
+      // Fallback to constructing from request
+      const protocol = request.headers.get('x-forwarded-proto') || 'http'
+      const host = request.headers.get('host') || 'localhost:3000'
+      return `${protocol}://${host}`
+    }
+    const baseUrl = getBaseUrl()
+
     // Create invoice record first
     const invoiceData = {
       user_id: profile.id,
@@ -89,8 +101,8 @@ export async function POST(request: NextRequest) {
       description: description,
       invoice_id: invoice.invoice_number,
       custom_id: invoice.id,
-      return_url: return_url || `${process.env.NEXT_PUBLIC_APP_URL}/payment/success`,
-      cancel_url: cancel_url || `${process.env.NEXT_PUBLIC_APP_URL}/payment/cancel`,
+      return_url: return_url || `${baseUrl}/payment/success`,
+      cancel_url: cancel_url || `${baseUrl}/payment/cancel`,
       items: items.map((item: any) => ({
         name: item.name,
         quantity: item.quantity || 1,
