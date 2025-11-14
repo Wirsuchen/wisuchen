@@ -11,6 +11,12 @@ export async function GET(
     const supabase = await createClient()
     const { id } = params
 
+    // Validate UUID format - if invalid, return 404 immediately
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    if (!uuidRegex.test(id)) {
+      return NextResponse.json({ error: 'Job not found' }, { status: 404 })
+    }
+
     const { data: job, error } = await supabase
       .from('offers')
       .select(`
@@ -24,7 +30,9 @@ export async function GET(
       .single()
 
     if (error) {
-      if (error.code === 'PGRST116') {
+      // PGRST116 = no rows returned (not found)
+      // 22P02 = invalid input syntax for UUID (also treat as not found)
+      if (error.code === 'PGRST116' || error.code === '22P02' || error.message?.includes('invalid input')) {
         return NextResponse.json({ error: 'Job not found' }, { status: 404 })
       }
       console.error('Error fetching job:', error)
