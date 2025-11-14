@@ -13,20 +13,26 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
-import { Upload, Eye, CreditCard, CheckCircle, Sparkles, Loader2 } from "lucide-react"
+import { Upload, Eye, CreditCard, CheckCircle, Sparkles, Loader2, Lock } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { JobDescriptionGenerator } from "@/components/ai/job-description-generator"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "@/contexts/auth-context"
+import Link from "next/link"
 
 export default function PostJobPage() {
   const router = useRouter()
+  const { user } = useAuth()
   const [step, setStep] = useState(1)
   const [showAIGenerator, setShowAIGenerator] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
   const [genReqLoading, setGenReqLoading] = useState(false)
   const [genBenLoading, setGenBenLoading] = useState(false)
   const { toast } = useToast()
+  
+  // Check if user has a paid plan (pro, professional, or business - covers legacy and new values)
+  const isPaidUser = !!(user && (user.isSubscribed || ['pro', 'professional', 'business'].includes(user.plan || '')))
   const [formData, setFormData] = useState({
     title: "",
     company: "",
@@ -74,6 +80,15 @@ export default function PostJobPage() {
   }
 
   const handleGenerateRequirements = async () => {
+    if (!isPaidUser) {
+      toast({
+        title: 'Upgrade Required',
+        description: 'AI features are available for Professional and Business plan subscribers. Upgrade to unlock this feature.',
+        variant: 'destructive',
+      })
+      return
+    }
+    
     try {
       setGenReqLoading(true)
       setFormData(prev => ({ ...prev, requirements: '' }))
@@ -101,6 +116,15 @@ export default function PostJobPage() {
   }
 
   const handleGenerateBenefits = async () => {
+    if (!isPaidUser) {
+      toast({
+        title: 'Upgrade Required',
+        description: 'AI features are available for Professional and Business plan subscribers. Upgrade to unlock this feature.',
+        variant: 'destructive',
+      })
+      return
+    }
+    
     try {
       setGenBenLoading(true)
       setFormData(prev => ({ ...prev, benefits: '' }))
@@ -333,21 +357,41 @@ export default function PostJobPage() {
                       <CardTitle className="flex items-center gap-2">
                         <Sparkles className="h-5 w-5 text-purple-500" />
                         AI Job Description Generator
+                        {!isPaidUser && (
+                          <Badge variant="secondary" className="ml-2">
+                            <Lock className="h-3 w-3 mr-1" />
+                            Pro Feature
+                          </Badge>
+                        )}
                       </CardTitle>
                       <CardDescription>
-                        Let AI create a professional job description for you
+                        {isPaidUser 
+                          ? 'Let AI create a professional job description for you'
+                          : 'Upgrade to Professional or Business plan to unlock AI-powered job description generation'
+                        }
                       </CardDescription>
                     </div>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setShowAIGenerator(!showAIGenerator)}
+                      onClick={() => {
+                        if (!isPaidUser) {
+                          toast({
+                            title: 'Upgrade Required',
+                            description: 'AI features are available for Professional and Business plan subscribers.',
+                            variant: 'destructive',
+                          })
+                          return
+                        }
+                        setShowAIGenerator(!showAIGenerator)
+                      }}
+                      disabled={!isPaidUser}
                     >
                       {showAIGenerator ? 'Hide AI Generator' : 'Use AI Generator'}
                     </Button>
                   </div>
                 </CardHeader>
-                {showAIGenerator && (
+                {showAIGenerator && isPaidUser && (
                   <CardContent>
                     <JobDescriptionGenerator
                       initialData={{
@@ -363,6 +407,20 @@ export default function PostJobPage() {
                         setShowPreview(true)
                       }}
                     />
+                  </CardContent>
+                )}
+                {!isPaidUser && (
+                  <CardContent>
+                    <div className="text-center py-8 border-2 border-dashed border-muted rounded-lg">
+                      <Lock className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                      <h3 className="text-lg font-semibold mb-2">AI Features Locked</h3>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Upgrade to Professional or Business plan to unlock AI-powered job description generation
+                      </p>
+                      <Button asChild>
+                        <Link href="/pricing">View Plans</Link>
+                      </Button>
+                    </div>
                   </CardContent>
                 )}
               </Card>
@@ -410,8 +468,20 @@ export default function PostJobPage() {
                   <div>
                     <div className="flex items-center justify-between">
                       <Label htmlFor="requirements">Requirements</Label>
-                      <Button type="button" variant="outline" size="sm" onClick={handleGenerateRequirements} disabled={genReqLoading} className="bg-transparent">
-                        {genReqLoading ? (<><Loader2 className="h-4 w-4 mr-2 animate-spin" />Generating…</>) : (<><Sparkles className="h-4 w-4 mr-2" />AI Generate</>)}
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={handleGenerateRequirements} 
+                        disabled={genReqLoading || !isPaidUser} 
+                        className="bg-transparent"
+                        title={!isPaidUser ? 'Upgrade to Professional or Business plan to use AI features' : ''}
+                      >
+                        {genReqLoading ? (
+                          <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Generating…</>
+                        ) : (
+                          <><Sparkles className="h-4 w-4 mr-2" />AI Generate {!isPaidUser && <Lock className="h-3 w-3 ml-1" />}</>
+                        )}
                       </Button>
                     </div>
                     <Textarea
@@ -426,8 +496,20 @@ export default function PostJobPage() {
                   <div>
                     <div className="flex items-center justify-between">
                       <Label htmlFor="benefits">Benefits & Perks</Label>
-                      <Button type="button" variant="outline" size="sm" onClick={handleGenerateBenefits} disabled={genBenLoading} className="bg-transparent">
-                        {genBenLoading ? (<><Loader2 className="h-4 w-4 mr-2 animate-spin" />Generating…</>) : (<><Sparkles className="h-4 w-4 mr-2" />AI Generate</>)}
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={handleGenerateBenefits} 
+                        disabled={genBenLoading || !isPaidUser} 
+                        className="bg-transparent"
+                        title={!isPaidUser ? 'Upgrade to Professional or Business plan to use AI features' : ''}
+                      >
+                        {genBenLoading ? (
+                          <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Generating…</>
+                        ) : (
+                          <><Sparkles className="h-4 w-4 mr-2" />AI Generate {!isPaidUser && <Lock className="h-3 w-3 ml-1" />}</>
+                        )}
                       </Button>
                     </div>
                     <Textarea

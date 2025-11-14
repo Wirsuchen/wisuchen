@@ -39,6 +39,7 @@ import { UserManagement } from './user-management'
 import { RolePermissions } from './role-permissions'
 import { useIsMobile } from '@/hooks/use-mobile'
 import Link from 'next/link'
+import Image from 'next/image'
 
 interface DashboardStats {
   totalJobs: number
@@ -63,6 +64,10 @@ interface ChartData {
 
 export function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('overview')
+  const [blogAuthors, setBlogAuthors] = useState<any[]>([])
+  const [blogLoading, setBlogLoading] = useState(false)
+  const [blogPosts, setBlogPosts] = useState<any[]>([])
+  const [blogPostsLoading, setBlogPostsLoading] = useState(false)
   const [stats, setStats] = useState<DashboardStats>({
     totalJobs: 0,
     activeJobs: 0,
@@ -112,6 +117,32 @@ export function AdminDashboard() {
     fetchDashboardStats()
     fetchSourceData()
   }, [])
+
+  useEffect(() => {
+    if (activeTab !== 'blog') return
+    ;(async () => {
+      setBlogLoading(true)
+      try {
+        const res = await fetch('/api/admin/blog/authors', { cache: 'no-store' })
+        if (res.ok) {
+          const data = await res.json()
+          setBlogAuthors(data.authors || [])
+        }
+      } catch {}
+      finally { setBlogLoading(false) }
+    })()
+    ;(async () => {
+      setBlogPostsLoading(true)
+      try {
+        const res = await fetch('/api/admin/blog/posts?limit=20', { cache: 'no-store' })
+        if (res.ok) {
+          const data = await res.json()
+          setBlogPosts(data.posts || [])
+        }
+      } catch {}
+      finally { setBlogPostsLoading(false) }
+    })()
+  }, [activeTab])
 
   const fetchDashboardStats = async () => {
     setIsLoading(true)
@@ -200,7 +231,7 @@ export function AdminDashboard() {
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <div className="overflow-x-auto">
-          <TabsList className="inline-flex w-auto min-w-full md:grid md:grid-cols-9 gap-2">
+          <TabsList className="inline-flex w-auto min-w-full md:grid md:grid-cols-10 gap-2">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="database">Database</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
@@ -208,6 +239,7 @@ export function AdminDashboard() {
             <TabsTrigger value="jobs">Job Import</TabsTrigger>
             <TabsTrigger value="affiliates">Affiliates</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="blog">Blog</TabsTrigger>
             <TabsTrigger value="billing">Billing</TabsTrigger>
             <TabsTrigger value="testing">API Testing</TabsTrigger>
           </TabsList>
@@ -387,6 +419,81 @@ export function AdminDashboard() {
                   </div>
                 ))}
               </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Blog Posts</CardTitle>
+              <CardDescription>Latest created posts with status</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {blogPostsLoading ? (
+                <div className="text-center py-8 text-muted-foreground">Loading posts...</div>
+              ) : blogPosts.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">No posts yet</div>
+              ) : (
+                <div className="space-y-3">
+                  {blogPosts.map((p) => (
+                    <div key={p.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="min-w-0">
+                        <div className="font-medium truncate">{p.title}</div>
+                        <div className="text-xs text-muted-foreground truncate">/{p.slug}</div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={p.status === 'published' ? 'default' : 'outline'}>{p.status}</Badge>
+                        <Button size="sm" variant="outline" onClick={async () => {
+                          const next = p.status === 'published' ? 'draft' : 'published'
+                          const res = await fetch(`/api/admin/blog/posts/${p.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: next }) })
+                          if (res.ok) {
+                            const { post } = await res.json()
+                            setBlogPosts((prev) => prev.map((it) => it.id === p.id ? { ...it, status: post.status, published_at: post.published_at } : it))
+                          }
+                        }}>
+                          {p.status === 'published' ? 'Unpublish' : 'Publish'}
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="blog" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Blog Authors</CardTitle>
+              <CardDescription>Users allowed to create blog posts</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex justify-between items-center mb-4">
+                <div className="text-sm text-muted-foreground">Roles: supervisor, admin, moderator, blogger, editor</div>
+                <Button asChild>
+                  <Link href="/admin/blog/create">Create New Post</Link>
+                </Button>
+              </div>
+              {blogLoading ? (
+                <div className="text-center py-8 text-muted-foreground">Loading authors...</div>
+              ) : blogAuthors.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">No authors found</div>
+              ) : (
+                <div className="space-y-3">
+                  {blogAuthors.map((a) => (
+                    <div key={a.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Image src={a.avatar_url || '/placeholder.svg'} alt={a.full_name || a.email} width={32} height={32} className="h-8 w-8 rounded-full object-cover" />
+                        <div>
+                          <div className="font-medium">{a.full_name || 'Unnamed'}</div>
+                          <div className="text-xs text-muted-foreground">{a.email}</div>
+                        </div>
+                      </div>
+                      <Badge variant="outline">{a.role}</Badge>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

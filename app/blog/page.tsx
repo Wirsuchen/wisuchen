@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { Button } from "@/components/ui/button"
@@ -10,132 +10,55 @@ import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Search, Calendar, Clock, ArrowRight, TrendingUp, ArrowLeft } from "lucide-react"
 import Link from "next/link"
+import { createClient } from "@/lib/supabase/client"
 
 export default function BlogPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [sortBy, setSortBy] = useState("newest")
-  const validPostIds = new Set<number>([1, 2])
+  const [loading, setLoading] = useState(true)
+  const [posts, setPosts] = useState<any[]>([])
+  const [categories, setCategories] = useState<{ id: string; name: string; count: number }[]>([{ id: "all", name: "All Posts", count: 0 }])
 
-  const categories = [
-    { id: "all", name: "All Posts", count: 24 },
-    { id: "job-tips", name: "Job Tips", count: 8 },
-    { id: "recruiting", name: "Recruiting", count: 6 },
-    { id: "market-insights", name: "Market Insights", count: 5 },
-    { id: "career-advice", name: "Career Advice", count: 3 },
-    { id: "deals", name: "Deals & Savings", count: 2 },
-  ]
+  useEffect(() => {
+    const supabase = createClient()
+    ;(async () => {
+      setLoading(true)
+      const { data } = await supabase
+        .from('blog_posts')
+        .select('id, title, slug, excerpt, content, featured_image_url, published_at, views_count, categories:categories(name,slug), profiles:profiles(full_name)')
+        .eq('status', 'published')
+        .order('published_at', { ascending: false })
+      const mapped = (data || []).map((p: any) => ({
+        id: p.id,
+        slug: p.slug,
+        title: p.title,
+        excerpt: p.excerpt || '',
+        content: p.content || '',
+        author: p.profiles?.full_name || 'Admin',
+        publishedDate: p.published_at || p.created_at,
+        readTime: `${Math.max(1, Math.round(((p.content || '').replace(/<[^>]+>/g, ' ').split(/\s+/).filter(Boolean).length) / 225))} min read`,
+        category: p.categories?.name || 'General',
+        categorySlug: p.categories?.slug || 'general',
+        tags: [],
+        image: p.featured_image_url || '/blog-market-trends.png',
+        featured: false,
+        views: p.views_count || 0,
+      }))
+      setPosts(mapped)
+      const counts: Record<string, { name: string; count: number }> = {}
+      mapped.forEach((m) => {
+        const key = m.categorySlug
+        if (!counts[key]) counts[key] = { name: m.category, count: 0 }
+        counts[key].count++
+      })
+      setCategories([{ id: 'all', name: 'All Posts', count: mapped.length }, ...Object.entries(counts).map(([id, v]) => ({ id, name: v.name, count: v.count }))])
+      setLoading(false)
+    })()
+  }, [])
 
-  const featuredPost = {
-    id: 1,
-    title: "The Future of Remote Work in Germany: Trends and Opportunities for 2024",
-    excerpt:
-      "Explore how remote work is reshaping the German job market and what it means for both employers and job seekers in the coming year.",
-    content: "Remote work has fundamentally changed the employment landscape in Germany...",
-    author: "Sarah Mueller",
-    publishedDate: "2024-01-20",
-    readTime: "8 min read",
-    category: "Market Insights",
-    tags: ["Remote Work", "Germany", "Trends", "2024"],
-    image: "/blog-market-trends.png",
-    featured: true,
-    views: 2456,
-  }
-
-  const blogPosts = [
-    {
-      id: 2,
-      title: "10 Essential Interview Tips That Will Land You Your Dream Job",
-      excerpt:
-        "Master the art of interviewing with these proven strategies that have helped thousands of candidates succeed.",
-      content: "Job interviews can be nerve-wracking, but with the right preparation...",
-      author: "Michael Schmidt",
-      publishedDate: "2024-01-18",
-      readTime: "6 min read",
-      category: "Job Tips",
-      tags: ["Interview", "Career", "Tips"],
-      image: "/blog-interview-tips.png",
-      featured: false,
-      views: 1834,
-    },
-    {
-      id: 3,
-      title: "How to Build an Effective Recruitment Strategy in 2024",
-      excerpt:
-        "Learn the latest recruitment techniques and tools that top companies are using to attract the best talent.",
-      content: "The recruitment landscape is evolving rapidly...",
-      author: "Anna Weber",
-      publishedDate: "2024-01-15",
-      readTime: "10 min read",
-      category: "Recruiting",
-      tags: ["Recruitment", "HR", "Strategy"],
-      image: "/blog-career-growth.png",
-      featured: false,
-      views: 1567,
-    },
-    {
-      id: 4,
-      title: "Salary Negotiation: A Complete Guide for German Job Market",
-      excerpt:
-        "Navigate salary negotiations with confidence using these expert tips tailored for the German employment market.",
-      content: "Salary negotiation is a crucial skill that can significantly impact your career...",
-      author: "Thomas Bauer",
-      publishedDate: "2024-01-12",
-      readTime: "7 min read",
-      category: "Career Advice",
-      tags: ["Salary", "Negotiation", "Germany"],
-      image: "/blog-salary-negotiation.png",
-      featured: false,
-      views: 2103,
-    },
-    {
-      id: 5,
-      title: "Best Tech Deals for Remote Workers: January 2024 Edition",
-      excerpt:
-        "Discover the top technology deals and discounts that can enhance your remote work setup without breaking the bank.",
-      content: "Working from home requires the right tools and equipment...",
-      author: "Lisa Chen",
-      publishedDate: "2024-01-10",
-      readTime: "5 min read",
-      category: "Deals & Savings",
-      tags: ["Tech", "Deals", "Remote Work"],
-      image: "/blog-market-trends.png",
-      featured: false,
-      views: 987,
-    },
-    {
-      id: 6,
-      title: "The Rise of AI in Recruitment: What Job Seekers Need to Know",
-      excerpt:
-        "Understand how artificial intelligence is changing the hiring process and how to adapt your job search strategy.",
-      content: "Artificial intelligence is revolutionizing many industries...",
-      author: "David Kim",
-      publishedDate: "2024-01-08",
-      readTime: "9 min read",
-      category: "Market Insights",
-      tags: ["AI", "Recruitment", "Technology"],
-      image: "/blog-ai-recruiting.png",
-      featured: false,
-      views: 1456,
-    },
-    {
-      id: 7,
-      title: "Building Your Personal Brand as a Professional",
-      excerpt:
-        "Learn how to create and maintain a strong personal brand that will help you stand out in today's competitive job market.",
-      content: "In today's digital age, personal branding has become essential...",
-      author: "Emma Johnson",
-      publishedDate: "2024-01-05",
-      readTime: "8 min read",
-      category: "Career Advice",
-      tags: ["Personal Brand", "LinkedIn", "Networking"],
-      image: "/blog-workplace-culture.png",
-      featured: false,
-      views: 1789,
-    },
-  ]
-
-  const allPosts = [featuredPost, ...blogPosts]
+  const featuredPost = useMemo(() => posts[0], [posts])
+  const allPosts = posts
 
   const filteredPosts = allPosts.filter((post) => {
     const matchesCategory =
@@ -157,6 +80,56 @@ export default function BlogPage() {
         return new Date(b.publishedDate).getTime() - new Date(a.publishedDate).getTime()
     }
   })
+
+  const handleNewsletterSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!newsletterEmail || !newsletterEmail.includes('@')) {
+      toast({
+        title: 'Invalid email',
+        description: 'Please enter a valid email address',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    setIsSubscribing(true)
+    
+    try {
+      const response = await fetch('/api/newsletter/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: newsletterEmail }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        toast({
+          title: 'Subscribed!',
+          description: 'Thank you for subscribing to our newsletter',
+        })
+        setNewsletterEmail('')
+      } else {
+        toast({
+          title: 'Error',
+          description: data.error || 'Failed to subscribe. Please try again.',
+          variant: 'destructive',
+        })
+      }
+    } catch (error) {
+      console.error('Newsletter subscription error:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to subscribe. Please try again later.',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsSubscribing(false)
+    }
+  }
 
   return (
     <div className="min-h-screen">
@@ -220,7 +193,7 @@ export default function BlogPage() {
         </div>
 
         {/* Featured Post */}
-        {selectedCategory === "all" && !searchQuery && (
+        {selectedCategory === "all" && !searchQuery && featuredPost && (
           <Card className="mb-12 overflow-hidden">
             <div className="grid grid-cols-1 lg:grid-cols-2">
               <div className="relative">
@@ -264,7 +237,7 @@ export default function BlogPage() {
                     </div>
                   </div>
                   <Button asChild>
-                    <Link href={validPostIds.has(featuredPost.id) ? `/blog/${featuredPost.id}` : '/blog'}>
+                    <Link href={`/blog/${featuredPost.slug}`}>
                       Read More
                       <ArrowRight className="h-4 w-4 ml-2" />
                     </Link>
@@ -277,7 +250,7 @@ export default function BlogPage() {
 
         {/* Blog Posts Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {sortedPosts.slice(selectedCategory === "all" && !searchQuery ? 1 : 0).map((post) => (
+          {sortedPosts.map((post) => (
             <Card key={post.id} className="hover:shadow-lg transition-shadow overflow-hidden">
               <div className="relative">
                 <img
@@ -299,7 +272,7 @@ export default function BlogPage() {
                     {post.readTime}
                   </div>
                 </div>
-                <Link href={validPostIds.has(post.id) ? `/blog/${post.id}` : '/blog'}>
+                <Link href={`/blog/${post.slug}`}>
                   <h3 className="text-lg font-semibold mb-3 hover:text-accent transition-colors line-clamp-2">
                     {post.title}
                   </h3>
@@ -348,10 +321,27 @@ export default function BlogPage() {
               Subscribe to our newsletter and get the latest career insights, job market trends, and exclusive deals
               delivered to your inbox.
             </p>
-            <div className="flex flex-col md:flex-row gap-4 max-w-md mx-auto">
-              <Input type="email" placeholder="Enter your email address" className="flex-1" />
-              <Button>Subscribe</Button>
-            </div>
+            <form onSubmit={handleNewsletterSubscribe} className="flex flex-col md:flex-row gap-4 max-w-md mx-auto">
+              <Input 
+                type="email" 
+                placeholder="Enter your email address" 
+                className="flex-1" 
+                value={newsletterEmail}
+                onChange={(e) => setNewsletterEmail(e.target.value)}
+                disabled={isSubscribing}
+                required
+              />
+              <Button type="submit" disabled={isSubscribing}>
+                {isSubscribing ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Subscribing...
+                  </>
+                ) : (
+                  'Subscribe'
+                )}
+              </Button>
+            </form>
           </CardContent>
         </Card>
       </main>

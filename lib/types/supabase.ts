@@ -330,6 +330,84 @@ export type Database = {
         }
         Relationships: []
       }
+      blog_posts: {
+        Row: {
+          id: string
+          title: string
+          slug: string
+          excerpt: string | null
+          content: string | null
+          featured_image_url: string | null
+          status: Database["public"]["Enums"]["content_status"] | null
+          category_id: string | null
+          author_id: string | null
+          seo_title: string | null
+          seo_description: string | null
+          seo_keywords: string | null
+          views_count: number | null
+          likes_count: number | null
+          comments_count: number | null
+          published_at: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          title: string
+          slug: string
+          excerpt?: string | null
+          content?: string | null
+          featured_image_url?: string | null
+          status?: Database["public"]["Enums"]["content_status"] | null
+          category_id?: string | null
+          author_id?: string | null
+          seo_title?: string | null
+          seo_description?: string | null
+          seo_keywords?: string | null
+          views_count?: number | null
+          likes_count?: number | null
+          comments_count?: number | null
+          published_at?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          title?: string
+          slug?: string
+          excerpt?: string | null
+          content?: string | null
+          featured_image_url?: string | null
+          status?: Database["public"]["Enums"]["content_status"] | null
+          category_id?: string | null
+          author_id?: string | null
+          seo_title?: string | null
+          seo_description?: string | null
+          seo_keywords?: string | null
+          views_count?: number | null
+          likes_count?: number | null
+          comments_count?: number | null
+          published_at?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blog_posts_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "blog_posts_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null

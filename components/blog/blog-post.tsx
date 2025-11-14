@@ -17,13 +17,15 @@ import {
   LinkIcon,
   ArrowLeft,
   ArrowRight,
+  Loader2,
 } from "lucide-react"
 import Link from "next/link"
-import { toast } from "@/hooks/use-toast"
+import { useToast } from "@/hooks/use-toast"
+import { Input } from "@/components/ui/input"
 
 interface BlogPostProps {
   post: {
-    id: number
+    id: string
     title: string
     excerpt: string
     content: string
@@ -40,6 +42,9 @@ interface BlogPostProps {
 export function BlogPost({ post }: BlogPostProps) {
   const [isLiked, setIsLiked] = useState(false)
   const [likes, setLikes] = useState(Math.floor(Math.random() * 100) + 50)
+  const [newsletterEmail, setNewsletterEmail] = useState("")
+  const [isSubscribing, setIsSubscribing] = useState(false)
+  const { toast } = useToast()
 
   const handleLike = () => {
     setIsLiked(!isLiked)
@@ -78,6 +83,56 @@ export function BlogPost({ post }: BlogPostProps) {
       }
     } catch (e: any) {
       toast({ title: "Share failed", description: e?.message || "Unable to share right now.", variant: "destructive" })
+    }
+  }
+
+  const handleNewsletterSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!newsletterEmail || !newsletterEmail.includes('@')) {
+      toast({
+        title: 'Invalid email',
+        description: 'Please enter a valid email address',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    setIsSubscribing(true)
+    
+    try {
+      const response = await fetch('/api/newsletter/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: newsletterEmail }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        toast({
+          title: 'Subscribed!',
+          description: 'Thank you for subscribing to our newsletter',
+        })
+        setNewsletterEmail('')
+      } else {
+        toast({
+          title: 'Error',
+          description: data.error || 'Failed to subscribe. Please try again.',
+          variant: 'destructive',
+        })
+      }
+    } catch (error) {
+      console.error('Newsletter subscription error:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to subscribe. Please try again later.',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsSubscribing(false)
     }
   }
 
@@ -185,45 +240,7 @@ export function BlogPost({ post }: BlogPostProps) {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Article Content */}
         <div className="lg:col-span-3">
-          <div className="prose prose-lg max-w-none">
-            <div className="whitespace-pre-wrap leading-relaxed">
-              {post.content.split("\n").map((paragraph, index) => {
-                if (paragraph.startsWith("## ")) {
-                  return (
-                    <h2 key={index} className="text-2xl font-bold mt-8 mb-4">
-                      {paragraph.replace("## ", "")}
-                    </h2>
-                  )
-                } else if (paragraph.startsWith("### ")) {
-                  return (
-                    <h3 key={index} className="text-xl font-semibold mt-6 mb-3">
-                      {paragraph.replace("### ", "")}
-                    </h3>
-                  )
-                } else if (paragraph.startsWith("**") && paragraph.endsWith("**")) {
-                  return (
-                    <p key={index} className="font-semibold mt-4 mb-2">
-                      {paragraph.replace(/\*\*/g, "")}
-                    </p>
-                  )
-                } else if (paragraph.startsWith("- ")) {
-                  return (
-                    <li key={index} className="ml-4 mb-1">
-                      {paragraph.replace("- ", "")}
-                    </li>
-                  )
-                } else if (paragraph.trim() === "") {
-                  return <br key={index} />
-                } else {
-                  return (
-                    <p key={index} className="mb-4">
-                      {paragraph}
-                    </p>
-                  )
-                }
-              })}
-            </div>
-          </div>
+          <div className="prose prose-lg max-w-none" dangerouslySetInnerHTML={{ __html: post.content }} />
 
           {/* Tags */}
           <div className="mt-8 pt-8 border-t">
@@ -322,12 +339,27 @@ export function BlogPost({ post }: BlogPostProps) {
                 <p className="text-sm text-muted-foreground mb-4">
                   Get the latest career insights delivered to your inbox.
                 </p>
-                <div className="space-y-2">
-                  <input type="email" placeholder="Your email" className="w-full px-3 py-2 border rounded-md text-sm" />
-                  <Button size="sm" className="w-full">
-                    Subscribe
+                <form onSubmit={handleNewsletterSubscribe} className="space-y-2">
+                  <Input 
+                    type="email" 
+                    placeholder="Your email" 
+                    className="text-sm"
+                    value={newsletterEmail}
+                    onChange={(e) => setNewsletterEmail(e.target.value)}
+                    disabled={isSubscribing}
+                    required
+                  />
+                  <Button size="sm" className="w-full" type="submit" disabled={isSubscribing}>
+                    {isSubscribing ? (
+                      <>
+                        <Loader2 className="h-3 w-3 mr-2 animate-spin" />
+                        Subscribing...
+                      </>
+                    ) : (
+                      'Subscribe'
+                    )}
                   </Button>
-                </div>
+                </form>
               </CardContent>
             </Card>
           </div>

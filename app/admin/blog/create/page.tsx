@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { PageLayout } from '@/components/layout/page-layout'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { RichTextEditor } from '@/components/ui/rich-text-editor'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { BlogGenerator } from '@/components/ai/blog-generator'
@@ -14,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Sparkles, Save, Eye, Languages } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 
 export default function CreateBlogPage() {
   const router = useRouter()
@@ -30,6 +32,9 @@ export default function CreateBlogPage() {
     metaDescription: '',
     keywords: [] as string[],
   })
+  const [featuredImageUrl, setFeaturedImageUrl] = useState<string>('')
+  const [uploadingImage, setUploadingImage] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   const handleAIGenerated = (content: string) => {
     setFormData((prev) => ({ ...prev, content }))
@@ -38,6 +43,66 @@ export default function CreateBlogPage() {
       title: '✨ Content Generated!',
       description: 'AI has created your blog article',
     })
+  }
+
+  const onPickImage = () => fileInputRef.current?.click()
+
+  const handleImageSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+      toast({ title: 'Invalid file', description: 'Please select an image file', variant: 'destructive' })
+      return
+    }
+    setUploadingImage(true)
+    try {
+      const supabase = createClient()
+      const ext = file.name.split('.').pop() || 'png'
+      const nameSanitized = file.name.replace(/[^a-zA-Z0-9_.-]+/g, '-')
+      const path = `blog/featured/${Date.now()}-${Math.random().toString(36).slice(2)}-${nameSanitized}`
+      const { error: uploadErr } = await supabase.storage.from('public-media').upload(path, file, {
+        contentType: file.type,
+        cacheControl: '3600',
+        upsert: false,
+      })
+      if (uploadErr) throw uploadErr
+
+      const { data: pub } = supabase.storage.from('public-media').getPublicUrl(path)
+      const publicUrl = pub?.publicUrl
+      if (!publicUrl) throw new Error('Failed to generate public URL')
+
+      // Try setting uploaded_by to current profile if available
+      let uploadedBy: string | null = null
+      const { data: auth } = await supabase.auth.getUser()
+      if (auth?.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('user_id', auth.user.id)
+          .maybeSingle()
+        uploadedBy = profile?.id ?? null
+      }
+
+      await supabase.from('media_files').insert({
+        filename: nameSanitized,
+        original_filename: file.name,
+        file_path: path,
+        file_size: file.size,
+        mime_type: file.type,
+        uploaded_by: uploadedBy,
+        bucket_name: 'public-media',
+        is_public: true,
+        alt_text: formData.title || null,
+      })
+
+      setFeaturedImageUrl(publicUrl)
+      toast({ title: 'Image uploaded', description: 'Featured image is set.' })
+    } catch (err: any) {
+      toast({ title: 'Upload failed', description: err?.message || 'Could not upload image', variant: 'destructive' })
+    } finally {
+      setUploadingImage(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
   }
 
   const handleTranslated = (translation: string, targetLang: 'de' | 'en' | 'fr' | 'it') => {
@@ -58,16 +123,45 @@ export default function CreateBlogPage() {
   }
 
   const handleSave = async (status: 'draft' | 'published') => {
-    // TODO: Implement save to database
-    toast({
-      title: status === 'draft' ? 'Draft Saved' : 'Published!',
-      description: `Blog post has been ${status === 'draft' ? 'saved as draft' : 'published'}`,
-    })
-    
-    // Redirect after save
-    setTimeout(() => {
-      router.push('/admin')
-    }, 2000)
+    const categoryMap: Record<string, string | null> = {
+      'job-tips': 'career-tips',
+      'recruiting': 'industry-news',
+      'market-insights': 'industry-news',
+      'career-advice': 'career-tips',
+      'deals': null,
+    }
+    const categorySlug = categoryMap[formData.category] ?? null
+    try {
+      const res = await fetch('/api/admin/blog/posts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: formData.title,
+          content: formData.content,
+          excerpt: formData.excerpt,
+          status,
+          seoTitle: formData.title,
+          seoDescription: formData.metaDescription || formData.excerpt,
+          seoKeywords: formData.keywords,
+          categorySlug,
+          featuredImageUrl: featuredImageUrl || null,
+        }),
+      })
+      if (!res.ok) {
+        const { error } = await res.json().catch(() => ({ error: 'Failed to save' }))
+        throw new Error(error || 'Failed to save')
+      }
+      const data = await res.json()
+      toast({
+        title: status === 'draft' ? 'Draft Saved' : 'Published!',
+        description: `Post ${status} with slug: ${data.slug}`,
+      })
+      setTimeout(() => {
+        router.push('/admin')
+      }, 1200)
+    } catch (e: any) {
+      toast({ title: 'Save failed', description: e?.message || 'Unable to save post', variant: 'destructive' })
+    }
   }
 
   return (
@@ -150,6 +244,45 @@ export default function CreateBlogPage() {
               />
             </div>
 
+            {/* Featured Image */}
+            <div className="space-y-2">
+              <Label>Featured Image</Label>
+              {featuredImageUrl ? (
+                <div className="space-y-2">
+                  <div className="w-full h-48 border rounded-md overflow-hidden bg-muted">
+                    <img src={featuredImageUrl} alt="Featured" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" type="button" onClick={onPickImage} disabled={uploadingImage}>
+                      {uploadingImage ? 'Uploading...' : 'Change Image'}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      type="button"
+                      onClick={() => setFeaturedImageUrl('')}
+                      disabled={uploadingImage}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <Button variant="outline" type="button" onClick={onPickImage} disabled={uploadingImage}>
+                    {uploadingImage ? 'Uploading...' : 'Upload Featured Image'}
+                  </Button>
+                  <p className="text-sm text-muted-foreground">PNG, JPG up to ~5MB</p>
+                </div>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageSelected}
+              />
+            </div>
+
             {/* Content with Translation */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -163,17 +296,14 @@ export default function CreateBlogPage() {
                   />
                 )}
               </div>
-              <Textarea
-                id="content"
+              <RichTextEditor
                 value={formData.content}
-                onChange={(e) => setFormData((prev) => ({ ...prev, content: e.target.value }))}
+                onChange={(html) => setFormData((prev) => ({ ...prev, content: html }))}
                 placeholder="Write your article content here..."
-                rows={20}
-                className="font-mono text-sm"
               />
               {formData.content && (
                 <p className="text-sm text-muted-foreground">
-                  {formData.content.split(' ').length} words, {formData.content.length} characters
+                  {formData.content.replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(Boolean).length} words, {formData.content.replace(/<[^>]+>/g, '').length} characters
                 </p>
               )}
             </div>
