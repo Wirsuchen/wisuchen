@@ -51,16 +51,21 @@ export function DashboardSidebar() {
       }
     }
     try {
-      const existing = document.querySelector('script[src*="translate_a/element.js"]')
-      if (!existing) {
-        const s = document.createElement('script')
-        s.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit'
-        document.body.appendChild(s)
+      if (typeof document !== 'undefined') {
+        const existing = document.querySelector('script[src*="translate_a/element.js"]')
+        if (!existing) {
+          const s = document.createElement('script')
+          s.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit'
+          document.body.appendChild(s)
+        }
       }
     } catch {}
-    const id = window.setInterval(tryInit, 500)
-    tryInit()
-    return () => window.clearInterval(id)
+    if (typeof window !== 'undefined') {
+      const id = window.setInterval(tryInit, 500)
+      tryInit()
+      return () => window.clearInterval(id)
+    }
+    return () => {}
   }, [])
 
   const navigation = [

@@ -27,9 +27,11 @@ function getStoredLocale(): Locale {
   }
   
   // Try cookie
-  const cookieMatch = document.cookie.match(/NEXT_LOCALE=([^;]+)/)
-  if (cookieMatch && isValidLocale(cookieMatch[1])) {
-    return cookieMatch[1] as Locale
+  if (typeof document !== 'undefined') {
+    const cookieMatch = document.cookie.match(/NEXT_LOCALE=([^;]+)/)
+    if (cookieMatch && isValidLocale(cookieMatch[1])) {
+      return cookieMatch[1] as Locale
+    }
   }
   
   return defaultLocale

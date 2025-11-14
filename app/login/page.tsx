@@ -29,9 +29,18 @@ export default function LoginPage() {
     )
   }
 
-  // If user exists, don't show login form (redirect is happening)
+  // If user exists, show redirecting message
   if (user) {
-    return null
+    return (
+      <PageLayout showBackButton={false} containerClassName="">
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
+            <p className="text-muted-foreground">You are already logged in. Redirecting...</p>
+          </div>
+        </div>
+      </PageLayout>
+    )
   }
 
   return (

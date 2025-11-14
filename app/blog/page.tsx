@@ -15,6 +15,7 @@ export default function BlogPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [sortBy, setSortBy] = useState("newest")
+  const validPostIds = new Set<number>([1, 2])
 
   const categories = [
     { id: "all", name: "All Posts", count: 24 },
@@ -263,7 +264,7 @@ export default function BlogPage() {
                     </div>
                   </div>
                   <Button asChild>
-                    <Link href={`/blog/${featuredPost.id}`}>
+                    <Link href={validPostIds.has(featuredPost.id) ? `/blog/${featuredPost.id}` : '/blog'}>
                       Read More
                       <ArrowRight className="h-4 w-4 ml-2" />
                     </Link>
@@ -298,7 +299,7 @@ export default function BlogPage() {
                     {post.readTime}
                   </div>
                 </div>
-                <Link href={`/blog/${post.id}`}>
+                <Link href={validPostIds.has(post.id) ? `/blog/${post.id}` : '/blog'}>
                   <h3 className="text-lg font-semibold mb-3 hover:text-accent transition-colors line-clamp-2">
                     {post.title}
                   </h3>

@@ -138,6 +138,7 @@ export function Profile() {
               </Button>
             </div>
             <Button variant="outline" className="w-full bg-transparent" disabled={avatarUploading} onClick={async () => {
+              if (typeof document === 'undefined') return
               const input = document.createElement('input')
               input.type = 'file'
               input.accept = 'image/*'

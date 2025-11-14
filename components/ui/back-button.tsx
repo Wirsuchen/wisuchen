@@ -12,7 +12,7 @@ export function BackButton({ className }: BackButtonProps) {
   const router = useRouter()
 
   const handleGoBack = () => {
-    if (window.history.length > 1) {
+    if (typeof window !== 'undefined' && window.history.length > 1) {
       router.back()
     } else {
       router.push("/")

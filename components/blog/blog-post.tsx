@@ -19,6 +19,7 @@ import {
   ArrowRight,
 } from "lucide-react"
 import Link from "next/link"
+import { toast } from "@/hooks/use-toast"
 
 interface BlogPostProps {
   post: {
@@ -45,23 +46,38 @@ export function BlogPost({ post }: BlogPostProps) {
     setLikes(isLiked ? likes - 1 : likes + 1)
   }
 
-  const handleShare = (platform: string) => {
-    const url = window.location.href
+  const handleShare = async (platform: string) => {
+    const url = typeof window !== 'undefined' ? window.location.href : ''
     const text = `Check out this article: ${post.title}`
 
-    switch (platform) {
-      case "twitter":
-        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`)
-        break
-      case "facebook":
-        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`)
-        break
-      case "linkedin":
-        window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`)
-        break
-      case "copy":
-        navigator.clipboard.writeText(url)
-        break
+    try {
+      switch (platform) {
+        case "native": {
+          if (navigator.share) {
+            await navigator.share({ title: post.title, text, url })
+            toast({ title: "Shared", description: "Thanks for sharing this article." })
+          } else {
+            await navigator.clipboard.writeText(url)
+            toast({ title: "Link copied", description: "Share it with your friends." })
+          }
+          break
+        }
+        case "twitter":
+          window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`)
+          break
+        case "facebook":
+          window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`)
+          break
+        case "linkedin":
+          window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`)
+          break
+        case "copy":
+          await navigator.clipboard.writeText(url)
+          toast({ title: "Link copied", description: "URL copied to clipboard." })
+          break
+      }
+    } catch (e: any) {
+      toast({ title: "Share failed", description: e?.message || "Unable to share right now.", variant: "destructive" })
     }
   }
 
@@ -149,7 +165,7 @@ export function BlogPost({ post }: BlogPostProps) {
               <Heart className={`h-4 w-4 mr-2 ${isLiked ? "fill-current" : ""}`} />
               {likes}
             </Button>
-            <Button variant="outline" size="sm" className="bg-transparent">
+            <Button variant="outline" size="sm" className="bg-transparent" onClick={() => handleShare("native")}>
               <Share2 className="h-4 w-4 mr-2" />
               Share
             </Button>

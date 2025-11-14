@@ -49,7 +49,7 @@ export function Header() {
 
   // Lock background scroll when mobile menu is open
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && typeof window !== 'undefined' && typeof document !== 'undefined') {
       const { style } = document.documentElement
       const prevOverflow = style.overflow
       const prevPaddingRight = style.paddingRight
@@ -220,6 +220,7 @@ export function Header() {
                   className="h-8 px-3 text-foreground hover:bg-accent hover:text-accent-foreground"
                   onClick={() => {
                     try {
+                      if (typeof document === 'undefined') return
                       const existing = document.querySelector('script[src*="translate_a/element.js"]')
                       if (!existing) {
                         const s = document.createElement('script')
