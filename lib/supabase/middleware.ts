@@ -47,11 +47,39 @@ export async function updateSession(request: NextRequest) {
   const pathname = request.nextUrl.pathname
   const PROTECTED_PREFIXES = ['/dashboard', '/account', '/profile', '/settings', '/admin', '/app']
   const requiresAuth = PROTECTED_PREFIXES.some((p) => pathname.startsWith(p))
+  const isAdminRoute = pathname.startsWith('/admin') && pathname !== '/admin/login'
 
+  // Redirect unauthenticated users
   if (!user && requiresAuth) {
     const url = request.nextUrl.clone()
-    url.pathname = '/login'
+    // Admin routes redirect to admin login, others to regular login
+    url.pathname = isAdminRoute ? '/admin/login' : '/login'
     return NextResponse.redirect(url)
+  }
+
+  // For admin routes, check if user has admin role
+  if (user && isAdminRoute) {
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('user_id', user.id)
+        .single()
+
+      const ADMIN_ROLES = ['supervisor', 'admin', 'moderator']
+      
+      // If user doesn't have admin role, redirect to home
+      if (!profile || !ADMIN_ROLES.includes(profile.role)) {
+        const url = request.nextUrl.clone()
+        url.pathname = '/'
+        return NextResponse.redirect(url)
+      }
+    } catch (error) {
+      // If error checking profile, redirect to admin login
+      const url = request.nextUrl.clone()
+      url.pathname = '/admin/login'
+      return NextResponse.redirect(url)
+    }
   }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is.

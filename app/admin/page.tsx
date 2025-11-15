@@ -9,7 +9,7 @@ export default async function AdminPage() {
   // Check authentication
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) {
-    redirect('/login')
+    redirect('/admin/login')
   }
 
   // Get user profile and check permissions
@@ -20,11 +20,12 @@ export default async function AdminPage() {
     .single()
 
   if (profileError || !profile) {
-    redirect('/login')
+    redirect('/admin/login')
   }
 
-  // Check if user has admin privileges
+  // Check if user has admin privileges - only supervisor, admin, and moderator can access
   if (!['supervisor', 'admin', 'moderator'].includes(profile.role)) {
+    // Non-admin users should be redirected away
     redirect('/')
   }
 

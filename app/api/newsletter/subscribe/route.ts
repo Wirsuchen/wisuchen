@@ -1,25 +1,24 @@
 /**
  * Newsletter Subscription API
  * POST /api/newsletter/subscribe
- * Subscribes an email to the newsletter via Mailjet
+ * Subscribes an email to the newsletter via Resend (Supabase Edge Function)
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { mailjetService } from '@/lib/services/email/mailjet'
+import { resendService } from '@/lib/services/email/resend'
 import { withRateLimit } from '@/lib/utils/rate-limiter'
 
 // Validation schema
 const subscribeSchema = z.object({
   email: z.string().email('Invalid email address'),
   name: z.string().optional(),
-  listId: z.number().optional(),
 })
 
 async function handler(req: NextRequest) {
   try {
-    // Check if Mailjet is configured
-    if (!mailjetService.isConfigured()) {
+    // Check if Resend service is configured
+    if (!resendService.isConfigured()) {
       return NextResponse.json(
         {
           success: false,
@@ -33,10 +32,9 @@ async function handler(req: NextRequest) {
     const validatedData = subscribeSchema.parse(body)
 
     // Subscribe to newsletter
-    const result = await mailjetService.subscribeToNewsletter({
+    const result = await resendService.subscribeToNewsletter({
       email: validatedData.email,
       name: validatedData.name,
-      listId: validatedData.listId,
     })
 
     return NextResponse.json(
@@ -64,7 +62,7 @@ async function handler(req: NextRequest) {
       )
     }
 
-    // Mailjet errors
+    // Resend errors
     if (error.message?.includes('already')) {
       return NextResponse.json(
         {
