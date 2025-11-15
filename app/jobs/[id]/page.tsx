@@ -29,6 +29,18 @@ import { fetchWithCache } from "@/lib/utils/client-cache"
 import { useAuth } from "@/contexts/auth-context"
 import { toast } from "@/hooks/use-toast"
 
+const sanitizeJobDescription = (text: string) => {
+  if (!text) return ""
+  return text
+    // Remove bracketed token like "]init["
+    .replace(/\]init\[/gi, "")
+    // Remove standalone word "init" (case-insensitive)
+    .replace(/\binit\b/gi, "")
+    // Collapse multiple spaces
+    .replace(/\s{2,}/g, " ")
+    .trim()
+}
+
 export default function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const [isImproving, setIsImproving] = useState(false)
   const [improvedDescription, setImprovedDescription] = useState("")
@@ -168,6 +180,7 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
   )
   const jobType = job.employmentType ? job.employmentType.replace('_', ' ') : undefined
   const postedDate = job.publishedAt ? new Date(job.publishedAt).toLocaleDateString() : undefined
+  const cleanedDescription = sanitizeJobDescription(job.description || "")
 
   return (
     <div className="min-h-screen">
@@ -241,7 +254,7 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
                             body: JSON.stringify({
                               id: job.id,
                               title: job.title,
-                              description: job.description,
+                              description: cleanedDescription,
                               company: job.company,
                               location: job.location,
                               employmentType: job.employmentType,
@@ -295,7 +308,7 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
                   <div>
                     <h3 className="text-lg font-semibold mb-3">Job Description</h3>
                     <div className="prose prose-sm max-w-none">
-                      <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed">{job.description}</pre>
+                      <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed">{cleanedDescription}</pre>
                     </div>
                   </div>
 
@@ -389,7 +402,7 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
                         body: JSON.stringify({
                           id: job.id,
                           title: job.title,
-                          description: job.description,
+                          description: cleanedDescription,
                           company: job.company,
                           location: job.location,
                           employmentType: job.employmentType,

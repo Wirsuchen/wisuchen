@@ -15,6 +15,21 @@ import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/contexts/auth-context'
 import Link from 'next/link'
 
+const sanitizeJobDescription = (text: string) => {
+  if (!text) return ''
+  return text
+    .replace(/\]init\[/gi, '')
+    .replace(/\binit\b/gi, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim()
+}
+
+const getJobSnippet = (text?: string | null, max: number = 250) => {
+  if (!text) return ''
+  const cleaned = sanitizeJobDescription(text).replace(/<[^>]*>/g, '')
+  return cleaned.substring(0, max)
+}
+
 interface UserPostedJob {
   id: string
   title: string
@@ -450,7 +465,7 @@ function JobCard({ job }: { job: Job }) {
 
       {job.description && (
         <p className="text-gray-700 mb-4 line-clamp-2">
-          {job.description.replace(/<[^>]*>/g, '').substring(0, 250)}...
+          {getJobSnippet(job.description)}...
         </p>
       )}
 
@@ -585,7 +600,7 @@ function UserJobCard({ job }: { job: UserPostedJob }) {
 
       {job.description && (
         <p className="text-gray-700 mb-4 line-clamp-2">
-          {job.description.replace(/<[^>]*>/g, '').substring(0, 250)}...
+          {getJobSnippet(job.description)}...
         </p>
       )}
 
