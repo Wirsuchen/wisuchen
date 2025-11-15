@@ -5,11 +5,11 @@ import type { OfferUpdate } from '@/lib/types/database'
 // GET /api/jobs/[id] - Get a specific job
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient()
-    const { id } = params
+    const { id } = await context.params
 
     // Validate UUID format - if invalid, return 404 immediately
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -69,11 +69,11 @@ export async function GET(
 // PUT /api/jobs/[id] - Update a job
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient()
-    const { id } = params
+    const { id } = await context.params
 
     // Check authentication
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -162,11 +162,11 @@ export async function PUT(
 // DELETE /api/jobs/[id] - Delete a job
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient()
-    const { id } = params
+    const { id } = await context.params
 
     // Check authentication
     const { data: { user }, error: authError } = await supabase.auth.getUser()
