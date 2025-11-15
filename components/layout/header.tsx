@@ -84,9 +84,9 @@ export function Header() {
       <div className="container mx-auto px-4 sm:px-6">
         {/* Outer container */}
         <div
-          className={`transition-all duration-300 mx-0 ${isScrolled ? "my-2" : "my-4"} rounded-2xl bg-background`}
+          className={`transition-all duration-300 mx-0 ${isScrolled ? "my-1" : "my-2"} rounded-2xl bg-background`}
         >
-          <div className="flex h-20 sm:h-24 md:h-28 items-center justify-between px-4 sm:px-6">
+          <div className="flex h-16 sm:h-20 md:h-24 items-center justify-between px-4 sm:px-6">
             {/* Logo - Mobile First */}
             <Link href="/" className="flex items-center space-x-2 flex-shrink-0 relative z-10">
   <div className="w-30 h-30 sm:w-30 sm:h-30 md:w-30 md:h-30 flex items-center justify-center overflow-hidden">

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, use } from "react"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { Button } from "@/components/ui/button"
@@ -41,11 +41,11 @@ const sanitizeJobDescription = (text: string) => {
     .trim()
 }
 
-export default function JobDetailPage({ params }: { params: { id: string } }) {
+export default function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: routeId } = use(params)
   const [isImproving, setIsImproving] = useState(false)
   const [improvedDescription, setImprovedDescription] = useState("")
   const searchParams = useSearchParams()
-  const routeId = params.id
   const { user } = useAuth()
   const canUseAI = !!(user && (user.isSubscribed || ['pro','premium'].includes(user.plan || '')))
 
