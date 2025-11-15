@@ -40,7 +40,10 @@ export default function SavedPage() {
   }))
 
   const savedDeals = items.filter(i => i.offer?.type === 'affiliate').map(i => ({
-    id: i.offer_id,
+    // Use external_id when available so it matches IDs returned by the deals API
+    id: i.offer?.external_id || i.offer_id,
+    // Keep internal offer_id separately for DELETE /api/saved and local state updates
+    offerId: i.offer_id,
     title: i.offer?.title,
     originalPrice: i.offer?.price,
     currentPrice: i.offer?.price,
@@ -156,8 +159,8 @@ export default function SavedPage() {
                         variant="ghost" 
                         size="sm" 
                         onClick={async () => {
-                          await fetch(`/api/saved?offer_id=${deal.id}`, { method: 'DELETE' })
-                          setItems(prev => prev.filter(i => i.offer_id !== deal.id))
+                          await fetch(`/api/saved?offer_id=${deal.offerId}`, { method: 'DELETE' })
+                          setItems(prev => prev.filter(i => i.offer_id !== deal.offerId))
                         }}
                       >
                         <Trash2 className="h-4 w-4" />

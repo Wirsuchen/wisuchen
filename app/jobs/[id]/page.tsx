@@ -41,11 +41,11 @@ const sanitizeJobDescription = (text: string) => {
     .trim()
 }
 
-export default function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default function JobDetailPage({ params }: { params: { id: string } }) {
   const [isImproving, setIsImproving] = useState(false)
   const [improvedDescription, setImprovedDescription] = useState("")
   const searchParams = useSearchParams()
-  const [jobId, setJobId] = useState<string | null>(null)
+  const routeId = params.id
   const { user } = useAuth()
   const canUseAI = !!(user && (user.isSubscribed || ['pro','premium'].includes(user.plan || '')))
 
@@ -64,24 +64,99 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
   const [job, setJob] = useState<ExtJob | null>(null)
   const [relatedJobs, setRelatedJobs] = useState<Job[]>([])
   const [loadingRelated, setLoadingRelated] = useState(false)
+  const [loadingJob, setLoadingJob] = useState(true)
 
-  // Unwrap params
+  // Load job either from sessionStorage (when coming from external search with source)
+  // or from the database via /api/jobs/[id] (when opened from /saved or user-posted jobs)
   useEffect(() => {
-    params.then(p => setJobId(p.id))
-  }, [params])
+    const id = routeId
+    if (!id) {
+      setJob(null)
+      setLoadingJob(false)
+      return
+    }
 
-  useEffect(() => {
-    if (!jobId) return
-    const source = searchParams.get('source') || 'rapidapi'
-    const storageKey = `job:${source}:${jobId}`
-    try {
-      const raw = sessionStorage.getItem(storageKey)
-      if (raw) {
-        const parsed = JSON.parse(raw) as ExtJob
-        setJob(parsed)
+    const loadJob = async () => {
+      const source = searchParams.get('source')
+
+      // Try sessionStorage first when a source is provided (external search flow)
+      if (source) {
+        try {
+          const storageKey = `job:${source}:${id}`
+          if (typeof window !== 'undefined') {
+            const raw = sessionStorage.getItem(storageKey)
+            if (raw) {
+              const parsed = JSON.parse(raw) as ExtJob
+              setJob(parsed)
+              setLoadingJob(false)
+              return
+            }
+          }
+        } catch (error) {
+          console.error('Error reading job from sessionStorage:', error)
+        }
       }
-    } catch {}
-  }, [jobId, searchParams])
+
+      // Fallback: fetch from API using internal offer ID (supports saved and user-posted jobs)
+      setLoadingJob(true)
+      try {
+        const res = await fetch(`/api/jobs/${encodeURIComponent(id)}`)
+        if (!res.ok) {
+          setJob(null)
+          return
+        }
+
+        const data = await res.json()
+        const dbJob = data.job
+        if (!dbJob) {
+          setJob(null)
+          return
+        }
+
+        const mapped: ExtJob = {
+          id: dbJob.id,
+          externalId: dbJob.external_id || dbJob.id,
+          title: dbJob.title,
+          description: dbJob.description || "",
+          company: (dbJob.company && dbJob.company.name) || "",
+          location: dbJob.location || "",
+          salary: dbJob.salary_min || dbJob.salary_max
+            ? {
+                min: dbJob.salary_min || undefined,
+                max: dbJob.salary_max || undefined,
+                currency: dbJob.salary_currency || undefined,
+                text:
+                  dbJob.salary_min && dbJob.salary_max
+                    ? `€${dbJob.salary_min}-€${dbJob.salary_max}`
+                    : undefined,
+              }
+            : undefined,
+          employmentType: dbJob.employment_type || undefined,
+          experienceLevel: dbJob.experience_level || undefined,
+          skills: dbJob.skills || [],
+          applicationUrl: dbJob.application_url || undefined,
+          source: dbJob.source || 'database',
+          publishedAt: dbJob.published_at || dbJob.created_at || new Date().toISOString(),
+          logo: dbJob.company?.logo_url || undefined,
+          companySize: dbJob.company?.company_size || undefined,
+          industry: dbJob.company?.industry || undefined,
+          website: dbJob.company?.website_url || undefined,
+          applicants: (dbJob as any).applications_count || undefined,
+          postedDate: dbJob.published_at || undefined,
+          type: dbJob.employment_type || undefined,
+        }
+
+        setJob(mapped)
+      } catch (error) {
+        console.error('Error fetching job:', error)
+        setJob(null)
+      } finally {
+        setLoadingJob(false)
+      }
+    }
+
+    loadJob()
+  }, [routeId, searchParams])
 
   // Fetch similar jobs when job is loaded
   useEffect(() => {
@@ -154,6 +229,19 @@ Are you passionate about creating exceptional user experiences? We're seeking a 
 Ready to make your mark in tech? Apply now and let's build something amazing together! 🚀`)
       setIsImproving(false)
     }, 2000)
+  }
+
+  if (loadingJob) {
+    return (
+      <div className="min-h-screen">
+        <Header />
+        <main className="pt-28 md:pt-32 lg:pt-36 container mx-auto px-4 py-16 text-center">
+          <h1 className="text-2xl font-bold mb-2">Loading job...</h1>
+          <p className="text-muted-foreground mb-6">Please wait while we load the job details.</p>
+        </main>
+        <Footer />
+      </div>
+    )
   }
 
   if (!job) {
