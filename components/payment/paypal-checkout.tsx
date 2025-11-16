@@ -19,6 +19,7 @@ import {
   ExternalLink,
   Loader2
 } from 'lucide-react'
+import { useTranslation } from '@/contexts/i18n-context'
 import { useToast } from '@/components/ui/use-toast'
 
 interface PaymentItem {
@@ -69,6 +70,7 @@ interface PayPalCheckoutProps {
 }
 
 export function PayPalCheckout({ selectedPlan }: PayPalCheckoutProps) {
+  const { t } = useTranslation()
   const [step, setStep] = useState<'form' | 'processing' | 'approval' | 'completed' | 'failed'>('form')
   const [isLoading, setIsLoading] = useState(false)
   const [paymentOrder, setPaymentOrder] = useState<PaymentOrder | null>(null)
@@ -337,8 +339,8 @@ export function PayPalCheckout({ selectedPlan }: PayPalCheckoutProps) {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="text-center">
-        <h2 className="text-2xl font-bold">PayPal Checkout</h2>
-        <p className="text-muted-foreground">Secure payment processing with PayPal</p>
+        <h2 className="text-2xl font-bold">{t('payment.paypalCheckout')}</h2>
+        <p className="text-muted-foreground">{t('payment.securePaymentProcessing')}</p>
       </div>
 
       {/* Payment Steps Indicator */}
@@ -412,11 +414,11 @@ export function PayPalCheckout({ selectedPlan }: PayPalCheckoutProps) {
 
             {/* Custom Payment Form */}
             <div className="space-y-4">
-              <h3 className="font-medium">Custom Payment</h3>
+              <h3 className="font-medium">{t('payment.customPayment')}</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="amount">Amount</Label>
+                  <Label htmlFor="amount">{t('payment.amount')}</Label>
                   <Input
                     id="amount"
                     type="number"
@@ -435,7 +437,7 @@ export function PayPalCheckout({ selectedPlan }: PayPalCheckoutProps) {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="currency">Currency</Label>
+                  <Label htmlFor="currency">{t('payment.currency')}</Label>
                   <Select
                     value={paymentForm.currency}
                     onValueChange={(value) => setPaymentForm(prev => ({ ...prev, currency: value }))}
@@ -453,7 +455,7 @@ export function PayPalCheckout({ selectedPlan }: PayPalCheckoutProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description">{t('payment.description')}</Label>
                 <Input
                   id="description"
                   value={paymentForm.description}
@@ -472,7 +474,7 @@ export function PayPalCheckout({ selectedPlan }: PayPalCheckoutProps) {
             {/* Payment Summary */}
             <Card className="bg-gray-50">
               <CardContent className="p-4">
-                <h4 className="font-medium mb-2">Payment Summary</h4>
+                <h4 className="font-medium mb-2">{t('payment.paymentSummary')}</h4>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span>{paymentForm.description}</span>
@@ -484,7 +486,7 @@ export function PayPalCheckout({ selectedPlan }: PayPalCheckoutProps) {
                   </div>
                   <Separator />
                   <div className="flex justify-between font-medium">
-                    <span>Total</span>
+                    <span>{t('payment.total')}</span>
                     <span>€{(parseFloat(paymentForm.amount) * 1.19).toFixed(2)}</span>
                   </div>
                 </div>
@@ -517,8 +519,8 @@ export function PayPalCheckout({ selectedPlan }: PayPalCheckoutProps) {
         <Card>
           <CardContent className="text-center py-8">
             <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-blue-500" />
-            <h3 className="text-lg font-medium mb-2">Creating Payment Order</h3>
-            <p className="text-muted-foreground">Please wait while we set up your payment...</p>
+            <h3 className="text-lg font-medium mb-2">{t('payment.creatingPaymentOrder')}</h3>
+            <p className="text-muted-foreground">{t('payment.pleaseWaitSetupPayment')}</p>
           </CardContent>
         </Card>
       )}
@@ -527,27 +529,27 @@ export function PayPalCheckout({ selectedPlan }: PayPalCheckoutProps) {
         <Card>
           <CardContent className="text-center py-8">
             <Clock className="w-12 h-12 mx-auto mb-4 text-yellow-500" />
-            <h3 className="text-lg font-medium mb-2">Waiting for Payment Approval</h3>
+            <h3 className="text-lg font-medium mb-2">{t('payment.waitingForPaymentApproval')}</h3>
             <p className="text-muted-foreground mb-4">
-              Complete your payment in the PayPal window that opened.
+              {t('payment.completePaymentInPayPal')}
             </p>
             
             <div className="space-y-4">
               <Alert>
                 <Receipt className="w-4 h-4" />
                 <AlertDescription>
-                  Invoice #{paymentOrder.invoice_number} has been created.
-                  Complete the payment to activate your job posting.
+                  {t('payment.invoiceCreated', { invoiceNumber: paymentOrder.invoice_number })}
+                  {t('payment.completePaymentToActivate')}
                 </AlertDescription>
               </Alert>
 
               <div className="flex gap-2 justify-center">
                 <Button variant="outline" onClick={resetForm}>
-                  Cancel Payment
+                  {t('payment.cancelPayment')}
                 </Button>
                 <Button onClick={() => window.open(paymentOrder.approval_url, '_blank')}>
                   <ExternalLink className="w-4 h-4 mr-2" />
-                  Open PayPal
+                  {t('payment.openPayPal')}
                 </Button>
               </div>
             </div>
@@ -559,7 +561,7 @@ export function PayPalCheckout({ selectedPlan }: PayPalCheckoutProps) {
         <Card>
           <CardContent className="text-center py-8">
             <CheckCircle className="w-12 h-12 mx-auto mb-4 text-green-500" />
-            <h3 className="text-lg font-medium mb-2">Payment Completed!</h3>
+            <h3 className="text-lg font-medium mb-2">{t('payment.paymentCompleted')}</h3>
             <p className="text-muted-foreground mb-4">
               Your payment has been successfully processed.
             </p>
@@ -567,26 +569,26 @@ export function PayPalCheckout({ selectedPlan }: PayPalCheckoutProps) {
             <div className="bg-green-50 rounded-lg p-4 mb-4">
               <div className="text-sm space-y-1">
                 <div className="flex justify-between">
-                  <span>Payment ID:</span>
+                  <span>{t('payment.paymentId')}</span>
                   <span className="font-mono">{paymentStatus.payment.id}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Invoice:</span>
+                  <span>{t('payment.invoice')}</span>
                   <span>{paymentStatus.payment.invoice.invoice_number}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Amount:</span>
+                  <span>{t('payment.amount')}</span>
                   <span>€{(paymentStatus.payment.amount / 100).toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Status:</span>
-                  <Badge variant="default">Paid</Badge>
+                  <span>{t('payment.status')}</span>
+                  <Badge variant="default">{t('payment.paid')}</Badge>
                 </div>
               </div>
             </div>
 
             <Button onClick={resetForm} className="w-full">
-              Make Another Payment
+              {t('payment.makeAnotherPayment')}
             </Button>
           </CardContent>
         </Card>
@@ -596,19 +598,19 @@ export function PayPalCheckout({ selectedPlan }: PayPalCheckoutProps) {
         <Card>
           <CardContent className="text-center py-8">
             <XCircle className="w-12 h-12 mx-auto mb-4 text-red-500" />
-            <h3 className="text-lg font-medium mb-2">Payment Failed</h3>
+            <h3 className="text-lg font-medium mb-2">{t('payment.paymentFailed')}</h3>
             <p className="text-muted-foreground mb-4">
-              There was an issue processing your payment. Please try again.
+              {t('payment.paymentFailedDescription')}
             </p>
 
             <Alert variant="destructive" className="mb-4">
               <AlertDescription>
-                If you continue to experience issues, please contact our support team.
+                {t('payment.contactSupport')}
               </AlertDescription>
             </Alert>
 
             <Button onClick={resetForm} className="w-full">
-              Try Again
+              {t('payment.tryAgain')}
             </Button>
           </CardContent>
         </Card>

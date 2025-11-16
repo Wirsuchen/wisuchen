@@ -17,6 +17,7 @@ import {
   SortAsc,
   SortDesc
 } from 'lucide-react'
+import { useTranslation } from '@/contexts/i18n-context'
 import { useToast } from '@/components/ui/use-toast'
 import type { OfferWithRelations } from '@/lib/types/supabase'
 
@@ -45,6 +46,7 @@ export function JobList({
   limit = 20,
   variant = 'default'
 }: JobListProps) {
+  const { t } = useTranslation()
   const [jobs, setJobs] = useState<OfferWithRelations[]>(initialJobs)
   const [categories, setCategories] = useState(initialCategories)
   const [isLoading, setIsLoading] = useState(false)
@@ -217,12 +219,12 @@ export function JobList({
 
         {/* Sort Options */}
         <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Sort by:</span>
+          <span className="text-sm text-muted-foreground">{t('jobs.sortBy')}</span>
           <div className="flex gap-1">
             {[
-              { key: 'date' as const, label: 'Date' },
-              { key: 'salary' as const, label: 'Salary' },
-              { key: 'relevance' as const, label: 'Relevance' }
+              { key: 'date' as const, label: t('jobs.sortOptions.date') },
+              { key: 'salary' as const, label: t('jobs.sortOptions.salary') },
+              { key: 'relevance' as const, label: t('jobs.sortOptions.relevance') }
             ].map(({ key, label }) => (
               <Button
                 key={key}
@@ -277,8 +279,8 @@ export function JobList({
             <Card>
               <CardContent className="text-center py-12">
                 <div className="text-muted-foreground">
-                  <h3 className="text-lg font-medium mb-2">No jobs found</h3>
-                  <p>Try adjusting your search criteria or check back later for new opportunities.</p>
+                  <h3 className="text-lg font-medium mb-2">{t('jobs.noJobsFound')}</h3>
+                  <p>{t('jobs.noJobsDescription')}</p>
                 </div>
               </CardContent>
             </Card>

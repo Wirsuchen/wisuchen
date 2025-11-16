@@ -25,10 +25,22 @@ import { useTranslation } from "@/contexts/i18n-context"
 
 export function MyInvoices() {
   const { t, tr } = useTranslation()
+  
+  // Safety check for translation context
+  if (!t || !tr) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <span className="ml-2">Loading...</span>
+      </div>
+    )
+  }
+  
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isPreviewDialogOpen, setIsPreviewDialogOpen] = useState(false)
   const [selectedInvoice, setSelectedInvoice] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [canCreateInvoices, setCanCreateInvoices] = useState(false)
   const [invoices, setInvoices] = useState<any[]>([])
   const [invoiceData, setInvoiceData] = useState({
@@ -40,18 +52,6 @@ export function MyInvoices() {
     vatRate: "19",
     includeWatermark: true,
   })
-
-  useEffect(() => {
-    const load = async () => {
-      try {
-        setLoading(true)
-        const supabase = createClient()
-        const { data: { session } } = await supabase.auth.getSession()
-        const userId = session?.user?.id
-        if (!userId) {
-          setInvoices([])
-          return
-        }
 
   const formatStatus = (status: string) => {
     const normalized = String(status || "").toLowerCase()
@@ -70,11 +70,74 @@ export function MyInvoices() {
         return status
     }
   }
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('id, role')
-          .eq('user_id', userId)
-          .single()
+
+  useEffect(() => {
+    let retryCount = 0
+    const maxRetries = 3
+    
+    const load = async (isRetry = false) => {
+      try {
+        setLoading(true)
+        if (!isRetry) setError(null)
+        
+        // Add delay for retries to allow services to warm up
+        if (isRetry) {
+          await new Promise(resolve => setTimeout(resolve, 1000 * retryCount))
+        }
+        
+        // Check if Supabase client is available
+        let supabase
+        try {
+          supabase = createClient()
+        } catch (err) {
+          console.error('Supabase client initialization error:', err)
+          if (retryCount < maxRetries) {
+            retryCount++
+            return load(true)
+          }
+          setError('Database connection failed')
+          return
+        }
+        
+        // Get user session
+        let session
+        try {
+          const { data: sessionData } = await supabase.auth.getSession()
+          session = sessionData
+        } catch (err) {
+          console.error('Session retrieval error:', err)
+          if (retryCount < maxRetries) {
+            retryCount++
+            return load(true)
+          }
+          setError('Authentication failed')
+          return
+        }
+        
+        const userId = session?.user?.id
+        if (!userId) {
+          setInvoices([])
+          return
+        }
+        
+        // Get user profile
+        let profile
+        try {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('id, role')
+            .eq('user_id', userId)
+            .single()
+          profile = profileData
+        } catch (err) {
+          console.error('Profile retrieval error:', err)
+          if (retryCount < maxRetries) {
+            retryCount++
+            return load(true)
+          }
+          setError('User profile not found')
+          return
+        }
 
         if (!profile?.id) {
           setInvoices([])
@@ -84,22 +147,43 @@ export function MyInvoices() {
         const role = profile.role as string | null
         setCanCreateInvoices(Boolean(role && ['admin', 'supervisor'].includes(role)))
 
-        const { data } = await supabase
-          .from('invoices')
-          .select('id, invoice_number, status, subtotal, tax_amount, total_amount, currency, billing_name, billing_email, billing_address, issued_at, due_date, pdf_url, tax_rate')
-          .eq('user_id', profile.id)
-          .order('issued_at', { ascending: false })
+        // Get invoices
+        let data
+        try {
+          // Add timeout to prevent hanging
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Request timeout')), 10000)
+          )
+          
+          const invoicesPromise = supabase
+            .from('invoices')
+            .select('id, invoice_number, status, subtotal, tax_amount, total_amount, currency, billing_name, billing_email, billing_address, issued_at, due_date, pdf_url, tax_rate')
+            .eq('user_id', profile.id)
+            .order('issued_at', { ascending: false })
+          
+          const { data: invoicesData } = await Promise.race([invoicesPromise, timeoutPromise])
+          data = invoicesData
+        } catch (err) {
+          console.error('Invoices retrieval error:', err)
+          if (retryCount < maxRetries) {
+            retryCount++
+            return load(true)
+          }
+          setError('Failed to load invoices')
+          return
+        }
 
         setInvoices(data || [])
       } catch (e) {
         console.error('Load invoices error:', e)
+        setError('An unexpected error occurred')
         setInvoices([])
       } finally {
         setLoading(false)
       }
     }
     load()
-  }, [])
+  }, [t])
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -315,6 +399,19 @@ export function MyInvoices() {
         )}
       </div>
 
+      {/* Error Display */}
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            {error}
+            <Button variant="ghost" size="sm" className="ml-2" onClick={() => window.location.reload()}>
+              Try Again
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
@@ -370,6 +467,12 @@ export function MyInvoices() {
           <CardDescription>{t("invoices.table.description")}</CardDescription>
         </CardHeader>
         <CardContent>
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin" />
+              <span className="ml-2">{t("common.loading")}</span>
+            </div>
+          ) : (
           <div className="border rounded-lg">
             <Table>
               <TableHeader>
@@ -429,6 +532,7 @@ export function MyInvoices() {
               </TableBody>
             </Table>
           </div>
+          )}
         </CardContent>
       </Card>
 

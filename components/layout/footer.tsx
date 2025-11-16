@@ -113,7 +113,7 @@ export function Footer() {
                   rel="noopener noreferrer"
                 >
                   <Facebook className="size-7" aria-hidden="true" />
-                  <span className="sr-only">Facebook</span>
+                  <span className="sr-only">{t('footer.facebook')}</span>
                 </Link>
               </Button>
               <Button variant="ghost" size="icon" className="rounded-full hover:text-primary" asChild>
@@ -124,7 +124,7 @@ export function Footer() {
                   rel="noopener noreferrer"
                 >
                   <Instagram className="size-7" aria-hidden="true" />
-                  <span className="sr-only">Instagram</span>
+                  <span className="sr-only">{t('footer.instagram')}</span>
                 </Link>
               </Button>
             </div>

@@ -2,6 +2,7 @@ import type React from "react"
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import { DashboardSidebar } from "@/components/dashboard/sidebar"
 import { DashboardMobileMenu } from "@/components/dashboard/mobile-menu"
+import { ErrorBoundary } from "@/components/ui/error-boundary"
 
 export default function DashboardLayout({
   children,
@@ -10,23 +11,25 @@ export default function DashboardLayout({
 }) {
   return (
     <ProtectedRoute>
-      <div className="min-h-screen flex">
-        {/* Desktop Sidebar - Hidden on mobile */}
-        <div className="hidden lg:block">
-          <DashboardSidebar />
-        </div>
-        
-        <main className="flex-1 overflow-x-hidden">
-          <div className="container mx-auto px-4 sm:px-6 py-6 md:py-8">
-            {/* Mobile Menu Button */}
-            <div className="lg:hidden mb-6">
-              <DashboardMobileMenu />
-            </div>
-            
-            {children}
+      <ErrorBoundary>
+        <div className="min-h-screen flex">
+          {/* Desktop Sidebar - Hidden on mobile */}
+          <div className="hidden lg:block">
+            <DashboardSidebar />
           </div>
-        </main>
-      </div>
+          
+          <main className="flex-1 overflow-x-hidden">
+            <div className="container mx-auto px-4 sm:px-6 py-6 md:py-8">
+              {/* Mobile Menu Button */}
+              <div className="lg:hidden mb-6">
+                <DashboardMobileMenu />
+              </div>
+              
+              {children}
+            </div>
+          </main>
+        </div>
+      </ErrorBoundary>
     </ProtectedRoute>
   )
 }

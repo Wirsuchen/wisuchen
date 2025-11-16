@@ -208,7 +208,6 @@
       "overview": "Overview",
       "myAds": "My Ads",
       "myDeals": "My Deals",
-      "myInvoices": "My Invoices",
       "stats": "Stats",
       "profile": "Profile",
       "manageBlogs": "Manage Blogs",
@@ -797,6 +796,10 @@
       "vatRateOption19": "19% (Standard Rate)",
       "includeWatermark": "Include WIRsuchen watermark",
       "createAndDownload": "Create & Download"
+    },
+    "createDialog": {
+      "title": "Create New Invoice",
+      "description": "Fill in the details below to create a new invoice"
     },
     "table": {
       "title": "Invoice History",
@@ -1533,44 +1536,6 @@
         "it": "Italian"
       }
     },
-    "payment": {
-      "success": {
-        "title": "Payment Successful!",
-        "successMessage": "Your payment has been processed successfully.",
-        "details": {
-          "title": "Payment Details",
-          "paymentId": "Payment ID",
-          "status": "Status",
-          "amount": "Amount",
-          "invoice": "Invoice"
-        },
-        "status": {
-          "paid": "Paid"
-        },
-        "description": {
-          "completedOn": "Transaction completed on {date}"
-        },
-        "invoice": {
-          "title": "Invoice Information",
-          "billingName": "Billing Name",
-          "billingEmail": "Billing Email",
-          "invoiceStatus": "Invoice Status"
-        },
-        "whatsNext": {
-          "title": "What's Next?",
-          "description": "Your job posting is now active and will be visible to job seekers. You'll receive email notifications about applications."
-        },
-        "actions": {
-          "viewJobs": "View Job Listings",
-          "manageJobs": "Manage My Jobs",
-          "backHome": "Back to Home"
-        },
-        "receipt": {
-          "message": "A receipt has been sent to your email address. You can also view your payment history in your dashboard."
-        }
-      },
-      "loading": "Loading payment details..."
-    },
     "blogPost": {
       "authorRole": "Content Writer",
       "share": "Share",
@@ -1626,6 +1591,102 @@
       "bulletList": "Bullet List",
       "numberedList": "Numbered List",
       "placeholder": "Write your content..."
+    },
+    "payment": {
+      "success": {
+        "title": "Payment Successful!",
+        "successMessage": "Your payment has been processed successfully.",
+        "details": {
+          "title": "Payment Details",
+          "paymentId": "Payment ID",
+          "status": "Status",
+          "amount": "Amount",
+          "invoice": "Invoice"
+        },
+        "status": {
+          "paid": "Paid"
+        },
+        "description": {
+          "completedOn": "Transaction completed on {date}"
+        },
+        "invoice": {
+          "title": "Invoice Information",
+          "billingName": "Billing Name",
+          "billingEmail": "Billing Email",
+          "invoiceStatus": "Invoice Status"
+        },
+        "whatsNext": {
+          "title": "What's Next?",
+          "description": "Your job posting is now active and will be visible to job seekers. You'll receive email notifications about applications."
+        },
+        "actions": {
+          "viewJobs": "View Job Listings",
+          "manageJobs": "Manage My Jobs",
+          "backHome": "Back to Home"
+        },
+        "receipt": {
+          "message": "A receipt has been sent to your email address. You can also view your payment history in your dashboard."
+        }
+      },
+      "loading": "Loading payment details...",
+      "cancelPayment": "Cancel Payment",
+      "openPayPal": "Open PayPal",
+      "invoiceCreated": "Invoice #{invoiceNumber} has been created.",
+      "completePaymentToActivate": "Complete the payment to activate your job posting.",
+      "waitingForPaymentApproval": "Waiting for Payment Approval",
+      "completePaymentInPayPal": "Complete your payment in the PayPal window that opened.",
+      "creatingPaymentOrder": "Creating Payment Order",
+      "pleaseWaitSetupPayment": "Please wait while we set up your payment...",
+      "paypalCheckout": "PayPal Checkout",
+      "securePaymentProcessing": "Secure payment processing with PayPal",
+      "customPayment": "Custom Payment",
+      "amount": "Amount",
+      "currency": "Currency",
+      "description": "Description",
+      "paymentSummary": "Payment Summary",
+      "total": "Total",
+      "paymentCompleted": "Payment Completed!",
+      "paymentId": "Payment ID:",
+      "invoice": "Invoice:",
+      "status": "Status:",
+      "paid": "Paid",
+      "makeAnotherPayment": "Make Another Payment",
+      "paymentFailed": "Payment Failed",
+      "paymentFailedDescription": "There was an issue processing your payment. Please try again.",
+      "contactSupport": "If you continue to experience issues, please contact our support team.",
+      "tryAgain": "Try Again"
+    },
+    "sidebar": {
+      "title": "Sidebar",
+      "description": "Displays the mobile sidebar.",
+      "toggle": "Toggle Sidebar"
+    },
+    "sheet": {
+      "close": "Close"
+    },
+    "breadcrumb": {
+      "more": "More"
+    },
+    "backButton": {
+      "back": "Back"
+    },
+    "command": {
+      "title": "Command Palette",
+      "description": "Search for a command to run..."
+    },
+    "footer": {
+      "facebook": "Facebook",
+      "instagram": "Instagram"
+    },
+    "jobList": {
+      "sortBy": "Sort by:",
+      "sortOptions": {
+        "date": "Date",
+        "salary": "Salary",
+        "relevance": "Relevance"
+      },
+      "noJobsFound": "No jobs found",
+      "noJobsDescription": "Try adjusting your search criteria or check back later for new opportunities."
     }
   }
 }

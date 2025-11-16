@@ -192,7 +192,6 @@
       "overview": "Übersicht",
       "myAds": "Meine Anzeigen",
       "myDeals": "Meine Angebote",
-      "myInvoices": "Meine Rechnungen",
       "stats": "Statistiken",
       "profile": "Profil",
       "manageBlogs": "Blogs verwalten",
@@ -617,6 +616,10 @@
       "vatRateOption19": "19% (Standardsatz)",
       "includeWatermark": "WIRsuchen-Wasserzeichen einfügen",
       "createAndDownload": "Erstellen & Herunterladen"
+    },
+    "createDialog": {
+      "title": "Neue Rechnung erstellen",
+      "description": "Füllen Sie die Details unten aus, um eine neue Rechnung zu erstellen"
     },
     "table": {
       "title": "Rechnungsverlauf",
@@ -1532,44 +1535,6 @@
         "it": "Italienisch"
       }
     },
-    "payment": {
-      "success": {
-        "title": "Zahlung erfolgreich!",
-        "successMessage": "Ihre Zahlung wurde erfolgreich verarbeitet.",
-        "details": {
-          "title": "Zahlungsdetails",
-          "paymentId": "Zahlungs-ID",
-          "status": "Status",
-          "amount": "Betrag",
-          "invoice": "Rechnung"
-        },
-        "status": {
-          "paid": "Bezahlt"
-        },
-        "description": {
-          "completedOn": "Transaktion abgeschlossen am {date}"
-        },
-        "invoice": {
-          "title": "Rechnungsinformationen",
-          "billingName": "Rechnungsname",
-          "billingEmail": "Rechnungs-E-Mail",
-          "invoiceStatus": "Rechnungsstatus"
-        },
-        "whatsNext": {
-          "title": "Was kommt als Nächstes?",
-          "description": "Ihre Jobanzeige ist jetzt aktiv und für Jobsuchende sichtbar. Sie erhalten E-Mail-Benachrichtigungen über Bewerbungen."
-        },
-        "actions": {
-          "viewJobs": "Job-Angebote anzeigen",
-          "manageJobs": "Meine Jobs verwalten",
-          "backHome": "Zurück zur Startseite"
-        },
-        "receipt": {
-          "message": "Eine Quittung wurde an Ihre E-Mail-Adresse gesendet. Sie können Ihre Zahlungshistorie auch in Ihrem Dashboard einsehen."
-        }
-      },
-      "loading": "Zahlungsdetails werden geladen..."
-    },
     "blogPost": {
       "authorRole": "Content-Autor",
       "share": "Teilen",
@@ -1625,6 +1590,102 @@
       "bulletList": "Aufzählung",
       "numberedList": "Nummerierte Liste",
       "placeholder": "Schreiben Sie Ihren Inhalt..."
+    },
+    "payment": {
+      "success": {
+        "title": "Zahlung erfolgreich!",
+        "successMessage": "Ihre Zahlung wurde erfolgreich verarbeitet.",
+        "details": {
+          "title": "Zahlungsdetails",
+          "paymentId": "Zahlungs-ID",
+          "status": "Status",
+          "amount": "Betrag",
+          "invoice": "Rechnung"
+        },
+        "status": {
+          "paid": "Bezahlt"
+        },
+        "description": {
+          "completedOn": "Transaktion abgeschlossen am {date}"
+        },
+        "invoice": {
+          "title": "Rechnungsinformationen",
+          "billingName": "Rechnungsname",
+          "billingEmail": "Rechnungs-E-Mail",
+          "invoiceStatus": "Rechnungsstatus"
+        },
+        "whatsNext": {
+          "title": "Was kommt als Nächstes?",
+          "description": "Ihre Jobanzeige ist jetzt aktiv und für Jobsuchende sichtbar. Sie erhalten E-Mail-Benachrichtigungen über Bewerbungen."
+        },
+        "actions": {
+          "viewJobs": "Job-Angebote anzeigen",
+          "manageJobs": "Meine Jobs verwalten",
+          "backHome": "Zurück zur Startseite"
+        },
+        "receipt": {
+          "message": "Eine Quittung wurde an Ihre E-Mail-Adresse gesendet. Sie können Ihre Zahlungshistorie auch in Ihrem Dashboard einsehen."
+        }
+      },
+      "loading": "Zahlungsdetails werden geladen...",
+      "cancelPayment": "Zahlung abbrechen",
+      "openPayPal": "PayPal öffnen",
+      "invoiceCreated": "Rechnung #{invoiceNumber} wurde erstellt.",
+      "completePaymentToActivate": "Schließen Sie die Zahlung ab, um Ihre Jobanzeige zu aktivieren.",
+      "waitingForPaymentApproval": "Warten auf Zahlungsgenehmigung",
+      "completePaymentInPayPal": "Schließen Sie Ihre Zahlung im geöffneten PayPal-Fenster ab.",
+      "creatingPaymentOrder": "Zahlungsauftrag wird erstellt",
+      "pleaseWaitSetupPayment": "Bitte warten Sie, während wir Ihre Zahlung einrichten...",
+      "paypalCheckout": "PayPal-Kasse",
+      "securePaymentProcessing": "Sichere Zahlungsabwicklung mit PayPal",
+      "customPayment": "Individuelle Zahlung",
+      "amount": "Betrag",
+      "currency": "Währung",
+      "description": "Beschreibung",
+      "paymentSummary": "Zahlungsübersicht",
+      "total": "Gesamt",
+      "paymentCompleted": "Zahlung abgeschlossen!",
+      "paymentId": "Zahlungs-ID:",
+      "invoice": "Rechnung:",
+      "status": "Status:",
+      "paid": "Bezahlt",
+      "makeAnotherPayment": "Weitere Zahlung tätigen",
+      "paymentFailed": "Zahlung fehlgeschlagen",
+      "paymentFailedDescription": "Es gab ein Problem bei der Verarbeitung Ihrer Zahlung. Bitte versuchen Sie es erneut.",
+      "contactSupport": "Wenn Sie weiterhin Probleme haben, kontaktieren Sie bitte unser Support-Team.",
+      "tryAgain": "Erneut versuchen"
+    },
+    "sidebar": {
+      "title": "Seitenleiste",
+      "description": "Zeigt die mobile Seitenleiste an.",
+      "toggle": "Seitenleiste umschalten"
+    },
+    "sheet": {
+      "close": "Schließen"
+    },
+    "breadcrumb": {
+      "more": "Mehr"
+    },
+    "backButton": {
+      "back": "Zurück"
+    },
+    "command": {
+      "title": "Befehlspalette",
+      "description": "Nach einem auszuführenden Befehl suchen..."
+    },
+    "footer": {
+      "facebook": "Facebook",
+      "instagram": "Instagram"
+    },
+    "jobList": {
+      "sortBy": "Sortieren nach:",
+      "sortOptions": {
+        "date": "Datum",
+        "salary": "Gehalt",
+        "relevance": "Relevanz"
+      },
+      "noJobsFound": "Keine Jobs gefunden",
+      "noJobsDescription": "Versuchen Sie, Ihre Suchkriterien anzupassen oder schauen Sie später für neue Möglichkeiten vorbei."
     }
   }
 }
