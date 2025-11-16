@@ -192,6 +192,7 @@
       "overview": "Übersicht",
       "myAds": "Meine Anzeigen",
       "myDeals": "Meine Angebote",
+      "myInvoices": "Meine Rechnungen",
       "stats": "Statistiken",
       "profile": "Profil",
       "manageBlogs": "Blogs verwalten",
@@ -1686,6 +1687,51 @@
       },
       "noJobsFound": "Keine Jobs gefunden",
       "noJobsDescription": "Versuchen Sie, Ihre Suchkriterien anzupassen oder schauen Sie später für neue Möglichkeiten vorbei."
+    },
+    "jobs": {
+      "employmentTypes": {
+        "full_time": "Vollzeit",
+        "part_time": "Teilzeit",
+        "contract": "Vertrag",
+        "freelance": "Freelance",
+        "internship": "Praktikum",
+        "temporary": "Befristet"
+      },
+      "experienceLevels": {
+        "entry": "Einsteiger",
+        "junior": "Junior",
+        "mid": "Mid-Level",
+        "senior": "Senior",
+        "lead": "Lead",
+        "executive": "Executive"
+      },
+      "badges": {
+        "featured": "Featured",
+        "urgent": "Urgent",
+        "remote": "Remote",
+        "hybrid": "Hybrid",
+        "verified": "Verified"
+      },
+      "buttons": {
+        "viewJob": "Job ansehen",
+        "viewDetails": "Details anzeigen",
+        "save": "Speichern",
+        "applyNow": "Jetzt bewerben"
+      },
+      "toasts": {
+        "saved": {
+          "title": "Job gespeichert",
+          "description": "Dieser Job wurde zu Ihren gespeicherten Elementen hinzugefügt."
+        },
+        "saveFailed": {
+          "title": "Job speichern fehlgeschlagen",
+          "description": "Bitte versuchen Sie es erneut."
+        },
+        "error": {
+          "title": "Fehler",
+          "description": "Job konnte nicht gespeichert werden. Bitte versuchen Sie es erneut."
+        }
+      }
     }
   }
 }

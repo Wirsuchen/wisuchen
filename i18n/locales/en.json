@@ -208,6 +208,7 @@
       "overview": "Overview",
       "myAds": "My Ads",
       "myDeals": "My Deals",
+      "myInvoices": "My Invoices",
       "stats": "Stats",
       "profile": "Profile",
       "manageBlogs": "Manage Blogs",
@@ -1687,6 +1688,51 @@
       },
       "noJobsFound": "No jobs found",
       "noJobsDescription": "Try adjusting your search criteria or check back later for new opportunities."
+    },
+    "jobs": {
+      "employmentTypes": {
+        "full_time": "Full time",
+        "part_time": "Part time",
+        "contract": "Contract",
+        "freelance": "Freelance",
+        "internship": "Internship",
+        "temporary": "Temporary"
+      },
+      "experienceLevels": {
+        "entry": "Entry level",
+        "junior": "Junior",
+        "mid": "Mid-level",
+        "senior": "Senior",
+        "lead": "Lead",
+        "executive": "Executive"
+      },
+      "badges": {
+        "featured": "Featured",
+        "urgent": "Urgent",
+        "remote": "Remote",
+        "hybrid": "Hybrid",
+        "verified": "Verified"
+      },
+      "buttons": {
+        "viewJob": "View Job",
+        "viewDetails": "View Details",
+        "save": "Save",
+        "applyNow": "Apply Now"
+      },
+      "toasts": {
+        "saved": {
+          "title": "Job saved",
+          "description": "This job has been added to your saved items."
+        },
+        "saveFailed": {
+          "title": "Failed to save job",
+          "description": "Please try again."
+        },
+        "error": {
+          "title": "Error",
+          "description": "Failed to save job. Please try again."
+        }
+      }
     }
   }
 }

@@ -19,6 +19,7 @@ import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'
 import type { OfferWithRelations } from '@/lib/types/database'
 import { toast } from '@/hooks/use-toast'
+import { useTranslation } from '@/contexts/i18n-context'
 
 interface JobCardProps {
   job: OfferWithRelations & { is_external?: boolean; application_url?: string | null; source?: string | null }
@@ -27,6 +28,7 @@ interface JobCardProps {
 }
 
 export function JobCard({ job, variant = 'default', showCompany = true }: JobCardProps) {
+  const { t } = useTranslation()
   const isExternal = Boolean((job as any).is_external || ((job as any).source && (job as any).source !== 'manual'))
   const formatSalary = (min?: number | null, max?: number | null, currency = 'EUR', period = 'yearly') => {
     if (!min && !max) return null
@@ -47,27 +49,11 @@ export function JobCard({ job, variant = 'default', showCompany = true }: JobCar
   }
 
   const getEmploymentTypeLabel = (type: string) => {
-    const labels = {
-      full_time: 'Vollzeit',
-      part_time: 'Teilzeit',
-      contract: 'Vertrag',
-      freelance: 'Freelance',
-      internship: 'Praktikum',
-      temporary: 'Befristet'
-    }
-    return labels[type as keyof typeof labels] || type
+    return t(`jobs.employmentTypes.${type}`) || type
   }
 
   const getExperienceLevelLabel = (level: string) => {
-    const labels = {
-      entry: 'Einsteiger',
-      junior: 'Junior',
-      mid: 'Mid-Level',
-      senior: 'Senior',
-      lead: 'Lead',
-      executive: 'Executive'
-    }
-    return labels[level as keyof typeof labels] || level
+    return t(`jobs.experienceLevels.${level}`) || level
   }
 
   if (variant === 'compact') {
@@ -80,13 +66,13 @@ export function JobCard({ job, variant = 'default', showCompany = true }: JobCar
                 {job.featured && (
                   <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
                     <Star className="w-3 h-3 mr-1" />
-                    Featured
+                    {t('jobs.badges.featured')}
                   </Badge>
                 )}
                 {job.urgent && (
                   <Badge variant="destructive">
                     <Zap className="w-3 h-3 mr-1" />
-                    Urgent
+                    {t('jobs.badges.urgent')}
                   </Badge>
                 )}
               </div>
@@ -118,7 +104,7 @@ export function JobCard({ job, variant = 'default', showCompany = true }: JobCar
                 )}
                 {job.is_remote && (
                   <Badge variant="outline" className="text-xs bg-green-50 text-green-700">
-                    Remote
+                    {t('jobs.badges.remote')}
                   </Badge>
                 )}
               </div>
@@ -158,13 +144,13 @@ export function JobCard({ job, variant = 'default', showCompany = true }: JobCar
                 {job.featured && (
                   <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
                     <Star className="w-3 h-3 mr-1" />
-                    Featured
+                    {t('jobs.badges.featured')}
                   </Badge>
                 )}
                 {job.urgent && (
                   <Badge variant="destructive">
                     <Zap className="w-3 h-3 mr-1" />
-                    Urgent
+                    {t('jobs.badges.urgent')}
                   </Badge>
                 )}
               </div>
@@ -181,7 +167,7 @@ export function JobCard({ job, variant = 'default', showCompany = true }: JobCar
                   <span>{job.company.name}</span>
                   {job.company.is_verified && (
                     <Badge variant="outline" className="text-xs">
-                      Verified
+                      {t('jobs.badges.verified')}
                     </Badge>
                   )}
                 </div>
@@ -233,13 +219,13 @@ export function JobCard({ job, variant = 'default', showCompany = true }: JobCar
           
           {job.is_remote && (
             <Badge variant="outline" className="bg-green-50 text-green-700">
-              Remote
+              {t('jobs.badges.remote')}
             </Badge>
           )}
           
           {job.is_hybrid && (
             <Badge variant="outline" className="bg-blue-50 text-blue-700">
-              Hybrid
+              {t('jobs.badges.hybrid')}
             </Badge>
           )}
         </div>
@@ -278,7 +264,7 @@ export function JobCard({ job, variant = 'default', showCompany = true }: JobCar
           <div className="flex gap-2">
             <Button variant="outline" size="sm" asChild>
               <Link href={isExternal && (job as any).application_url ? (job as any).application_url : `/jobs/${job.id}`} target={isExternal ? '_blank' : undefined} rel={isExternal ? 'noopener noreferrer' : undefined}>
-                {isExternal ? 'View Job' : 'View Details'}
+                {isExternal ? t('jobs.buttons.viewJob') : t('jobs.buttons.viewDetails')}
               </Link>
             </Button>
             <Button
@@ -314,33 +300,33 @@ export function JobCard({ job, variant = 'default', showCompany = true }: JobCar
                   const data = await response.json()
                   if (data.success) {
                     toast({ 
-                      title: 'Job saved', 
-                      description: 'This job has been added to your saved items.' 
+                      title: t('jobs.toasts.saved.title'), 
+                      description: t('jobs.toasts.saved.description') 
                     })
                   } else {
                     toast({ 
-                      title: 'Failed to save job', 
-                      description: data.error || 'Please try again.', 
+                      title: t('jobs.toasts.saveFailed.title'), 
+                      description: data.error || t('jobs.toasts.saveFailed.description'), 
                       variant: 'destructive' 
                     })
                   }
                 } catch (error) {
                   console.error('Error saving job:', error)
                   toast({ 
-                    title: 'Error', 
-                    description: 'Failed to save job. Please try again.', 
+                    title: t('jobs.toasts.error.title'), 
+                    description: t('jobs.toasts.error.description'), 
                     variant: 'destructive' 
                   })
                 }
               }}
             >
-              Save
+              {t('jobs.buttons.save')}
             </Button>
             
             {job.application_url && (
               <Button size="sm" asChild>
                 <Link href={job.application_url} target="_blank" rel="noopener noreferrer">
-                  Apply Now
+                  {t('jobs.buttons.applyNow')}
                   <ExternalLink className="w-4 h-4 ml-1" />
                 </Link>
               </Button>

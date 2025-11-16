@@ -506,6 +506,50 @@ export interface Database {
           updated_at?: string
         }
       }
+      media_files: {
+        Row: {
+          id: string
+          filename: string
+          original_filename: string
+          file_path: string
+          file_size: number
+          mime_type: string
+          uploaded_by: string | null
+          bucket_name: string
+          is_public: boolean
+          alt_text: string | null
+          created_at: string
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          filename: string
+          original_filename: string
+          file_path: string
+          file_size: number
+          mime_type: string
+          uploaded_by?: string | null
+          bucket_name: string
+          is_public?: boolean
+          alt_text?: string | null
+          created_at?: string
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          filename?: string
+          original_filename?: string
+          file_path?: string
+          file_size?: number
+          mime_type?: string
+          uploaded_by?: string | null
+          bucket_name?: string
+          is_public?: boolean
+          alt_text?: string | null
+          created_at?: string
+          updated_at?: string | null
+        }
+      }
       // Add other tables as needed...
     }
     Views: {
