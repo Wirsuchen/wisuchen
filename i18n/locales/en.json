@@ -16,6 +16,7 @@
     "sort": "Sort",
     "close": "Close",
     "back": "Back",
+    "backToHome": "Back to Home",
     "next": "Next",
     "previous": "Previous",
     "submit": "Submit",
@@ -27,7 +28,30 @@
     "more": "More",
     "less": "Less",
     "viewAll": "View All",
-    "readMore": "Read More"
+    "readMore": "Read More",
+    "navigation": "Navigation",
+    "translate": "Translate",
+    "changeLanguage": "Change language",
+    "photos": "Photos",
+    "videos": "Videos",
+    "notAvailable": "Not available at the moment",
+    "tryAgain": "Try Again",
+    "loadMore": "Load More",
+    "refresh": "Refresh",
+    "allRightsReserved": "All rights reserved",
+    "madeWith": "Made with",
+    "in": "in",
+    "explore": "Explore",
+    "account": "Account",
+    "company": "Company",
+    "apiDocs": "API Documentation",
+    "newsletterInvalidEmailTitle": "Invalid email",
+    "newsletterInvalidEmailDescription": "Please enter a valid email address",
+    "newsletterSubscribedTitle": "Subscribed!",
+    "newsletterSubscribedDescription": "Thank you for subscribing to our newsletter",
+    "newsletterErrorTryAgain": "Failed to subscribe. Please try again.",
+    "newsletterErrorTryAgainLater": "Failed to subscribe. Please try again later.",
+    "subscribing": "Subscribing..."
   },
   "nav": {
     "home": "Home",
@@ -40,7 +64,8 @@
     "login": "Login",
     "register": "Register",
     "logout": "Logout",
-    "profile": "Profile"
+    "profile": "Profile",
+    "savedItems": "Saved Items"
   },
   "auth": {
     "signIn": "Sign In",
@@ -87,18 +112,51 @@
     "creatingAccount": "Creating account...",
     "registrationSuccess": "Registration successful! Redirecting to dashboard...",
     "allFieldsRequired": "Please fill in all required fields",
-    "acceptTermsRequired": "Please accept the terms and conditions"
+    "acceptTermsRequired": "Please accept the terms and conditions",
+    "alreadyLoggedInRedirect": "You are already logged in. Redirecting...",
+    "backToLogin": "Back to Login",
+    "forgotPasswordPage": {
+      "successTitle": "Email Sent!",
+      "successDescription": "Check your email for password reset instructions.",
+      "successInfo": "We've sent a password reset link to {email}",
+      "notReceived": "Didn't receive the email? Check your spam folder or try again.",
+      "tryDifferentEmail": "Try Different Email",
+      "pageTitle": "Forgot your password?",
+      "pageDescription": "Enter your email address and we'll send you a link to reset your password.",
+      "formTitle": "Reset Password",
+      "formDescription": "We'll send you a secure link to reset your password",
+      "sending": "Sending...",
+      "sendResetLink": "Send Reset Link"
+    },
+    "admin": {
+      "title": "Admin Login",
+      "description": "Enter your credentials to access the admin dashboard",
+      "authFailed": "Authentication failed. Please try again.",
+      "profileNotFound": "User profile not found. Please contact support.",
+      "accessDenied": "Access denied. Admin privileges required.",
+      "unexpectedError": "An unexpected error occurred. Please try again."
+    }
   },
   "dashboard": {
     "title": "Dashboard",
     "overview": "Welcome back! Here's what's happening with your account.",
     "myAds": "My Ads",
+    "myAdsDescription": "Manage your job postings and track their performance",
     "savedDeals": "Saved Deals",
     "myInvoices": "My Invoices",
     "settings": "Settings",
     "statistics": "Statistics",
+    "statsTitle": "Analytics & Stats",
+    "statsDescription": "Real-time metrics from Supabase",
+    "detailedAnalyticsTitle": "Detailed Analytics",
+    "detailedAnalyticsDescription": "Charts will appear here once enough data is available",
+    "noChartData": "No chart data available yet.",
     "recentActivity": "Your latest activities and their performance",
     "activeJobAds": "Active Job Ads",
+    "totalAds": "Total Ads",
+    "activeAds": "Active",
+    "totalViews": "Total Views",
+    "totalApplicants": "Total Applicants",
     "totalInvoices": "Total Invoices",
     "profileViews": "Profile Views",
     "noAdsYet": "No ads yet",
@@ -110,10 +168,67 @@
     "postNewJob": "Post New Job",
     "createInvoice": "Create Invoice",
     "viewAnalytics": "View Analytics",
-    "apiTesting": "API Testing"
+    "apiTesting": "API Testing",
+    "mySavedDealsTitle": "My Saved Deals",
+    "mySavedDealsDescription": "Track your favorite deals and never miss a bargain",
+    "mySavedDealsEmptyTitle": "No Saved Deals Yet",
+    "mySavedDealsEmptyDescription": "Start saving your favorite deals by clicking the heart icon on any deal. They'll appear here for easy access.",
+    "mySavedDealsStatsSavedDeals": "Saved Deals",
+    "mySavedDealsStatsTotalSavings": "Total Savings",
+    "mySavedDealsStatsInStock": "In Stock",
+    "mySavedDealsCardTitle": "Saved Deals",
+    "mySavedDealsCardDescription": "Manage your saved deals and track price changes",
+    "mySavedDealsSearchPlaceholder": "Search deals...",
+    "mySavedDealsFilterByCategory": "Filter by category",
+    "mySavedDealsCategoryAll": "All Categories",
+    "mySavedDealsCategoryElectronics": "Electronics",
+    "mySavedDealsCategoryFashion": "Fashion",
+    "mySavedDealsCategoryHome": "Home & Garden",
+    "mySavedDealsCategorySports": "Sports",
+    "mySavedDealsSavedLabel": "Saved {saved}",
+    "myAdsJobListingsTitle": "Job Listings",
+    "myAdsJobListingsDescription": "View and manage all your job postings",
+    "myAdsSearchPlaceholder": "Search job titles...",
+    "myAdsFilterByStatus": "Filter by status",
+    "myAdsStatusAll": "All Status",
+    "myAdsStatusActive": "Active",
+    "myAdsStatusExpired": "Expired",
+    "myAdsStatusDraft": "Draft",
+    "myAdsTableJobTitle": "Job Title",
+    "myAdsTableStatus": "Status",
+    "myAdsTableViews": "Views",
+    "myAdsTableApplicants": "Applicants",
+    "myAdsTablePosted": "Posted",
+    "myAdsTableExpires": "Expires",
+    "myAdsTableActions": "Actions",
+    "loginRequiredTitle": "Login Required",
+    "loginRequiredDescription": "Please sign in to view your dashboard.",
+    "goToLogin": "Go to Login",
+    "nav": {
+      "overview": "Overview",
+      "myAds": "My Ads",
+      "myDeals": "My Deals",
+      "myInvoices": "My Invoices",
+      "stats": "Stats",
+      "profile": "Profile",
+      "manageBlogs": "Manage Blogs",
+      "createBlog": "Create Blog",
+      "admin": "Admin",
+      "supervisor": "Supervisor",
+      "moderator": "Moderator",
+      "lister": "Lister",
+      "publisher": "Publisher",
+      "blogger": "Blogger",
+      "editor": "Editor",
+      "analyst": "Analyst",
+      "menuButton": "Dashboard Menu"
+    }
   },
   "jobs": {
     "title": "Job Listings",
+    "heroSubtitle": "Discover jobs from 10+ sources: Glassdoor, Upwork, Y Combinator & more",
+    "latestJobs": "Latest Jobs",
+    "latestWidgetSubtitle": "{count} jobs from multiple sources",
     "searchJobs": "Search Jobs",
     "location": "Location",
     "category": "Category",
@@ -121,11 +236,10 @@
     "experienceLevel": "Experience Level",
     "salary": "Salary",
     "postedDate": "Posted",
-    "apply": "Apply",
     "save": "Save",
     "share": "Share",
-    "views": "views",
     "applicants": "applicants",
+    "status": "Status",
     "fullTime": "Full-time",
     "partTime": "Part-time",
     "contract": "Contract",
@@ -142,37 +256,171 @@
     "perMonth": "per month",
     "perHour": "per hour",
     "noJobsFound": "No jobs found",
-    "tryAdjustingFilters": "Try adjusting your filters"
+    "tryAdjustingFilters": "Try adjusting your filters",
+    "sourcesCountLabel": "10+ Sources",
+    "cached": "Cached",
+    "live": "Live",
+    "myPostedJobs": "My Posted Jobs",
+    "myPostedJobsDescription": "Jobs you've created and posted",
+    "noUserJobs": "You haven't posted any jobs yet",
+    "searchPlaceholder": "Job title, keywords...",
+    "locationPlaceholder": "City, state, or country...",
+    "searching": "Searching...",
+    "allTypes": "All Types",
+    "resetFilters": "Reset Filters",
+    "errorLoading": "Error loading jobs",
+    "loadingJobs": "Loading jobs...",
+    "loadingFromSources": "Fetching from multiple sources (Adzuna, RapidAPI)",
+    "resetSearch": "Reset Search",
+    "loadingMore": "Loading more...",
+    "remaining": "remaining",
+    "dataSources": "Data Sources",
+    "totalJobs": "Total Jobs",
+    "cacheStatus": "Cache Status",
+    "noJobsAvailable": "No jobs available",
+    "notPublished": "Not published",
+    "viewDetails": "View Details",
+    "details": "Details",
+    "applyNow": "Apply Now",
+    "apply": "Apply",
+    "manage": "Manage",
+    "time": {
+      "justNow": "Just now",
+      "hoursAgo": "{hours}h ago",
+      "yesterday": "Yesterday",
+      "daysAgo": "{days} days ago"
+    },
+    "detail": {
+      "loadingTitle": "Loading job...",
+      "loadingDescription": "Please wait while we load the job details.",
+      "notFoundTitle": "Job not found",
+      "notFoundDescription": "Open a job from the jobs list to view its details.",
+      "backToJobs": "Back to Jobs",
+      "savedTitle": "Job saved",
+      "savedDescription": "This job has been added to your saved items.",
+      "saveErrorTitle": "Failed to save job",
+      "saveErrorDescription": "Failed to save job. Please try again.",
+      "descriptionTitle": "Job Description",
+      "aiEnhancedTitle": "AI-Enhanced Description",
+      "upgradeToUse": "Upgrade to use",
+      "subscribersOnly": "Available for subscribers only",
+      "improving": "Improving...",
+      "improveWithAI": "Improve with AI",
+      "aiHelpText": "Click \"Improve with AI\" to see an enhanced version of this job description with better formatting and more engaging language.",
+      "aiUpgradeText": "This feature is available for subscribers. Upgrade to unlock AI-enhanced descriptions.",
+      "benefitsTitle": "Benefits & Perks",
+      "applyTitle": "Apply for this position",
+      "saveJobButton": "Save Job",
+      "termsNotice": "By applying, you agree to our Terms of Service and Privacy Policy",
+      "aboutCompany": "About",
+      "foundedIn": "Founded in",
+      "visitWebsite": "Visit Website",
+      "recommendedTitle": "Recommended Jobs",
+      "loadingRecommended": "Loading recommended jobs...",
+      "noRecommendations": "No recommendations available"
+    }
   },
   "deals": {
-    "title": "Deals & Offers",
+    "title": "Best Deals & Price Comparison",
     "searchDeals": "Search Deals",
+    "searchPlaceholder": "Search products, brands, or categories",
     "discount": "Discount",
     "originalPrice": "Original Price",
     "salePrice": "Sale Price",
     "savings": "Savings",
     "viewDeal": "View Deal",
     "getDeal": "Get Deal",
+    "comparePrices": "Compare Prices",
     "expiresSoon": "Expires Soon",
     "featured": "Featured",
     "trending": "Trending",
     "newDeals": "New Deals",
-    "noDealsFound": "No deals found"
+    "noDealsFound": "No deals found",
+    "filters": "Filters",
+    "sortBy": "Sort By",
+    "sort": {
+      "bestDeal": "Best Deal",
+      "priceLow": "Price: Low to High",
+      "priceHigh": "Price: High to Low",
+      "discount": "Highest Discount",
+      "rating": "Highest Rated",
+      "newest": "Newest"
+    },
+    "categories": "Categories",
+    "brands": "Brands",
+    "priceRange": "Price Range",
+    "selectRange": "Select range",
+    "clearAllFilters": "Clear All Filters",
+    "loading": "Loading deals...",
+    "showingCount": "Showing {count} deals",
+    "loadingFromApi": "Loading deals from API...",
+    "noDealsFoundWithFilters": "No deals found. Try adjusting your filters.",
+    "saveAmount": "Save {amount}",
+    "storesCount": "{count} stores",
+    "reviewsCount": "({count} reviews)",
+    "outOfStock": "Out of Stock",
+    "detail": {
+      "notFoundTitle": "Deal not found",
+      "notFoundDescription": "The deal you're looking for doesn't exist.",
+      "backToDeals": "Back to Deals",
+      "savedTitle": "Deal saved",
+      "savedDescription": "This deal has been added to your saved items.",
+      "saveErrorTitle": "Failed to save deal",
+      "saveErrorDescription": "Failed to save deal. Please try again.",
+      "shareSuccessTitle": "Shared!",
+      "shareSuccessDescription": "Deal shared successfully.",
+      "linkCopiedTitle": "Link copied!",
+      "linkCopiedDescription": "Deal link has been copied to your clipboard.",
+      "linkReadyTitle": "Link ready",
+      "linkReadyDescription": "Please copy the link manually.",
+      "backButton": "Back to Deals",
+      "visitSource": "Visit Source",
+      "visit": "Visit",
+      "youSave": "You save {amount}",
+      "selectSize": "Select Size",
+      "selectColor": "Select Color",
+      "availableAt": "Available at",
+      "buyNow": "Buy Now",
+      "productDescription": "Product Description",
+      "productAttributes": "Product Attributes",
+      "offerDetailsTitle": "Offer Details",
+      "offerDetailsFrom": "From {store}",
+      "priceLabel": "Price",
+      "originalPriceLabel": "Original Price",
+      "shippingLabel": "Shipping",
+      "returnsLabel": "Returns",
+      "conditionLabel": "Condition",
+      "quickActionsTitle": "Quick Actions",
+      "saveDealButton": "Save Deal",
+      "shareDealButton": "Share Deal",
+      "productInfoTitle": "Product Info",
+      "categoryLabel": "Category",
+      "ratingLabel": "Rating",
+      "shareThisDealTitle": "Share This Deal",
+      "shareThisDealDescription": "Found a great deal? Share it with your friends!",
+      "browseMoreDeals": "Browse More Deals"
+    }
   },
-  "blog": {
-    "title": "Blog",
-    "latestPosts": "Latest Posts",
-    "readArticle": "Read Article",
-    "relatedPosts": "Related Posts",
-    "comments": "Comments",
-    "share": "Share",
-    "tags": "Tags",
-    "author": "Author",
-    "publishedOn": "Published on",
-    "minute": "minute",
-    "minutes": "minutes",
-    "readTime": "read time",
-    "noPostsFound": "No posts found"
+  "saved": {
+    "title": "Saved Items",
+    "subtitle": "Keep track of your favorite jobs and deals in one place.",
+    "tabs": {
+      "jobsWithCount": "Saved Jobs ({count})",
+      "dealsWithCount": "Saved Deals ({count})"
+    },
+    "jobs": {
+      "savedOn": "Saved on {date}",
+      "viewJob": "View Job",
+      "emptyTitle": "No saved jobs yet",
+      "emptyDescription": "Start saving jobs you're interested in to keep track of them here."
+    },
+    "deals": {
+      "discountBadge": "{percent}% OFF",
+      "savedOn": "Saved on {date}",
+      "goToStore": "Go to Store",
+      "emptyTitle": "No saved deals yet",
+      "emptyDescription": "Start saving deals you're interested in to keep track of them here."
+    }
   },
   "footer": {
     "aboutUs": "About Us",
@@ -187,21 +435,185 @@
     "newsletter": "Newsletter",
     "subscribeNewsletter": "Subscribe to Newsletter",
     "enterEmail": "Enter email",
-    "subscribe": "Subscribe",
-    "allRightsReserved": "All rights reserved",
-    "madeWith": "Made with",
-    "in": "in"
+    "subscribe": "Subscribe"
   },
-  "pricing": {
-    "title": "Pricing",
-    "jobPostingPrice": "€5.00 for 30 days",
-    "selectPlan": "Select Plan",
-    "basic": "Basic",
-    "premium": "Premium",
-    "enterprise": "Enterprise",
-    "perMonth": "per month",
-    "billedAnnually": "Billed annually",
-    "popular": "Popular"
+  "about": {
+    "stats": {
+      "activeUsers": "Active Users",
+      "jobsPosted": "Jobs Posted",
+      "dealsFound": "Deals Found",
+      "countries": "Countries"
+    },
+    "hero": {
+      "title": "Connecting Talent with Opportunity",
+      "description": "WIRsuchen is more than just a job board. We're building the future of work by connecting talented individuals with amazing opportunities while helping everyone save money on the things they love.",
+      "exploreJobs": "Explore Jobs",
+      "browseDeals": "Browse Deals"
+    },
+    "mission": {
+      "title": "Our Mission",
+      "description": "We believe that finding the right job and getting the best deals shouldn't be complicated. Our platform combines the power of AI with human insight to create meaningful connections between talent and opportunity, while helping our community save money on everyday purchases.",
+      "forJobSeekers": {
+        "title": "For Job Seekers",
+        "description": "We understand that job searching can be overwhelming. That's why we've built intelligent matching algorithms and provide personalized recommendations to help you find roles that truly fit your skills and aspirations.",
+        "aiMatching": "AI-powered job matching",
+        "careerInsights": "Personalized career insights",
+        "resumeTools": "Resume optimization tools"
+      },
+      "forEmployers": {
+        "title": "For Employers",
+        "description": "Finding the right talent is crucial for your business success. Our platform helps you reach qualified candidates efficiently while providing tools to manage your hiring process from start to finish.",
+        "candidateFiltering": "Advanced candidate filtering",
+        "hiringAnalytics": "Hiring analytics dashboard",
+        "applicationManagement": "Streamlined application management"
+      }
+    },
+    "team": {
+      "title": "Meet Our Team",
+      "description": "We're a diverse team of passionate individuals committed to revolutionizing how people find jobs and discover great deals."
+    },
+    "cta": {
+      "title": "Ready to Get Started?",
+      "description": "Join thousands of professionals who have found their dream jobs and amazing deals through WIRsuchen.",
+      "joinToday": "Join WIRsuchen Today"
+    }
+  },
+  "blog": {
+    "invalidEmail": "Invalid email",
+    "enterValidEmail": "Please enter a valid email address",
+    "subscribed": "Subscribed!",
+    "subscribeSuccess": "Thank you for subscribing to our newsletter",
+    "subscribeError": "Failed to subscribe. Please try again.",
+    "subscribeErrorLater": "Failed to subscribe. Please try again later.",
+    "backToHome": "Back to Home",
+    "title": "WIRsuchen Blog",
+    "description": "Stay updated with the latest insights on careers, recruitment, market trends, and exclusive deals.",
+    "searchPlaceholder": "Search articles...",
+    "allCategories": "All Categories",
+    "sort": {
+      "newestFirst": "Newest First",
+      "oldestFirst": "Oldest First",
+      "mostPopular": "Most Popular"
+    },
+    "featured": "Featured",
+    "readMore": "Read More",
+    "loadMoreArticles": "Load More Articles",
+    "stayUpdated": "Stay Updated",
+    "newsletterDescription": "Subscribe to our newsletter and get the latest career insights, job market trends, and exclusive deals delivered to your inbox.",
+    "enterEmailPlaceholder": "Enter your email address",
+    "subscribe": "Subscribe",
+    "admin": {
+      "title": "Blog Management",
+      "description": "Manage all blog posts - view, edit, and delete",
+      "createNew": "Create New Post",
+      "searchPlaceholder": "Search posts by title, slug, or excerpt...",
+      "filter": {
+        "all": "All",
+        "published": "Published",
+        "draft": "Draft"
+      },
+      "allPosts": "All Blog Posts ({count})",
+      "manageContent": "Manage and edit your blog content",
+      "noPostsFound": "No blog posts found",
+      "createFirst": "Create Your First Post",
+      "unknown": "Unknown",
+      "table": {
+        "title": "Title",
+        "status": "Status",
+        "category": "Category",
+        "author": "Author",
+        "views": "Views",
+        "published": "Published",
+        "actions": "Actions"
+      },
+      "deleteConfirm": {
+        "title": "Are you sure?",
+        "description": "This action cannot be undone. This will permanently delete the blog post."
+      },
+      "loadError": "Failed to load blog posts",
+      "deleteError": "Failed to delete post",
+      "deleteSuccess": "Blog post has been deleted successfully",
+      "deleteFailed": "Delete failed",
+      "updateError": "Failed to update",
+      "statusUpdateError": "Failed to update status",
+      "statusUpdated": "Status updated",
+      "statusChanged": "Post status changed to {status}",
+      "updateFailed": "Update failed",
+      "deleted": "Deleted",
+      "deleting": "Deleting...",
+      "create": {
+        "title": "Create Blog Article",
+        "description": "Use AI to generate content or write manually",
+        "hideAI": "Hide AI",
+        "showAIGenerator": "Show AI Generator",
+        "content": "Blog Content",
+        "writeOrEdit": "Write or edit your blog article",
+        "language": "(Language: {lang})",
+        "titlePlaceholder": "e.g., Top 10 Interview Tips for 2025",
+        "category": "Category",
+        "categories": {
+          "jobTips": "Job Tips",
+          "recruiting": "Recruiting",
+          "marketInsights": "Market Insights",
+          "careerAdvice": "Career Advice",
+          "deals": "Deals & Savings"
+        },
+        "author": "Author",
+        "authorPlaceholder": "Author name",
+        "excerpt": "Excerpt / Summary",
+        "excerptPlaceholder": "Brief summary of the article...",
+        "featuredImage": "Featured Image",
+        "featured": "Featured",
+        "uploading": "Uploading...",
+        "changeImage": "Change Image",
+        "uploadImage": "Upload Featured Image",
+        "imageInfo": "PNG, JPG up to ~5MB",
+        "articleContent": "Article Content",
+        "contentPlaceholder": "Write your article content here...",
+        "wordCount": "{words} words, {characters} characters",
+        "tags": "Tags (comma-separated)",
+        "tagsPlaceholder": "job search, career tips, remote work",
+        "seoMetadata": "SEO Metadata",
+        "metaDescription": "Meta Description",
+        "seoKeywords": "SEO Keywords",
+        "saveDraft": "Save Draft",
+        "publish": "Publish"
+      },
+      "ai": {
+        "generated": "✨ Content Generated!",
+        "description": "AI has created your blog article"
+      },
+      "image": {
+        "invalid": "Invalid file",
+        "selectImage": "Please select an image file",
+        "uploaded": "Image uploaded",
+        "set": "Featured image is set.",
+        "uploadFailed": "Upload failed",
+        "uploadError": "Could not upload image"
+      },
+      "translate": {
+        "translatedTo": "Translated to {lang}",
+        "translated": "Content has been translated"
+      },
+      "saveError": "Failed to save",
+      "draftSaved": "Draft Saved",
+      "published": "Published!",
+      "postStatus": "Post {status} with slug: {slug}",
+      "saveFailed": "Save failed",
+      "unableToSave": "Unable to save post",
+      "edit": {
+        "title": "Edit Blog Article",
+        "description": "Update your blog post content and settings",
+        "backToBlogs": "Back to Blogs",
+        "editArticle": "Edit your blog article",
+        "status": "Status",
+        "archived": "Archived",
+        "draftUpdated": "Draft Updated",
+        "postUpdated": "Post updated with slug: {slug}",
+        "saving": "Saving...",
+        "publishing": "Publishing..."
+      }
+    }
   },
   "forms": {
     "required": "Required",
@@ -271,6 +683,949 @@
     "readyToStart": "Ready to Get Started?",
     "readyToStartDesc": "Join thousands of professionals who trust WIRsuchen for their career growth and savings.",
     "findJobs": "Find Jobs",
-    "browseDeals": "Browse Deals"
+    "browseDeals": "Browse Deals",
+    "blogPost1Title": "Top 10 Interview Tips for 2024",
+    "blogPost1Excerpt": "Master your next job interview with these proven strategies...",
+    "blogPost1Category": "Career Tips",
+    "blogPost1ReadTime": "5 min read",
+    "blogPost2Title": "Remote Work Trends in Germany",
+    "blogPost2Excerpt": "How the job market is adapting to remote work opportunities...",
+    "blogPost2Category": "Market Insights",
+    "blogPost2ReadTime": "8 min read",
+    "blogPost3Title": "Best Tech Deals This Month",
+    "blogPost3Excerpt": "Don't miss these incredible technology deals and discounts...",
+    "blogPost3Category": "Deals",
+    "blogPost3ReadTime": "3 min read"
+  },
+  "profile": {
+    "manageAccountInfo": "Manage your account information and preferences",
+    "profilePicture": "Profile Picture",
+    "updateProfilePhoto": "Update your profile photo",
+    "avatar": "Avatar",
+    "uploadFailed": "Upload failed",
+    "avatarUploadError": "Could not upload avatar.",
+    "avatarUpdated": "Avatar updated",
+    "avatarUpdatedDesc": "Your profile picture was updated.",
+    "uploadNewPhoto": "Upload New Photo",
+    "basicInfo": "Basic Information",
+    "updatePersonalDetails": "Update your personal details",
+    "fullName": "Full Name",
+    "emailAddress": "Email Address",
+    "phoneNumber": "Phone Number",
+    "company": "Company",
+    "linkedin": "LinkedIn",
+    "location": "Location",
+    "bio": "Bio",
+    "saveProfile": "Save Profile",
+    "socialLinks": "Social Links",
+    "addSocialProfiles": "Add your professional social media profiles",
+    "website": "Website",
+    "websitePlaceholder": "https://yourwebsite.com",
+    "linkedinPlaceholder": "https://linkedin.com/in/username",
+    "github": "GitHub",
+    "githubPlaceholder": "https://github.com/username",
+    "accountSettings": "Account Settings",
+    "manageAccountPreferences": "Manage your account preferences and notifications",
+    "language": "Language",
+    "english": "English",
+    "deutsch": "Deutsch",
+    "francais": "Français",
+    "italiano": "Italiano",
+    "timezone": "Timezone",
+    "notificationPreferences": "Notification Preferences",
+    "emailNotifications": "Email Notifications",
+    "emailNotificationsDesc": "Receive important account updates",
+    "marketingEmails": "Marketing Emails",
+    "marketingEmailsDesc": "Receive promotional content and offers",
+    "jobAlerts": "Job Alerts",
+    "jobAlertsDesc": "Get notified about new job opportunities",
+    "dealAlerts": "Deal Alerts",
+    "dealAlertsDesc": "Get notified about price drops and new deals",
+    "saving": "Saving...",
+    "saveSettings": "Save Settings",
+    "subscription": "Subscription",
+    "manageSubscription": "Manage your subscription plan",
+    "currentPlan": "Current Plan",
+    "paypalSubId": "PayPal Subscription ID (optional)",
+    "paypalSubIdPlaceholder": "I-XXXX...",
+    "unsubscribing": "Unsubscribing...",
+    "unsubscribe": "Unsubscribe",
+    "unsubscribeFromPlan": "Unsubscribe from Plan",
+    "unsubscribeConfirm": "Are you sure you want to unsubscribe and switch to the free plan? This action cannot be undone.",
+    "saveSuccess": "Profile updated",
+    "saveSuccessDesc": "Your profile information has been saved successfully.",
+    "updateFailed": "Failed to update profile. Please try again.",
+    "settingsSaved": "Settings saved",
+    "settingsSavedDesc": "Your account settings have been saved successfully.",
+    "settingsSaveFailed": "Failed to save settings. Please try again.",
+    "unsubscribeFailed": "Failed to unsubscribe",
+    "unsubscribed": "Unsubscribed",
+    "unsubscribedDesc": "Your plan was changed to Free.",
+    "unsubscribeError": "Could not unsubscribe"
+  },
+  "invoices": {
+    "subtitle": "Create and manage your invoices",
+    "createInvoiceButton": "Create Invoice",
+    "adminOnlyNotice": "Invoice creation available to admin users only",
+    "stats": {
+      "totalInvoices": "Total Invoices",
+      "totalRevenue": "Total Revenue",
+      "pending": "Pending",
+      "overdue": "Overdue"
+    },
+    "status": {
+      "paid": "Paid",
+      "pending": "Pending",
+      "sent": "Sent",
+      "overdue": "Overdue",
+      "draft": "Draft"
+    },
+    "form": {
+      "clientNameLabel": "Client Name *",
+      "clientNamePlaceholder": "Company Name",
+      "clientEmailLabel": "Client Email",
+      "clientEmailPlaceholder": "client@company.com",
+      "clientAddressLabel": "Client Address",
+      "clientAddressPlaceholder": "Street Address, City, Postal Code, Country",
+      "descriptionLabel": "Description *",
+      "descriptionPlaceholder": "Describe the services or products...",
+      "amountLabel": "Amount (€) *",
+      "amountPlaceholder": "1000",
+      "vatRateLabel": "VAT Rate (%)",
+      "vatRateOption0": "0% (No VAT)",
+      "vatRateOption7": "7% (Reduced Rate)",
+      "vatRateOption19": "19% (Standard Rate)",
+      "includeWatermark": "Include WIRsuchen watermark",
+      "createAndDownload": "Create & Download"
+    },
+    "table": {
+      "title": "Invoice History",
+      "description": "View and manage all your invoices",
+      "headers": {
+        "invoiceId": "Invoice ID",
+        "client": "Client",
+        "amount": "Amount",
+        "vat": "VAT",
+        "status": "Status",
+        "created": "Created",
+        "dueDate": "Due Date",
+        "actions": "Actions"
+      },
+      "empty": "No invoices yet."
+    },
+    "preview": {
+      "title": "Invoice Preview - {id}",
+      "description": "Preview your invoice before downloading",
+      "brandSubtitle": "Professional Services",
+      "badge": "INVOICE",
+      "from": "From:",
+      "to": "To:",
+      "invoiceDate": "Invoice Date:",
+      "dueDate": "Due Date:",
+      "status": "Status:",
+      "lineItems": {
+        "description": "Description",
+        "amount": "Amount",
+        "invoiceTotal": "Invoice total"
+      },
+      "summary": {
+        "subtotal": "Subtotal:",
+        "vat": "VAT ({rate}%):",
+        "total": "Total:"
+      },
+      "footer": "Generated by WIRsuchen Invoice System",
+      "downloadPdf": "Download PDF"
+    }
+  },
+  "support": {
+    "hero": {
+      "title": "How can I help?",
+      "description": "I'm a solo entrepreneur—so you'll always talk to me directly. No bots. No ticket hoops.",
+      "emailButton": "Email me",
+      "formButton": "Go to contact form"
+    },
+    "contact": {
+      "title": "Get in Touch",
+      "email": {
+        "title": "Email",
+        "description": "Best for detailed questions",
+        "availability": "Replies within 24–48h",
+        "action": "Email me"
+      },
+      "whatsapp": {
+        "title": "WhatsApp",
+        "description": "Quick questions and updates",
+        "availability": "Weekdays 9am–6pm",
+        "action": "Message on WhatsApp"
+      },
+      "call": {
+        "title": "Book a 15-min call",
+        "description": "Perfect for clarifying scope",
+        "availability": "By appointment",
+        "action": "Open calendar"
+      }
+    },
+    "faqs": {
+      "title": "Frequently Asked Questions",
+      "q1": "How fast do you reply?",
+      "a1": "I usually reply within 24 hours on weekdays (48 hours max during busy periods).",
+      "q2": "Do you work on weekends?",
+      "a2": "I monitor for urgent issues, but detailed replies may wait until Monday.",
+      "q3": "What's the best way to reach you?",
+      "a3": "Email for detailed requests; WhatsApp for quick updates. Use the form below if you prefer.",
+      "q4": "Can we schedule a call?",
+      "a4": "Yes—use the calendar link above to pick a time that works for you.",
+      "q5": "Do you offer ongoing support?",
+      "a5": "Yes, I offer flexible retainers and on-demand support for ongoing work.",
+      "q6": "Where are you based?",
+      "a6": "I'm based in your city here and work with clients worldwide across time zones."
+    },
+    "form": {
+      "title": "Prefer to write it out?",
+      "description": "Send me a message and I'll get back to you within 24–48 hours.",
+      "cardTitle": "Contact form",
+      "cardDescription": "Share as much detail as you like—screenshots and links help me move faster.",
+      "name": "Name",
+      "namePlaceholder": "Your name",
+      "email": "Email",
+      "emailPlaceholder": "you@example.com",
+      "message": "Message",
+      "messagePlaceholder": "How can I help?",
+      "sendButton": "Send message"
+    },
+    "availability": {
+      "title": "Availability",
+      "description": "I aim to reply within 24–48 hours on weekdays. During launches, it may take a bit longer.",
+      "status": "Currently accepting new clients"
+    }
+  },
+  "pricing": {
+    "title": "Pricing",
+    "hero": {
+      "title": "Simple, Transparent Pricing",
+      "description": "Choose the perfect plan for your needs. Upgrade or downgrade at any time."
+    },
+    "mostPopular": "Most Popular",
+    "plans": {
+      "basic": {
+        "name": "Basic",
+        "price": "Free",
+        "description": "For exploring jobs and deals",
+        "features": {
+          "browse": "Browse jobs and deals",
+          "save": "Save up to 10 items",
+          "alerts": "Basic job alerts",
+          "support": "Standard support",
+          "ai": "AI tools: Not included"
+        },
+        "cta": "Get Started"
+      },
+      "professional": {
+        "name": "Professional",
+        "period": "/month",
+        "description": "For active seekers who want AI tools",
+        "features": {
+          "everything": "Everything in Basic",
+          "jobGenerator": "AI Job Description Generator",
+          "seoGenerator": "AI SEO Snippet/Meta Generator",
+          "blogGenerator": "AI Blog/Content Generator",
+          "filters": "Advanced job filters & remote-only toggle",
+          "priorityAlerts": "Priority job alerts",
+          "unlimited": "Unlimited saved items",
+          "prioritySupport": "Priority email support"
+        },
+        "cta": "Upgrade to Pro"
+      },
+      "business": {
+        "name": "Business",
+        "period": "/month",
+        "description": "For recruiters and small teams",
+        "features": {
+          "everything": "Everything in Professional",
+          "posting": "Job posting access (requires approval)",
+          "profile": "Company profile & logo",
+          "sla": "Priority support (SLA)"
+        },
+        "cta": "Talk to us"
+      }
+    },
+    "faqs": {
+      "title": "Frequently Asked Questions",
+      "q1": {
+        "question": "Can I change plans anytime?",
+        "answer": "Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately."
+      },
+      "q2": {
+        "question": "Is there a free trial?",
+        "answer": "Yes, all paid plans come with a 14-day free trial. No credit card required."
+      },
+      "q3": {
+        "question": "What payment methods do you accept?",
+        "answer": "We accept all major credit cards, PayPal, and bank transfers for annual plans."
+      },
+      "q4": {
+        "question": "Do you offer refunds?",
+        "answer": "Yes, we offer a 30-day money-back guarantee for all paid plans."
+      }
+    }
+  },
+  "admin": {
+    "dashboard": {
+      "title": "Admin Dashboard",
+      "description": "Manage your wirsuchen job portal",
+      "refresh": "Refresh"
+    },
+    "tabs": {
+      "overview": "Overview",
+      "database": "Database",
+      "users": "Users",
+      "permissions": "Permissions",
+      "jobImport": "Job Import",
+      "affiliates": "Affiliates",
+      "analytics": "Analytics",
+      "blog": "Blog",
+      "billing": "Billing",
+      "apiTesting": "API Testing"
+    },
+    "quickActions": {
+      "title": "Quick Actions",
+      "description": "Common admin shortcuts",
+      "openAPITesting": "Open API Testing",
+      "openBilling": "Open Billing",
+      "refreshStats": "Refresh Stats"
+    },
+    "metrics": {
+      "totalJobs": "Total Jobs",
+      "activeJobs": "active jobs",
+      "companies": "Companies",
+      "registeredEmployers": "Registered employers",
+      "users": "Users",
+      "totalRegisteredUsers": "Total registered users",
+      "revenue": "Revenue",
+      "total": "total"
+    },
+    "imports": {
+      "totalImports": "Total Imports",
+      "successful": "successful",
+      "successRate": "success rate",
+      "jobViews": "Job Views",
+      "totalJobPageViews": "Total job page views",
+      "applications": "Applications",
+      "totalJobApplications": "Total job applications",
+      "conversionRate": "Conversion Rate",
+      "viewsToApplications": "Views to applications"
+    },
+    "charts": {
+      "monthlyJobPostings": "Monthly Job Postings",
+      "jobPostingsAndRevenue": "Job postings and revenue over time",
+      "jobs": "Jobs",
+      "revenue": "Revenue",
+      "jobCategories": "Job Categories",
+      "distributionByCategory": "Distribution of job postings by category"
+    },
+    "activity": {
+      "title": "Recent Activity",
+      "description": "Latest system activities and imports",
+      "jobImport": "Job Import",
+      "payment": "Payment",
+      "affiliateImport": "Affiliate Import",
+      "userRegistration": "User Registration",
+      "website": "Website",
+      "items": "items",
+      "timeAgo": "{minutes, plural, =1 {# minute ago} other {# minutes ago}} {hours, plural, =1 {# hour ago} other {# hours ago}}"
+    },
+    "blog": {
+      "posts": {
+        "title": "Blog Posts",
+        "description": "Latest created posts with status",
+        "loading": "Loading posts...",
+        "noPosts": "No posts yet",
+        "publish": "Publish",
+        "unpublish": "Unpublish"
+      },
+      "authors": {
+        "title": "Blog Authors",
+        "description": "Users allowed to create blog posts",
+        "roles": "Roles: supervisor, admin, moderator, blogger, editor",
+        "createNewPost": "Create New Post",
+        "loading": "Loading authors...",
+        "noAuthors": "No authors found",
+        "unnamed": "Unnamed"
+      }
+    },
+    "database": {
+      "loading": "Loading database statistics...",
+      "totalJobs": "Total Jobs",
+      "fromAllAPISources": "From all API sources",
+      "totalDeals": "Total Deals",
+      "affiliateProducts": "Affiliate products",
+      "apiSources": "API Sources",
+      "activeIntegrations": "Active integrations",
+      "jobSourcesBreakdown": "Job Sources Breakdown",
+      "realTimeData": "Real-time data from all API sources",
+      "jobs": "jobs",
+      "dealSourcesBreakdown": "Deal Sources Breakdown",
+      "affiliateProductsAllSources": "Affiliate products from all sources",
+      "deals": "deals",
+      "jobSourcesDistribution": "Job Sources Distribution",
+      "visualBreakdownJobSources": "Visual breakdown of job sources",
+      "dealSourcesDistribution": "Deal Sources Distribution",
+      "visualBreakdownDealSources": "Visual breakdown of deal sources",
+      "noDealSources": "No deal sources available",
+      "noDataAvailable": "No data available"
+    },
+    "analytics": {
+      "importSources": "Import Sources",
+      "distributionJobSources": "Distribution of job sources",
+      "monthlyImports": "Monthly Imports",
+      "importActivityTime": "Import activity over time",
+      "apiPerformance": "API Performance",
+      "healthy": "Healthy",
+      "warning": "Warning",
+      "importSuccessRate": "Import Success Rate",
+      "of": "of",
+      "importsSuccessful": "imports successful",
+      "dataQuality": "Data Quality",
+      "completeProfiles": "Complete Profiles",
+      "validEmails": "Valid Emails",
+      "salaryInfo": "Salary Info",
+      "companyDetails": "Company Details"
+    },
+    "billing": {
+      "title": "Billing & Invoices",
+      "description": "Create and manage invoices (UI coming soon)",
+      "notWired": "The invoice creation UI is not wired yet in this project. If you want, I can add an invoices page and API routes for creating and listing invoices.",
+      "createInvoice": "Create Invoice (coming soon)"
+    },
+    "testing": {
+      "title": "API Testing Playground",
+      "description": "Run live tests against your API endpoints",
+      "openDescription": "Open the built-in API testing page to try endpoints like jobs, categories, imports and payments.",
+      "openAPITesting": "Open API Testing"
+    },
+    "jobImport": {
+      "title": "Job Import Manager",
+      "description": "Import jobs from external APIs",
+      "refresh": "Refresh",
+      "importJobs": "Import Jobs",
+      "importHistory": "Import History",
+      "configuration": {
+        "title": "Import Configuration",
+        "description": "Configure and start a new job import from external APIs"
+      },
+      "form": {
+        "jobSource": "Job Source",
+        "selectJobSource": "Select job source",
+        "importLimit": "Import Limit",
+        "searchQuery": "Search Query",
+        "searchQueryPlaceholder": "e.g., software developer, marketing",
+        "location": "Location",
+        "locationPlaceholder": "e.g., Berlin, Munich, Hamburg",
+        "employmentType": "Employment Type",
+        "anyType": "Any type",
+        "fullTime": "Full Time",
+        "partTime": "Part Time",
+        "contract": "Contract",
+        "freelance": "Freelance",
+        "minSalary": "Min Salary (€)",
+        "maxSalary": "Max Salary (€)"
+      },
+      "sources": {
+        "adzuna": "Adzuna (German Jobs)",
+        "adzunaDescription": "Official German job board API",
+        "employmentAgency": "Employment Agency API",
+        "viaRapidAPI": "Via RapidAPI",
+        "glassdoor": "Glassdoor API",
+        "glassdoorDescription": "Company reviews and jobs",
+        "upwork": "Upwork API",
+        "freelanceProjects": "Freelance projects",
+        "activeJobsDB": "Active Jobs DB",
+        "aggregatedDatabase": "Aggregated job database",
+        "multiSource": "Multi-Source Import",
+        "multiSourceDescription": "Import from multiple APIs"
+      },
+      "errors": {
+        "error": "Error",
+        "selectSource": "Please select a job source",
+        "importFailed": "Import failed",
+        "unknownError": "Unknown error"
+      },
+      "importStarted": "Import Started",
+      "importingFrom": "Importing jobs from {source}...",
+      "importCompleted": "Import Completed",
+      "importResults": "Created: {created}, Updated: {updated}, Failed: {failed}",
+      "importing": "Importing...",
+      "startImport": "Start Import",
+      "currentImport": {
+        "title": "Current Import Status",
+        "source": "Source",
+        "progress": "Progress",
+        "created": "Created",
+        "updated": "Updated",
+        "failed": "Failed"
+      },
+      "history": {
+        "title": "Import History",
+        "description": "View previous job import runs and their results",
+        "noRuns": "No import runs found. Start your first import above.",
+        "unknownSource": "Unknown Source",
+        "total": "Total",
+        "started": "Started",
+        "completed": "Completed"
+      }
+    },
+    "userManagement": {
+      "title": "User Management",
+      "description": "Manage user roles and permissions",
+      "refresh": "Refresh",
+      "searchPlaceholder": "Search by email or name...",
+      "filterByRole": "Filter by role",
+      "allRoles": "All Roles",
+      "noUsers": "No users found matching your criteria",
+      "stats": {
+        "totalUsers": "Total Users"
+      },
+      "roles": {
+        "supervisor": "Supervisor",
+        "admin": "Admin",
+        "moderator": "Moderator",
+        "lister": "Lister",
+        "publisher": "Publisher",
+        "blogger": "Blogger",
+        "editor": "Editor",
+        "analyst": "Analyst",
+        "employer": "Employer",
+        "jobSeeker": "Job Seeker"
+      },
+      "errors": {
+        "error": "Error",
+        "fetchUsers": "Failed to fetch users",
+        "loadUsers": "Failed to load users",
+        "updateSubscription": "Failed to update subscription",
+        "couldNotUpdateSubscription": "Could not update subscription",
+        "updatePlan": "Failed to update plan",
+        "couldNotUpdatePlan": "Could not update plan",
+        "updateRole": "Failed to update user role"
+      },
+      "subscription": {
+        "subscribed": "Subscribed",
+        "unsubscribed": "Unsubscribed"
+      },
+      "plan": {
+        "updated": "Plan Updated"
+      },
+      "role": {
+        "updated": "Role Updated",
+        "updateDescription": "{email} is now {role}"
+      },
+      "table": {
+        "user": "User",
+        "email": "Email",
+        "role": "Role",
+        "subscription": "Subscription",
+        "plan": "Plan",
+        "joined": "Joined",
+        "actions": "Actions",
+        "noName": "No name",
+        "changeRole": "Change Role"
+      },
+      "pagination": {
+        "showing": "Showing {start} to {end} of {total} users"
+      },
+      "dialog": {
+        "changeRole": "Change User Role",
+        "updateRoleFor": "Update the role for {email}",
+        "selectNewRole": "Select New Role",
+        "currentRole": "Current role",
+        "cancel": "Cancel",
+        "updating": "Updating...",
+        "updateRole": "Update Role"
+      }
+    },
+    "rolePermissions": {
+      "title": "Role Permissions Matrix",
+      "description": "Detailed permissions for each role in the system",
+      "table": {
+        "feature": "Feature / Permission"
+      },
+      "permissions": {
+        "manageUsers": "Manage Users & Roles",
+        "manageCategories": "Manage Categories",
+        "manageJobSources": "Manage Job Sources",
+        "viewAllOffers": "View All Offers",
+        "createJobOffers": "Create Job Offers",
+        "approveContent": "Approve/Reject Content",
+        "createBlogPosts": "Create Blog Posts",
+        "editAnyBlogPost": "Edit Any Blog Post",
+        "viewAnalytics": "View Analytics",
+        "viewAuditLogs": "View Audit Logs",
+        "manageSettings": "Manage Settings",
+        "createCompany": "Create Company",
+        "uploadMedia": "Upload Media"
+      },
+      "roles": {
+        "supervisor": "Supervisor",
+        "admin": "Admin",
+        "moderator": "Moderator",
+        "lister": "Lister",
+        "publisher": "Publisher",
+        "blogger": "Blogger",
+        "editor": "Editor",
+        "analyst": "Analyst"
+      },
+      "roleDescriptions": {
+        "supervisor": "Full system access",
+        "admin": "Manage content & users",
+        "moderator": "Content moderation",
+        "lister": "Job ad management",
+        "publisher": "Post job listings",
+        "blogger": "Write articles",
+        "editor": "Edit all articles",
+        "analyst": "View analytics"
+      },
+      "legend": {
+        "title": "Legend",
+        "hasPermission": "Has permission",
+        "noPermission": "No permission"
+      },
+      "bestPractices": {
+        "title": "Best Practices",
+        "assignMinimum": "Assign minimum required permissions",
+        "reviewRegularly": "Review permissions regularly",
+        "useSupervisorSparingly": "Use supervisor role sparingly",
+        "enable2FA": "Enable 2FA for admin roles"
+      }
+    },
+    "affiliateImport": {
+      "title": "Affiliate Import Manager",
+      "description": "Import affiliate offers from partner networks",
+      "refresh": "Refresh",
+      "importOffers": "Import Offers",
+      "importHistory": "Import History",
+      "configuration": {
+        "title": "Import Configuration",
+        "description": "Configure and start importing affiliate offers from partner networks"
+      },
+      "form": {
+        "affiliateNetwork": "Affiliate Network",
+        "selectAffiliateNetwork": "Select affiliate network",
+        "importLimit": "Import Limit",
+        "keywords": "Keywords",
+        "keywordsPlaceholder": "e.g., technology, fashion, travel",
+        "category": "Category",
+        "categoryPlaceholder": "e.g., Electronics, Clothing, Books",
+        "minCommission": "Min Commission (%)",
+        "maxCommission": "Max Commission (%)",
+        "hasCoupon": "Has Coupon Code",
+        "onSaleOnly": "On Sale Only"
+      },
+      "sources": {
+        "awin": "Awin Network",
+        "awinDescription": "Global affiliate network with 15,000+ advertisers",
+        "adcell": "Adcell Network",
+        "adcellDescription": "German affiliate network with local focus"
+      },
+      "features": {
+        "highQualityBrands": "High-quality brands",
+        "realTimeTracking": "Real-time tracking",
+        "globalReach": "Global reach",
+        "germanMarketFocus": "German market focus",
+        "productFeeds": "Product feeds",
+        "performanceTracking": "Performance tracking"
+      },
+      "errors": {
+        "error": "Error",
+        "selectSource": "Please select an affiliate source",
+        "importFailed": "Import failed",
+        "unknownError": "Unknown error"
+      },
+      "importStarted": "Import Started",
+      "importingFrom": "Importing affiliate offers from {source}...",
+      "importCompleted": "Import Completed",
+      "importResults": "Created: {created}, Updated: {updated}, Failed: {failed}",
+      "importing": "Importing...",
+      "startImport": "Start Import",
+      "currentImport": {
+        "title": "Current Import Status",
+        "network": "Network",
+        "progress": "Progress",
+        "created": "Created",
+        "updated": "Updated",
+        "failed": "Failed"
+      },
+      "programs": {
+        "title": "Affiliate Programs",
+        "description": "Manage your affiliate program connections",
+        "noPrograms": "No affiliate programs found. Start an import to create program connections.",
+        "active": "Active",
+        "inactive": "Inactive",
+        "provider": "Provider",
+        "commission": "Commission",
+        "lastSync": "Last Sync"
+      },
+      "history": {
+        "title": "Import History",
+        "description": "View previous affiliate import runs and their results",
+        "noRuns": "No import runs found. Start your first import above.",
+        "unknownNetwork": "Unknown Network",
+        "total": "Total",
+        "started": "Started",
+        "completed": "Completed"
+      }
+    },
+    "jobSearch": {
+      "title": "Job Search",
+      "activeFilters": "active filters",
+      "simple": "Simple",
+      "advanced": "Advanced",
+      "searchPlaceholder": "Search jobs, companies, or skills...",
+      "locationPlaceholder": "Location",
+      "search": "Search",
+      "clearAll": "Clear All",
+      "filters": {
+        "remote": "Remote",
+        "hybrid": "Hybrid",
+        "featuredOnly": "Featured Only",
+        "category": "Category",
+        "employmentType": "Employment Type",
+        "experienceLevel": "Experience Level",
+        "minimumSalary": "Minimum Salary"
+      },
+      "placeholders": {
+        "allCategories": "All categories",
+        "allTypes": "All types",
+        "allLevels": "All levels",
+        "anySalary": "Any salary"
+      },
+      "employmentTypes": {
+        "fullTime": "Full-time",
+        "partTime": "Part-time",
+        "contract": "Contract",
+        "freelance": "Freelance",
+        "internship": "Internship",
+        "temporary": "Temporary"
+      },
+      "experienceLevels": {
+        "entry": "Entry Level",
+        "junior": "Junior",
+        "mid": "Mid-Level",
+        "senior": "Senior",
+        "lead": "Lead",
+        "executive": "Executive"
+      },
+      "salaryRanges": {
+        "range30k": "€30,000+",
+        "range50k": "€50,000+",
+        "range70k": "€70,000+",
+        "range100k": "€100,000+",
+        "range150k": "€150,000+"
+      }
+    },
+    "jobDescriptionGenerator": {
+      "title": "AI Job Description Generator",
+      "description": "Generate professional job descriptions using AI or improve existing ones",
+      "form": {
+        "jobTitle": "Job Title",
+        "jobTitlePlaceholder": "e.g., Senior Full Stack Developer",
+        "companyName": "Company Name",
+        "companyNamePlaceholder": "e.g., Tech Corp GmbH",
+        "location": "Location",
+        "locationPlaceholder": "e.g., Berlin, Germany",
+        "employmentType": "Employment Type",
+        "employmentTypePlaceholder": "e.g., Full-time",
+        "requirements": "Requirements (one per line)",
+        "requirementsPlaceholder": "5+ years React experience\nTypeScript expertise\nTeam leadership skills",
+        "benefits": "Benefits (one per line)",
+        "benefitsPlaceholder": "Competitive salary\nRemote work options\nHealth insurance",
+        "existingDescription": "Existing Description (optional - to improve)",
+        "existingDescriptionPlaceholder": "Paste your current job description here if you want to improve it...",
+        "generate": "Generate Description",
+        "generating": "Generating with AI..."
+      },
+      "results": {
+        "title": "Generated Description",
+        "copy": "Copy",
+        "copied": "Copied!"
+      },
+      "errors": {
+        "missingInfo": {
+          "title": "Missing Information",
+          "description": "Please provide at least job title and company name"
+        },
+        "aiService": {
+          "title": "Error",
+          "description": "Failed to connect to AI service"
+        }
+      },
+      "success": {
+        "generated": {
+          "title": "✨ Description Generated!",
+          "description": "AI has created your job description"
+        },
+        "copied": {
+          "title": "Copied!",
+          "description": "Job description copied to clipboard"
+        }
+      }
+    },
+    "blogGenerator": {
+      "title": "AI Blog Article Generator",
+      "description": "Generate professional blog articles using AI for your target audience",
+      "form": {
+        "topic": "Topic",
+        "topicPlaceholder": "Enter your blog article topic...",
+        "category": "Category",
+        "targetAudience": "Target Audience",
+        "tone": "Tone",
+        "language": "Language",
+        "keywords": "Keywords (optional)",
+        "keywordsPlaceholder": "Enter relevant keywords separated by commas...",
+        "generate": "Generate Article",
+        "generating": "Generating with AI..."
+      },
+      "results": {
+        "title": "Generated Article",
+        "copy": "Copy",
+        "copied": "Copied!"
+      },
+      "errors": {
+        "missingInfo": {
+          "title": "Missing Information",
+          "description": "Please provide a topic for the article"
+        },
+        "aiService": {
+          "title": "Error",
+          "description": "Failed to connect to AI service"
+        }
+      },
+      "success": {
+        "generated": {
+          "title": "✨ Article Generated!",
+          "description": "AI has created your blog article"
+        },
+        "copied": {
+          "title": "Copied!",
+          "description": "Blog article copied to clipboard"
+        }
+      },
+      "categories": {
+        "job_market": "Job Market",
+        "career_advice": "Career Advice",
+        "industry_insights": "Industry Insights",
+        "company_culture": "Company Culture",
+        "recruitment": "Recruitment",
+        "technology": "Technology"
+      },
+      "audiences": {
+        "job_seekers": "Job Seekers",
+        "employers": "Employers",
+        "general": "General Audience"
+      },
+      "tones": {
+        "professional": "Professional",
+        "casual": "Casual",
+        "informative": "Informative"
+      },
+      "languages": {
+        "de": "German",
+        "en": "English",
+        "fr": "French",
+        "it": "Italian"
+      }
+    },
+    "payment": {
+      "success": {
+        "title": "Payment Successful!",
+        "successMessage": "Your payment has been processed successfully.",
+        "details": {
+          "title": "Payment Details",
+          "paymentId": "Payment ID",
+          "status": "Status",
+          "amount": "Amount",
+          "invoice": "Invoice"
+        },
+        "status": {
+          "paid": "Paid"
+        },
+        "description": {
+          "completedOn": "Transaction completed on {date}"
+        },
+        "invoice": {
+          "title": "Invoice Information",
+          "billingName": "Billing Name",
+          "billingEmail": "Billing Email",
+          "invoiceStatus": "Invoice Status"
+        },
+        "whatsNext": {
+          "title": "What's Next?",
+          "description": "Your job posting is now active and will be visible to job seekers. You'll receive email notifications about applications."
+        },
+        "actions": {
+          "viewJobs": "View Job Listings",
+          "manageJobs": "Manage My Jobs",
+          "backHome": "Back to Home"
+        },
+        "receipt": {
+          "message": "A receipt has been sent to your email address. You can also view your payment history in your dashboard."
+        }
+      },
+      "loading": "Loading payment details..."
+    },
+    "blogPost": {
+      "authorRole": "Content Writer",
+      "share": "Share",
+      "tags": "Tags",
+      "viewProfile": "View Profile",
+      "relatedArticles": "Related Articles",
+      "newsletter": {
+        "title": "Stay Updated",
+        "description": "Get the latest career insights delivered to your inbox.",
+        "placeholder": "Your email",
+        "subscribe": "Subscribe",
+        "subscribing": "Subscribing..."
+      },
+      "navigation": {
+        "previous": "Previous Post",
+        "next": "Next Post"
+      }
+    },
+    "supervisor": {
+      "panel": {
+        "title": "Supervisor Panel"
+      }
+    },
+    "publisher": {
+      "panel": {
+        "title": "Publisher Panel"
+      }
+    },
+    "auth": {
+      "loginRequired": "Login Required",
+      "signInToAccess": "Please sign in to access this page.",
+      "goToLogin": "Go to Login"
+    },
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next",
+      "morePages": "More pages"
+    },
+    "carousel": {
+      "previousSlide": "Previous slide",
+      "nextSlide": "Next slide"
+    },
+    "dialog": {
+      "close": "Close"
+    },
+    "richTextEditor": {
+      "enterUrl": "Enter URL",
+      "bold": "Bold",
+      "italic": "Italic",
+      "underline": "Underline",
+      "addLink": "Add Link",
+      "heading": "Heading",
+      "bulletList": "Bullet List",
+      "numberedList": "Numbered List",
+      "placeholder": "Write your content..."
+    }
   }
 }

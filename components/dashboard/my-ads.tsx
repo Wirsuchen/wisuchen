@@ -9,8 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Eye, Users, Edit, RefreshCw, Trash2, Search, Plus } from "lucide-react"
 import Link from "next/link"
+import { useTranslation } from "@/contexts/i18n-context"
 
 export function MyAds() {
+  const { t } = useTranslation()
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [loading, setLoading] = useState(true)
@@ -99,13 +101,13 @@ export function MyAds() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">My Job Ads</h1>
-          <p className="text-muted-foreground">Manage your job postings and track their performance</p>
+          <h1 className="text-3xl font-bold">{t("dashboard.myAds")}</h1>
+          <p className="text-muted-foreground">{t("dashboard.myAdsDescription")}</p>
         </div>
         <Button asChild>
           <Link href="/jobs/post">
             <Plus className="h-4 w-4 mr-2" />
-            Post New Job
+            {t("dashboard.postNewJob")}
           </Link>
         </Button>
       </div>
@@ -116,7 +118,7 @@ export function MyAds() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Ads</p>
+                <p className="text-sm text-muted-foreground">{t("dashboard.totalAds")}</p>
                 <p className="text-2xl font-bold">{loading ? '—' : totalAds}</p>
               </div>
               <Eye className="h-8 w-8 text-blue-600" />
@@ -127,7 +129,7 @@ export function MyAds() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Active</p>
+                <p className="text-sm text-muted-foreground">{t("dashboard.activeAds")}</p>
                 <p className="text-2xl font-bold text-green-600">{loading ? '—' : activeCount}</p>
               </div>
               <RefreshCw className="h-8 w-8 text-green-600" />
@@ -138,7 +140,7 @@ export function MyAds() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Views</p>
+                <p className="text-sm text-muted-foreground">{t("dashboard.totalViews")}</p>
                 <p className="text-2xl font-bold">{loading ? '—' : totalViews}</p>
               </div>
               <Eye className="h-8 w-8 text-purple-600" />
@@ -149,7 +151,7 @@ export function MyAds() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Applicants</p>
+                <p className="text-sm text-muted-foreground">{t("dashboard.totalApplicants")}</p>
                 <p className="text-2xl font-bold">{loading ? '—' : totalApplicants}</p>
               </div>
               <Users className="h-8 w-8 text-orange-600" />
@@ -161,8 +163,8 @@ export function MyAds() {
       {/* Filters */}
       <Card>
         <CardHeader>
-          <CardTitle>Job Listings</CardTitle>
-          <CardDescription>View and manage all your job postings</CardDescription>
+          <CardTitle>{t("dashboard.myAdsJobListingsTitle")}</CardTitle>
+          <CardDescription>{t("dashboard.myAdsJobListingsDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col md:flex-row gap-4 mb-6">
@@ -170,7 +172,7 @@ export function MyAds() {
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search job titles..."
+                  placeholder={t("dashboard.myAdsSearchPlaceholder")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10"
@@ -179,13 +181,13 @@ export function MyAds() {
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-full md:w-48">
-                <SelectValue placeholder="Filter by status" />
+                <SelectValue placeholder={t("dashboard.myAdsFilterByStatus")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="expired">Expired</SelectItem>
-                <SelectItem value="draft">Draft</SelectItem>
+                <SelectItem value="all">{t("dashboard.myAdsStatusAll")}</SelectItem>
+                <SelectItem value="active">{t("dashboard.myAdsStatusActive")}</SelectItem>
+                <SelectItem value="expired">{t("dashboard.myAdsStatusExpired")}</SelectItem>
+                <SelectItem value="draft">{t("dashboard.myAdsStatusDraft")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -195,24 +197,24 @@ export function MyAds() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Job Title</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Views</TableHead>
-                  <TableHead>Applicants</TableHead>
-                  <TableHead>Posted</TableHead>
-                  <TableHead>Expires</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead>{t("dashboard.myAdsTableJobTitle")}</TableHead>
+                  <TableHead>{t("dashboard.myAdsTableStatus")}</TableHead>
+                  <TableHead>{t("dashboard.myAdsTableViews")}</TableHead>
+                  <TableHead>{t("dashboard.myAdsTableApplicants")}</TableHead>
+                  <TableHead>{t("dashboard.myAdsTablePosted")}</TableHead>
+                  <TableHead>{t("dashboard.myAdsTableExpires")}</TableHead>
+                  <TableHead>{t("dashboard.myAdsTableActions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Loading...</TableCell>
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">{t("common.loading")}</TableCell>
                   </TableRow>
                 ) : filteredAds.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                      No job ads yet. <Link href="/jobs/post" className="underline">Post your first job</Link>.
+                      {t("dashboard.noAdsYet")} <Link href="/jobs/post" className="underline">{t("dashboard.postFirstAd")}</Link>.
                     </TableCell>
                   </TableRow>
                 ) : (

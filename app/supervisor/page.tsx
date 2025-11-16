@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { PageLayout } from '@/components/layout/page-layout'
+import { SupervisorContent } from './supervisor-client'
 
 export default async function SupervisorPage() {
   const supabase = await createClient()
@@ -10,9 +11,7 @@ export default async function SupervisorPage() {
   if (!profile || !['supervisor','admin'].includes(profile.role as string)) redirect('/')
   return (
     <PageLayout showBackButton={false} containerClassName="max-w-7xl">
-      <div className="space-y-4">
-        <h1 className="text-3xl font-bold">Supervisor Panel</h1>
-      </div>
+      <SupervisorContent />
     </PageLayout>
   )
 }

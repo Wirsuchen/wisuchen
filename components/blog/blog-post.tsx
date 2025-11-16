@@ -22,6 +22,7 @@ import {
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
 import { Input } from "@/components/ui/input"
+import { useTranslation } from '@/contexts/i18n-context'
 
 interface BlogPostProps {
   post: {
@@ -40,6 +41,7 @@ interface BlogPostProps {
 }
 
 export function BlogPost({ post }: BlogPostProps) {
+  const { t } = useTranslation()
   const [isLiked, setIsLiked] = useState(false)
   const [likes, setLikes] = useState(Math.floor(Math.random() * 100) + 50)
   const [newsletterEmail, setNewsletterEmail] = useState("")
@@ -206,7 +208,7 @@ export function BlogPost({ post }: BlogPostProps) {
             </div>
             <div>
               <p className="font-medium">{post.author}</p>
-              <p className="text-sm text-muted-foreground">Content Writer</p>
+              <p className="text-sm text-muted-foreground">{t('blogPost.authorRole')}</p>
             </div>
           </div>
 
@@ -222,7 +224,7 @@ export function BlogPost({ post }: BlogPostProps) {
             </Button>
             <Button variant="outline" size="sm" className="bg-transparent" onClick={() => handleShare("native")}>
               <Share2 className="h-4 w-4 mr-2" />
-              Share
+              {t('blogPost.share')}
             </Button>
           </div>
         </div>
@@ -244,7 +246,7 @@ export function BlogPost({ post }: BlogPostProps) {
 
           {/* Tags */}
           <div className="mt-8 pt-8 border-t">
-            <h3 className="text-lg font-semibold mb-4">Tags</h3>
+            <h3 className="text-lg font-semibold mb-4">{t('blogPost.tags')}</h3>
             <div className="flex flex-wrap gap-2">
               {post.tags.map((tag) => (
                 <Badge key={tag} variant="outline">
@@ -297,7 +299,7 @@ export function BlogPost({ post }: BlogPostProps) {
                   </p>
                   <Button variant="outline" size="sm" className="w-full bg-transparent">
                     <User className="h-4 w-4 mr-2" />
-                    View Profile
+                    {t('blogPost.viewProfile')}
                   </Button>
                 </div>
               </CardContent>
@@ -306,7 +308,7 @@ export function BlogPost({ post }: BlogPostProps) {
             {/* Related Posts */}
             <Card>
               <CardContent className="p-6">
-                <h4 className="font-semibold mb-4">Related Articles</h4>
+                <h4 className="font-semibold mb-4">{t('blogPost.relatedArticles')}</h4>
                 <div className="space-y-4">
                   {relatedPosts.map((relatedPost) => (
                     <div key={relatedPost.id} className="border-b pb-4 last:border-b-0 last:pb-0">
@@ -335,14 +337,14 @@ export function BlogPost({ post }: BlogPostProps) {
             {/* Newsletter Signup */}
             <Card>
               <CardContent className="p-6">
-                <h4 className="font-semibold mb-2">Stay Updated</h4>
+                <h4 className="font-semibold mb-2">{t('blogPost.newsletter.title')}</h4>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Get the latest career insights delivered to your inbox.
+                  {t('blogPost.newsletter.description')}
                 </p>
                 <form onSubmit={handleNewsletterSubscribe} className="space-y-2">
                   <Input 
                     type="email" 
-                    placeholder="Your email" 
+                    placeholder={t('blogPost.newsletter.placeholder')} 
                     className="text-sm"
                     value={newsletterEmail}
                     onChange={(e) => setNewsletterEmail(e.target.value)}
@@ -353,10 +355,10 @@ export function BlogPost({ post }: BlogPostProps) {
                     {isSubscribing ? (
                       <>
                         <Loader2 className="h-3 w-3 mr-2 animate-spin" />
-                        Subscribing...
+                        {t('blogPost.newsletter.subscribing')}
                       </>
                     ) : (
-                      'Subscribe'
+                      t('blogPost.newsletter.subscribe')
                     )}
                   </Button>
                 </form>
@@ -371,12 +373,12 @@ export function BlogPost({ post }: BlogPostProps) {
         <Button variant="outline" asChild className="bg-transparent">
           <Link href="/blog/1">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Previous Post
+            {t('blogPost.navigation.previous')}
           </Link>
         </Button>
         <Button variant="outline" asChild className="bg-transparent">
           <Link href="/blog/3">
-            Next Post
+            {t('blogPost.navigation.next')}
             <ArrowRight className="h-4 w-4 ml-2" />
           </Link>
         </Button>

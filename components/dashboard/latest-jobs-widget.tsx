@@ -9,8 +9,10 @@ import { useEffect } from 'react'
 import { useJobs, type Job } from '@/hooks/use-jobs'
 import { Briefcase, MapPin, TrendingUp, ExternalLink, Loader2 } from 'lucide-react'
 import Link from 'next/link'
+import { useTranslation } from '@/contexts/i18n-context'
 
 export function LatestJobsWidget() {
+  const { t, tr } = useTranslation()
   const { jobs, loading, error, search, meta } = useJobs()
 
   useEffect(() => {
@@ -37,7 +39,7 @@ export function LatestJobsWidget() {
       <div className="bg-white rounded-lg shadow-sm p-6">
         <div className="flex items-center gap-3 mb-4">
           <Briefcase className="w-6 h-6 text-blue-600" />
-          <h2 className="text-xl font-semibold">Latest Jobs</h2>
+          <h2 className="text-xl font-semibold">{t('jobs.latestJobs')}</h2>
         </div>
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
           <p className="text-red-700 text-sm">{error}</p>
@@ -55,10 +57,12 @@ export function LatestJobsWidget() {
             <Briefcase className="w-6 h-6 text-blue-600" />
           </div>
           <div>
-            <h2 className="text-xl font-semibold">Latest Jobs</h2>
+            <h2 className="text-xl font-semibold">{t('jobs.latestJobs')}</h2>
             {meta && (
               <p className="text-sm text-gray-600">
-                {Object.values(meta.sources).reduce((a, b) => a + b, 0)} jobs from multiple sources
+                {tr('jobs.latestWidgetSubtitle', {
+                  count: Object.values(meta.sources).reduce((a, b) => a + (b || 0), 0),
+                })}
               </p>
             )}
           </div>
@@ -68,7 +72,7 @@ export function LatestJobsWidget() {
           href="/dashboard/jobs-feed"
           className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1"
         >
-          View All
+          {t('common.viewAll')}
           <ExternalLink className="w-4 h-4" />
         </Link>
       </div>
@@ -83,9 +87,9 @@ export function LatestJobsWidget() {
             </div>
           ))}
           <div className="bg-green-50 rounded-lg p-3">
-            <div className="text-xs text-gray-600 mb-1">Status</div>
+            <div className="text-xs text-gray-600 mb-1">{t('jobs.status')}</div>
             <div className="text-sm font-semibold text-green-600">
-              {meta.cached ? '✓ Cached' : 'Live'}
+              {meta.cached ? t('jobs.cached') : t('jobs.live')}
             </div>
           </div>
         </div>
@@ -95,7 +99,7 @@ export function LatestJobsWidget() {
       {jobs.length === 0 ? (
         <div className="text-center py-8">
           <Briefcase className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-          <p className="text-gray-600">No jobs available</p>
+          <p className="text-gray-600">{t('jobs.noJobsAvailable')}</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -111,7 +115,7 @@ export function LatestJobsWidget() {
           href="/dashboard/jobs-feed"
           className="block text-center mt-4 py-2 text-blue-600 hover:text-blue-700 font-medium text-sm"
         >
-          View all jobs →
+          {t('home.viewAllJobs')} →
         </Link>
       )}
     </div>
@@ -122,11 +126,26 @@ export function LatestJobsWidget() {
  * Individual Job Item
  */
 function JobItem({ job }: { job: Job }) {
+  const { t } = useTranslation()
+
   const getSourceColor = (source: string) => {
     if (source.includes('adzuna')) return 'text-purple-600 bg-purple-50'
     if (source.includes('glassdoor')) return 'text-green-600 bg-green-50'
     if (source.includes('upwork')) return 'text-blue-600 bg-blue-50'
     return 'text-gray-600 bg-gray-50'
+  }
+
+  const formatEmploymentType = (type: string) => {
+    const keyMap: Record<string, string> = {
+      full_time: 'jobs.fullTime',
+      part_time: 'jobs.partTime',
+      contract: 'jobs.contract',
+      freelance: 'jobs.freelance',
+      internship: 'jobs.internship',
+      temporary: 'jobs.temporary',
+    }
+    const key = keyMap[type.toLowerCase()]
+    return key ? t(key) : type.replace('_', ' ')
   }
 
   return (
@@ -149,7 +168,7 @@ function JobItem({ job }: { job: Job }) {
           
           {job.employmentType && (
             <span className="inline-block px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs">
-              {job.employmentType.replace('_', ' ')}
+              {formatEmploymentType(job.employmentType)}
             </span>
           )}
         </div>
@@ -165,7 +184,7 @@ function JobItem({ job }: { job: Job }) {
               rel="noopener noreferrer"
               className="text-blue-600 hover:text-blue-700 text-xs font-medium"
             >
-              Apply →
+              {t('jobs.apply')} →
             </a>
           )}
         </div>

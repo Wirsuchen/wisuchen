@@ -8,8 +8,10 @@
 import { useState, useEffect } from 'react'
 import { useJobs, type Job } from '@/hooks/use-jobs'
 import { Loader2, Search, MapPin, Briefcase, DollarSign, ExternalLink, RefreshCw, Filter } from 'lucide-react'
+import { useTranslation } from '@/contexts/i18n-context'
 
 export default function JobsFeedPage() {
+  const { t, tr } = useTranslation()
   const [searchQuery, setSearchQuery] = useState('')
   const [location, setLocation] = useState('')
   const [employmentType, setEmploymentType] = useState<string>('')
@@ -62,9 +64,9 @@ export default function JobsFeedPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold mb-2">Latest Jobs</h1>
+          <h1 className="text-3xl font-bold mb-2">{t('jobs.latestJobs')}</h1>
           <p className="text-gray-600">
-            Aggregated from multiple sources • Updated in real-time
+            {t('jobs.heroSubtitle')}
           </p>
         </div>
         
@@ -77,7 +79,7 @@ export default function JobsFeedPage() {
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
         >
           <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          Refresh
+          {t('common.refresh')}
         </button>
       </div>
 
@@ -92,7 +94,7 @@ export default function JobsFeedPage() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Job title or keywords..."
+                placeholder={t('jobs.searchPlaceholder')}
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
@@ -103,7 +105,7 @@ export default function JobsFeedPage() {
                 type="text"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                placeholder="Location..."
+                placeholder={t('jobs.locationPlaceholder')}
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
@@ -116,10 +118,10 @@ export default function JobsFeedPage() {
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  Searching...
+                  {t('jobs.searching')}
                 </span>
               ) : (
-                'Search Jobs'
+                t('jobs.searchJobs')
               )}
             </button>
           </div>
@@ -129,25 +131,25 @@ export default function JobsFeedPage() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <Filter className="w-4 h-4 inline mr-2" />
-                Employment Type
+                {t('jobs.jobType')}
               </label>
               <select
                 value={employmentType}
                 onChange={(e) => setEmploymentType(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               >
-                <option value="">All Types</option>
-                <option value="full_time">Full Time</option>
-                <option value="part_time">Part Time</option>
-                <option value="contract">Contract</option>
-                <option value="freelance">Freelance</option>
-                <option value="internship">Internship</option>
+                <option value="">{t('jobs.allTypes')}</option>
+                <option value="full_time">{t('jobs.fullTime')}</option>
+                <option value="part_time">{t('jobs.partTime')}</option>
+                <option value="contract">{t('jobs.contract')}</option>
+                <option value="freelance">{t('jobs.freelance')}</option>
+                <option value="internship">{t('jobs.internship')}</option>
               </select>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Data Sources
+                {t('jobs.dataSources')}
               </label>
               <div className="flex flex-wrap gap-3">
                 {['adzuna', 'rapidapi'].map(source => (
@@ -177,7 +179,7 @@ export default function JobsFeedPage() {
       {meta && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <div className="bg-white rounded-lg shadow-sm p-4">
-            <div className="text-sm text-gray-600 mb-1">Total Jobs</div>
+            <div className="text-sm text-gray-600 mb-1">{t('jobs.totalJobs')}</div>
             <div className="text-2xl font-bold">{pagination?.total || 0}</div>
           </div>
           
@@ -189,12 +191,12 @@ export default function JobsFeedPage() {
           ))}
 
           <div className="bg-white rounded-lg shadow-sm p-4">
-            <div className="text-sm text-gray-600 mb-1">Cache Status</div>
+            <div className="text-sm text-gray-600 mb-1">{t('jobs.cacheStatus')}</div>
             <div className="text-lg font-semibold">
               {meta.cached ? (
-                <span className="text-green-600">✓ Cached</span>
+                <span className="text-green-600">{t('jobs.cached')}</span>
               ) : (
-                <span className="text-blue-600">Fresh Data</span>
+                <span className="text-blue-600">{t('jobs.live')}</span>
               )}
             </div>
           </div>
@@ -205,14 +207,14 @@ export default function JobsFeedPage() {
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
           <div className="flex items-start gap-3">
-            <div className="text-red-600 font-medium">Error loading jobs</div>
+            <div className="text-red-600 font-medium">{t('jobs.errorLoading')}</div>
           </div>
           <p className="text-red-700 mt-1">{error}</p>
           <button
             onClick={loadLatestJobs}
             className="mt-3 text-red-600 hover:text-red-700 font-medium"
           >
-            Try Again
+            {t('common.tryAgain')}
           </button>
         </div>
       )}
@@ -222,14 +224,14 @@ export default function JobsFeedPage() {
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
             <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
-            <p className="text-gray-600">Loading latest jobs from all sources...</p>
+            <p className="text-gray-600">{t('jobs.loadingFromSources')}</p>
           </div>
         </div>
       ) : jobs.length === 0 ? (
         <div className="text-center py-20">
           <Briefcase className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-gray-700 mb-2">No jobs found</h3>
-          <p className="text-gray-600">Try adjusting your search criteria</p>
+          <h3 className="text-xl font-semibold text-gray-700 mb-2">{t('jobs.noJobsFound')}</h3>
+          <p className="text-gray-600">{t('jobs.tryAdjustingFilters')}</p>
         </div>
       ) : (
         <>
@@ -250,10 +252,10 @@ export default function JobsFeedPage() {
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
                     <Loader2 className="w-5 h-5 animate-spin" />
-                    Loading more...
+                    {t('jobs.loadingMore')}
                   </span>
                 ) : (
-                  `Load More (${pagination.total - pagination.page * pagination.limit} remaining)`
+                  `${t('common.loadMore')} (${pagination.total - pagination.page * pagination.limit} ${t('jobs.remaining')})`
                 )}
               </button>
             </div>
@@ -268,14 +270,16 @@ export default function JobsFeedPage() {
  * Job Card Component
  */
 function JobCard({ job }: { job: Job }) {
+  const { t, tr } = useTranslation()
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     const now = new Date()
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
     
-    if (diffInHours < 1) return 'Just now'
-    if (diffInHours < 24) return `${diffInHours}h ago`
-    if (diffInHours < 48) return 'Yesterday'
+    if (diffInHours < 1) return t('jobs.time.justNow')
+    if (diffInHours < 24) return tr('jobs.time.hoursAgo', { hours: diffInHours })
+    if (diffInHours < 48) return t('jobs.time.yesterday')
     return date.toLocaleDateString()
   }
 

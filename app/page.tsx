@@ -130,24 +130,24 @@ export default function HomePage() {
   const blogPosts = [
     {
       id: 1,
-      title: "Top 10 Interview Tips for 2024",
-      excerpt: "Master your next job interview with these proven strategies...",
-      category: "Career Tips",
-      readTime: "5 min read",
+      title: t('home.blogPost1Title'),
+      excerpt: t('home.blogPost1Excerpt'),
+      category: t('home.blogPost1Category'),
+      readTime: t('home.blogPost1ReadTime'),
     },
     {
       id: 2,
-      title: "Remote Work Trends in Germany",
-      excerpt: "How the job market is adapting to remote work opportunities...",
-      category: "Market Insights",
-      readTime: "8 min read",
+      title: t('home.blogPost2Title'),
+      excerpt: t('home.blogPost2Excerpt'),
+      category: t('home.blogPost2Category'),
+      readTime: t('home.blogPost2ReadTime'),
     },
     {
       id: 3,
-      title: "Best Tech Deals This Month",
-      excerpt: "Don't miss these incredible technology deals and discounts...",
-      category: "Deals",
-      readTime: "3 min read",
+      title: t('home.blogPost3Title'),
+      excerpt: t('home.blogPost3Excerpt'),
+      category: t('home.blogPost3Category'),
+      readTime: t('home.blogPost3ReadTime'),
     },
   ]
 
@@ -340,7 +340,7 @@ export default function HomePage() {
                 </div>
               ) : topDeals.length === 0 ? (
                 <div className="col-span-full text-center py-12 text-muted-foreground">
-                  No deals available at the moment
+                  {t('common.notAvailable')}
                 </div>
               ) : (
                 topDeals.map((deal) => (

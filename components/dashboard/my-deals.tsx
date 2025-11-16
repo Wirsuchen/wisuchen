@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Heart, Search, Star, ShoppingBag, Trash2, ExternalLink, Loader2, AlertCircle } from "lucide-react"
 import Link from "next/link"
 import { formatEuro } from "@/lib/utils"
+import { useTranslation } from "@/contexts/i18n-context"
 
 interface SavedDeal {
   id: string
@@ -25,6 +26,7 @@ interface SavedDeal {
 }
 
 export function MyDeals() {
+  const { t, tr } = useTranslation()
   const [searchQuery, setSearchQuery] = useState("")
   const [categoryFilter, setCategoryFilter] = useState("all")
   const [savedDeals, setSavedDeals] = useState<any[]>([])
@@ -77,13 +79,13 @@ export function MyDeals() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">My Saved Deals</h1>
-            <p className="text-muted-foreground">Track your favorite deals and never miss a bargain</p>
+            <h1 className="text-3xl font-bold">{t("dashboard.mySavedDealsTitle")}</h1>
+            <p className="text-muted-foreground">{t("dashboard.mySavedDealsDescription")}</p>
           </div>
           <Button variant="outline" asChild className="bg-transparent">
             <Link href="/deals">
               <ShoppingBag className="h-4 w-4 mr-2" />
-              Browse Deals
+              {t("home.browseDeals")}
             </Link>
           </Button>
         </div>
@@ -91,14 +93,14 @@ export function MyDeals() {
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center justify-center py-16">
             <AlertCircle className="h-16 w-16 text-muted-foreground mb-4" />
-            <h3 className="text-xl font-semibold mb-2">No Saved Deals Yet</h3>
+            <h3 className="text-xl font-semibold mb-2">{t("dashboard.mySavedDealsEmptyTitle")}</h3>
             <p className="text-muted-foreground text-center mb-6 max-w-md">
-              Start saving your favorite deals by clicking the heart icon on any deal. They'll appear here for easy access.
+              {t("dashboard.mySavedDealsEmptyDescription")}
             </p>
             <Button asChild>
               <Link href="/deals">
                 <ShoppingBag className="h-4 w-4 mr-2" />
-                Browse All Deals
+                {t("home.viewAllDeals")}
               </Link>
             </Button>
           </CardContent>
@@ -111,13 +113,13 @@ export function MyDeals() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">My Saved Deals</h1>
-          <p className="text-muted-foreground">Track your favorite deals and never miss a bargain</p>
+          <h1 className="text-3xl font-bold">{t("dashboard.mySavedDealsTitle")}</h1>
+          <p className="text-muted-foreground">{t("dashboard.mySavedDealsDescription")}</p>
         </div>
         <Button variant="outline" asChild className="bg-transparent">
           <Link href="/deals">
             <ShoppingBag className="h-4 w-4 mr-2" />
-            Browse More Deals
+            {t("home.viewAllDeals")}
           </Link>
         </Button>
       </div>
@@ -128,7 +130,7 @@ export function MyDeals() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Saved Deals</p>
+                <p className="text-sm text-muted-foreground">{t("dashboard.mySavedDealsStatsSavedDeals")}</p>
                 <p className="text-2xl font-bold">{savedDeals.length}</p>
               </div>
               <Heart className="h-8 w-8 text-red-600" />
@@ -139,7 +141,7 @@ export function MyDeals() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Savings</p>
+                <p className="text-sm text-muted-foreground">{t("dashboard.mySavedDealsStatsTotalSavings")}</p>
                 <p className="text-2xl font-bold text-green-600">{formatEuro(totalSavings)}</p>
               </div>
               <ShoppingBag className="h-8 w-8 text-green-600" />
@@ -150,7 +152,7 @@ export function MyDeals() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">In Stock</p>
+                <p className="text-sm text-muted-foreground">{t("dashboard.mySavedDealsStatsInStock")}</p>
                 <p className="text-2xl font-bold">{savedDeals.filter((deal) => deal.inStock).length}</p>
               </div>
               <Star className="h-8 w-8 text-blue-600" />
@@ -162,8 +164,8 @@ export function MyDeals() {
       {/* Filters */}
       <Card>
         <CardHeader>
-          <CardTitle>Saved Deals</CardTitle>
-          <CardDescription>Manage your saved deals and track price changes</CardDescription>
+          <CardTitle>{t("dashboard.mySavedDealsCardTitle")}</CardTitle>
+          <CardDescription>{t("dashboard.mySavedDealsCardDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col md:flex-row gap-4 mb-6">
@@ -171,7 +173,7 @@ export function MyDeals() {
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search deals..."
+                  placeholder={t("dashboard.mySavedDealsSearchPlaceholder")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10"
@@ -180,14 +182,14 @@ export function MyDeals() {
             </div>
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
               <SelectTrigger className="w-full md:w-48">
-                <SelectValue placeholder="Filter by category" />
+                <SelectValue placeholder={t("dashboard.mySavedDealsFilterByCategory")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                <SelectItem value="electronics">Electronics</SelectItem>
-                <SelectItem value="fashion">Fashion</SelectItem>
-                <SelectItem value="home">Home & Garden</SelectItem>
-                <SelectItem value="sports">Sports</SelectItem>
+                <SelectItem value="all">{t("dashboard.mySavedDealsCategoryAll")}</SelectItem>
+                <SelectItem value="electronics">{t("dashboard.mySavedDealsCategoryElectronics")}</SelectItem>
+                <SelectItem value="fashion">{t("dashboard.mySavedDealsCategoryFashion")}</SelectItem>
+                <SelectItem value="home">{t("dashboard.mySavedDealsCategoryHome")}</SelectItem>
+                <SelectItem value="sports">{t("dashboard.mySavedDealsCategorySports")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -222,7 +224,7 @@ export function MyDeals() {
                     </div>
                     {deal.inStock === false && (
                       <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-t-lg">
-                        <Badge variant="destructive">Out of Stock</Badge>
+                        <Badge variant="destructive">{t("deals.outOfStock")}</Badge>
                       </div>
                     )}
                   </div>
@@ -250,7 +252,7 @@ export function MyDeals() {
 
                     {deal.saved && (
                       <p className="text-xs text-muted-foreground mt-2">
-                        Saved {deal.saved}
+                        {tr("dashboard.mySavedDealsSavedLabel", { saved: deal.saved })}
                       </p>
                     )}
 
@@ -258,7 +260,7 @@ export function MyDeals() {
                       <Button className="flex-1" asChild disabled={deal.inStock === false}>
                         <Link href={deal.url ? deal.url : `/deals/${deal.id}`}>
                           <ExternalLink className="h-4 w-4 mr-2" />
-                          {deal.inStock === false ? "Out of Stock" : "View Deal"}
+                          {deal.inStock === false ? t("deals.outOfStock") : t("deals.viewDeal")}
                         </Link>
                       </Button>
                       <Button

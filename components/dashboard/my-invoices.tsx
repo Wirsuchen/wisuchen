@@ -21,8 +21,10 @@ import {
 import { FileText, Download, Eye, Plus, Euro, Calendar, Printer, Loader2 } from "lucide-react"
 import { generateInvoicePDF } from "@/lib/invoice-generator"
 import { createClient } from "@/lib/supabase/client"
+import { useTranslation } from "@/contexts/i18n-context"
 
 export function MyInvoices() {
+  const { t, tr } = useTranslation()
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isPreviewDialogOpen, setIsPreviewDialogOpen] = useState(false)
   const [selectedInvoice, setSelectedInvoice] = useState<any>(null)
@@ -50,6 +52,24 @@ export function MyInvoices() {
           setInvoices([])
           return
         }
+
+  const formatStatus = (status: string) => {
+    const normalized = String(status || "").toLowerCase()
+    switch (normalized) {
+      case "paid":
+        return t("invoices.status.paid")
+      case "pending":
+        return t("invoices.status.pending")
+      case "sent":
+        return t("invoices.status.sent")
+      case "overdue":
+        return t("invoices.status.overdue")
+      case "draft":
+        return t("invoices.status.draft")
+      default:
+        return status
+    }
+  }
         const { data: profile } = await supabase
           .from('profiles')
           .select('id, role')
@@ -180,75 +200,75 @@ export function MyInvoices() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">My Invoices</h1>
-          <p className="text-muted-foreground">Create and manage your invoices</p>
+          <h1 className="text-3xl font-bold">{t("dashboard.myInvoices")}</h1>
+          <p className="text-muted-foreground">{t("invoices.subtitle")}</p>
         </div>
         {canCreateInvoices ? (
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
-                Create Invoice
+                {t("invoices.createInvoiceButton")}
               </Button>
             </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Create New Invoice</DialogTitle>
-              <DialogDescription>Fill in the details to generate a new invoice</DialogDescription>
+              <DialogTitle>{t("invoices.createDialog.title")}</DialogTitle>
+              <DialogDescription>{t("invoices.createDialog.description")}</DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="clientName">Client Name *</Label>
+                  <Label htmlFor="clientName">{t("invoices.form.clientNameLabel")}</Label>
                   <Input
                     id="clientName"
                     value={invoiceData.clientName}
                     onChange={(e) => setInvoiceData({ ...invoiceData, clientName: e.target.value })}
-                    placeholder="Company Name"
+                    placeholder={t("invoices.form.clientNamePlaceholder")}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="clientEmail">Client Email</Label>
+                  <Label htmlFor="clientEmail">{t("invoices.form.clientEmailLabel")}</Label>
                   <Input
                     id="clientEmail"
                     type="email"
                     value={invoiceData.clientEmail}
                     onChange={(e) => setInvoiceData({ ...invoiceData, clientEmail: e.target.value })}
-                    placeholder="client@company.com"
+                    placeholder={t("invoices.form.clientEmailPlaceholder")}
                   />
                 </div>
               </div>
               <div>
-                <Label htmlFor="clientAddress">Client Address</Label>
+                <Label htmlFor="clientAddress">{t("invoices.form.clientAddressLabel")}</Label>
                 <Textarea
                   id="clientAddress"
                   value={invoiceData.clientAddress}
                   onChange={(e) => setInvoiceData({ ...invoiceData, clientAddress: e.target.value })}
-                  placeholder="Street Address, City, Postal Code, Country"
+                  placeholder={t("invoices.form.clientAddressPlaceholder")}
                 />
               </div>
               <div>
-                <Label htmlFor="description">Description *</Label>
+                <Label htmlFor="description">{t("invoices.form.descriptionLabel")}</Label>
                 <Textarea
                   id="description"
                   value={invoiceData.description}
                   onChange={(e) => setInvoiceData({ ...invoiceData, description: e.target.value })}
-                  placeholder="Describe the services or products..."
+                  placeholder={t("invoices.form.descriptionPlaceholder")}
                 />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="amount">Amount (€) *</Label>
+                  <Label htmlFor="amount">{t("invoices.form.amountLabel")}</Label>
                   <Input
                     id="amount"
                     type="number"
                     value={invoiceData.amount}
                     onChange={(e) => setInvoiceData({ ...invoiceData, amount: e.target.value })}
-                    placeholder="1000"
+                    placeholder={t("invoices.form.amountPlaceholder")}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="vatRate">VAT Rate (%)</Label>
+                  <Label htmlFor="vatRate">{t("invoices.form.vatRateLabel")}</Label>
                   <Select
                     value={invoiceData.vatRate}
                     onValueChange={(value) => setInvoiceData({ ...invoiceData, vatRate: value })}
@@ -257,9 +277,9 @@ export function MyInvoices() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="0">0% (No VAT)</SelectItem>
-                      <SelectItem value="7">7% (Reduced Rate)</SelectItem>
-                      <SelectItem value="19">19% (Standard Rate)</SelectItem>
+                      <SelectItem value="0">{t("invoices.form.vatRateOption0")}</SelectItem>
+                      <SelectItem value="7">{t("invoices.form.vatRateOption7")}</SelectItem>
+                      <SelectItem value="19">{t("invoices.form.vatRateOption19")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -272,25 +292,25 @@ export function MyInvoices() {
                     setInvoiceData({ ...invoiceData, includeWatermark: checked as boolean })
                   }
                 />
-                <Label htmlFor="watermark">Include WIRsuchen watermark</Label>
+                <Label htmlFor="watermark">{t("invoices.form.includeWatermark")}</Label>
               </div>
             </div>
             <div className="flex justify-end space-x-2">
               <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)} className="bg-transparent">
-                Cancel
+                {t("common.cancel")}
               </Button>
               <Button
                 onClick={handleCreateInvoice}
                 disabled={!invoiceData.clientName || !invoiceData.description || !invoiceData.amount}
               >
-                Create & Download
+                {t("invoices.form.createAndDownload")}
               </Button>
             </div>
           </DialogContent>
           </Dialog>
         ) : (
           <Badge variant="outline" className="bg-muted text-muted-foreground">
-            Invoice creation available to admin users only
+            {t("invoices.adminOnlyNotice")}
           </Badge>
         )}
       </div>
@@ -301,7 +321,7 @@ export function MyInvoices() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Invoices</p>
+                <p className="text-sm text-muted-foreground">{t("invoices.stats.totalInvoices")}</p>
                 <p className="text-2xl font-bold">{invoices.length}</p>
               </div>
               <FileText className="h-8 w-8 text-blue-600" />
@@ -312,7 +332,7 @@ export function MyInvoices() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Revenue</p>
+                <p className="text-sm text-muted-foreground">{t("invoices.stats.totalRevenue")}</p>
                 <p className="text-2xl font-bold text-green-600">€{totalRevenue.toFixed(2)}</p>
               </div>
               <Euro className="h-8 w-8 text-green-600" />
@@ -323,7 +343,7 @@ export function MyInvoices() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Pending</p>
+                <p className="text-sm text-muted-foreground">{t("invoices.stats.pending")}</p>
                 <p className="text-2xl font-bold text-yellow-600">€{pendingAmount.toFixed(2)}</p>
               </div>
               <Calendar className="h-8 w-8 text-yellow-600" />
@@ -334,7 +354,7 @@ export function MyInvoices() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Overdue</p>
+                <p className="text-sm text-muted-foreground">{t("invoices.stats.overdue")}</p>
                 <p className="text-2xl font-bold text-red-600">€{overdueAmount.toFixed(2)}</p>
               </div>
               <Calendar className="h-8 w-8 text-red-600" />
@@ -346,29 +366,29 @@ export function MyInvoices() {
       {/* Invoices Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Invoice History</CardTitle>
-          <CardDescription>View and manage all your invoices</CardDescription>
+          <CardTitle>{t("invoices.table.title")}</CardTitle>
+          <CardDescription>{t("invoices.table.description")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="border rounded-lg">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Invoice ID</TableHead>
-                  <TableHead>Client</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>VAT</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead>Due Date</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead>{t("invoices.table.headers.invoiceId")}</TableHead>
+                  <TableHead>{t("invoices.table.headers.client")}</TableHead>
+                  <TableHead>{t("invoices.table.headers.amount")}</TableHead>
+                  <TableHead>{t("invoices.table.headers.vat")}</TableHead>
+                  <TableHead>{t("invoices.table.headers.status")}</TableHead>
+                  <TableHead>{t("invoices.table.headers.created")}</TableHead>
+                  <TableHead>{t("invoices.table.headers.dueDate")}</TableHead>
+                  <TableHead>{t("invoices.table.headers.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {invoices.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                      No invoices yet.
+                      {t("invoices.table.empty")}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -379,7 +399,7 @@ export function MyInvoices() {
                       <TableCell>€{Number(invoice.total_amount || 0).toFixed(2)}</TableCell>
                       <TableCell>€{Number(invoice.tax_amount || 0).toFixed(2)}</TableCell>
                       <TableCell>
-                        <Badge variant={getStatusColor(invoice.status) as any}>{String(invoice.status || '').toUpperCase()}</Badge>
+                        <Badge variant={getStatusColor(invoice.status) as any}>{formatStatus(String(invoice.status || '').toUpperCase())}</Badge>
                       </TableCell>
                       <TableCell>{invoice.issued_at ? new Date(invoice.issued_at).toLocaleDateString() : '—'}</TableCell>
                       <TableCell>{invoice.due_date ? new Date(invoice.due_date).toLocaleDateString() : '—'}</TableCell>
@@ -416,25 +436,25 @@ export function MyInvoices() {
       <Dialog open={isPreviewDialogOpen} onOpenChange={setIsPreviewDialogOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Invoice Preview - {selectedInvoice?.id}</DialogTitle>
-            <DialogDescription>Preview your invoice before downloading</DialogDescription>
+            <DialogTitle>{tr("invoices.preview.title", { id: selectedInvoice?.id })}</DialogTitle>
+            <DialogDescription>{t("invoices.preview.description")}</DialogDescription>
           </DialogHeader>
           {selectedInvoice && (
             <div className="bg-white p-8 border rounded-lg">
               <div className="flex justify-between items-start mb-8">
                 <div>
                   <h2 className="text-2xl font-bold text-red-600">wirsuchen</h2>
-                  <p className="text-sm text-gray-600">Professional Services</p>
+                  <p className="text-sm text-gray-600">{t("invoices.preview.brandSubtitle")}</p>
                 </div>
                 <div className="text-right">
-                  <h3 className="text-xl font-bold">INVOICE</h3>
+                  <h3 className="text-xl font-bold">{t("invoices.preview.badge")}</h3>
                   <p className="text-sm text-gray-600">{selectedInvoice.id}</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-8 mb-8">
                 <div>
-                  <h4 className="font-semibold mb-2">From:</h4>
+                  <h4 className="font-semibold mb-2">{t("invoices.preview.from")}</h4>
                   <div className="text-sm text-gray-600">
                     <p>WIRsuchen GmbH</p>
                     <p>Musterstraße 1</p>
@@ -443,7 +463,7 @@ export function MyInvoices() {
                   </div>
                 </div>
                 <div>
-                  <h4 className="font-semibold mb-2">To:</h4>
+                  <h4 className="font-semibold mb-2">{t("invoices.preview.to")}</h4>
                   <div className="text-sm text-gray-600">
                     <p className="font-medium">{selectedInvoice.billing_name || '-'}</p>
                     {(selectedInvoice.billing_address || '').split("\n").map((line: string, index: number) => (
@@ -457,18 +477,18 @@ export function MyInvoices() {
               <div className="grid grid-cols-2 gap-8 mb-8">
                 <div>
                   <p className="text-sm">
-                    <span className="font-semibold">Invoice Date:</span>{" "}
+                    <span className="font-semibold">{t("invoices.preview.invoiceDate")}</span>{" "}
                     {selectedInvoice.issued_at ? new Date(selectedInvoice.issued_at).toLocaleDateString() : '—'}
                   </p>
                   <p className="text-sm">
-                    <span className="font-semibold">Due Date:</span>{" "}
+                    <span className="font-semibold">{t("invoices.preview.dueDate")}</span>{" "}
                     {selectedInvoice.due_date ? new Date(selectedInvoice.due_date).toLocaleDateString() : '—'}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm">
-                    <span className="font-semibold">Status:</span>{" "}
-                    <Badge variant={getStatusColor(selectedInvoice.status) as any}>{String(selectedInvoice.status || '').toUpperCase()}</Badge>
+                    <span className="font-semibold">{t("invoices.preview.status")}</span>{" "}
+                    <Badge variant={getStatusColor(selectedInvoice.status) as any}>{formatStatus(String(selectedInvoice.status || '').toUpperCase())}</Badge>
                   </p>
                 </div>
               </div>
@@ -477,13 +497,13 @@ export function MyInvoices() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Description</TableHead>
-                      <TableHead className="text-right">Amount</TableHead>
+                      <TableHead>{t("invoices.preview.lineItems.description")}</TableHead>
+                      <TableHead className="text-right">{t("invoices.preview.lineItems.amount")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     <TableRow>
-                      <TableCell>Invoice total</TableCell>
+                      <TableCell>{t("invoices.preview.lineItems.invoiceTotal")}</TableCell>
                       <TableCell className="text-right">€{Number(selectedInvoice.total_amount || 0).toFixed(2)}</TableCell>
                     </TableRow>
                   </TableBody>
@@ -493,32 +513,32 @@ export function MyInvoices() {
               <div className="flex justify-end">
                 <div className="w-64">
                   <div className="flex justify-between py-2">
-                    <span>Subtotal:</span>
+                    <span>{t("invoices.preview.summary.subtotal")}</span>
                     <span>€{Number(selectedInvoice.subtotal || 0).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between py-2">
-                    <span>VAT ({Number(selectedInvoice.tax_rate || 0).toFixed(2)}%):</span>
+                    <span>{tr("invoices.preview.summary.vat", { rate: Number(selectedInvoice.tax_rate || 0).toFixed(2) })}</span>
                     <span>€{Number(selectedInvoice.tax_amount || 0).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between py-2 border-t font-bold">
-                    <span>Total:</span>
+                    <span>{t("invoices.preview.summary.total")}</span>
                     <span>€{Number(selectedInvoice.total_amount || 0).toFixed(2)}</span>
                   </div>
                 </div>
               </div>
 
               <div className="text-center mt-8 pt-4 border-t">
-                <p className="text-xs text-gray-400">Generated by WIRsuchen Invoice System</p>
+                <p className="text-xs text-gray-400">{t("invoices.preview.footer")}</p>
               </div>
             </div>
           )}
           <div className="flex justify-end space-x-2 mt-4">
             <Button variant="outline" onClick={() => setIsPreviewDialogOpen(false)} className="bg-transparent">
-              Close
+              {t("common.close")}
             </Button>
             <Button onClick={() => selectedInvoice && handleDownloadPDF(selectedInvoice)}>
               <Printer className="h-4 w-4 mr-2" />
-              Download PDF
+              {t("invoices.preview.downloadPdf")}
             </Button>
           </div>
         </DialogContent>

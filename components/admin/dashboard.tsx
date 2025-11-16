@@ -38,6 +38,7 @@ import { AffiliateImportManager } from './affiliate-import'
 import { UserManagement } from './user-management'
 import { RolePermissions } from './role-permissions'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { useTranslation } from '@/contexts/i18n-context'
 import Link from 'next/link'
 import Image from 'next/image'
 
@@ -63,6 +64,7 @@ interface ChartData {
 }
 
 export function AdminDashboard() {
+  const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')
   const [blogAuthors, setBlogAuthors] = useState<any[]>([])
   const [blogLoading, setBlogLoading] = useState(false)
@@ -220,28 +222,28 @@ export function AdminDashboard() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
         <div>
-          <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-          <p className="text-muted-foreground">Manage your wirsuchen job portal</p>
+          <h1 className="text-3xl font-bold">{t('admin.dashboard.title')}</h1>
+          <p className="text-muted-foreground">{t('admin.dashboard.description')}</p>
         </div>
         <Button onClick={fetchDashboardStats} variant="outline" disabled={isLoading}>
           <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-          Refresh
+          {t('admin.dashboard.refresh')}
         </Button>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <div className="overflow-x-auto">
           <TabsList className="inline-flex w-auto min-w-full md:grid md:grid-cols-10 gap-2">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="database">Database</TabsTrigger>
-            <TabsTrigger value="users">Users</TabsTrigger>
-            <TabsTrigger value="permissions">Permissions</TabsTrigger>
-            <TabsTrigger value="jobs">Job Import</TabsTrigger>
-            <TabsTrigger value="affiliates">Affiliates</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            <TabsTrigger value="blog">Blog</TabsTrigger>
-            <TabsTrigger value="billing">Billing</TabsTrigger>
-            <TabsTrigger value="testing">API Testing</TabsTrigger>
+            <TabsTrigger value="overview">{t('admin.tabs.overview')}</TabsTrigger>
+            <TabsTrigger value="database">{t('admin.tabs.database')}</TabsTrigger>
+            <TabsTrigger value="users">{t('admin.tabs.users')}</TabsTrigger>
+            <TabsTrigger value="permissions">{t('admin.tabs.permissions')}</TabsTrigger>
+            <TabsTrigger value="jobs">{t('admin.tabs.jobImport')}</TabsTrigger>
+            <TabsTrigger value="affiliates">{t('admin.tabs.affiliates')}</TabsTrigger>
+            <TabsTrigger value="analytics">{t('admin.tabs.analytics')}</TabsTrigger>
+            <TabsTrigger value="blog">{t('admin.tabs.blog')}</TabsTrigger>
+            <TabsTrigger value="billing">{t('admin.tabs.billing')}</TabsTrigger>
+            <TabsTrigger value="testing">{t('admin.tabs.apiTesting')}</TabsTrigger>
           </TabsList>
         </div>
 
@@ -249,18 +251,18 @@ export function AdminDashboard() {
           {/* Quick Actions */}
           <Card>
             <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-              <CardDescription>Common admin shortcuts</CardDescription>
+              <CardTitle>{t('admin.quickActions.title')}</CardTitle>
+              <CardDescription>{t('admin.quickActions.description')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2">
                 <Button asChild>
-                  <Link href="/api-test">Open API Testing</Link>
+                  <Link href="/api-test">{t('admin.quickActions.openAPITesting')}</Link>
                 </Button>
-                <Button variant="outline" onClick={() => setActiveTab('billing')}>Open Billing</Button>
+                <Button variant="outline" onClick={() => setActiveTab('billing')}>{t('admin.quickActions.openBilling')}</Button>
                 <Button variant="outline" onClick={fetchDashboardStats} disabled={isLoading}>
                   <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-                  Refresh Stats
+                  {t('admin.quickActions.refreshStats')}
                 </Button>
               </div>
             </CardContent>
@@ -268,33 +270,33 @@ export function AdminDashboard() {
           {/* Key Metrics */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <StatCard
-              title="Total Jobs"
+              title={t('admin.metrics.totalJobs')}
               value={stats.totalJobs}
-              description={`${stats.activeJobs} active jobs`}
+              description={`${stats.activeJobs} ${t('admin.metrics.activeJobs')}`}
               icon={Briefcase}
               trend="+12% from last month"
               color="text-blue-600"
             />
             <StatCard
-              title="Companies"
+              title={t('admin.metrics.companies')}
               value={stats.totalCompanies}
-              description="Registered employers"
+              description={t('admin.metrics.registeredEmployers')}
               icon={Building}
               trend="+8% from last month"
               color="text-green-600"
             />
             <StatCard
-              title="Users"
+              title={t('admin.metrics.users')}
               value={stats.totalUsers}
-              description="Total registered users"
+              description={t('admin.metrics.totalRegisteredUsers')}
               icon={Users}
               trend="+15% from last month"
               color="text-purple-600"
             />
             <StatCard
-              title="Revenue"
+              title={t('admin.metrics.revenue')}
               value={`€${stats.monthlyRevenue}`}
-              description={`€${stats.totalRevenue} total`}
+              description={`€${stats.totalRevenue} ${t('admin.metrics.total')}`}
               icon={DollarSign}
               trend="+23% from last month"
               color="text-orange-600"
@@ -304,33 +306,33 @@ export function AdminDashboard() {
           {/* Import Statistics */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <StatCard
-              title="Total Imports"
+              title={t('admin.imports.totalImports')}
               value={stats.totalImports}
-              description={`${stats.successfulImports} successful`}
+              description={`${stats.successfulImports} ${t('admin.imports.successful')}`}
               icon={Download}
-              trend={`${stats.totalImports ? Math.round((stats.successfulImports / stats.totalImports) * 100) : 0}% success rate`}
+              trend={`${stats.totalImports ? Math.round((stats.successfulImports / stats.totalImports) * 100) : 0}% ${t('admin.imports.successRate')}`}
               color="text-indigo-600"
             />
             <StatCard
-              title="Job Views"
+              title={t('admin.imports.jobViews')}
               value={stats.totalViews}
-              description="Total job page views"
+              description={t('admin.imports.totalJobPageViews')}
               icon={Eye}
               trend="+18% from last month"
               color="text-cyan-600"
             />
             <StatCard
-              title="Applications"
+              title={t('admin.imports.applications')}
               value={stats.totalClicks}
-              description="Total job applications"
+              description={t('admin.imports.totalJobApplications')}
               icon={MousePointer}
               trend="+25% from last month"
               color="text-pink-600"
             />
             <StatCard
-              title="Conversion Rate"
+              title={t('admin.imports.conversionRate')}
               value={`${stats.totalViews ? Math.round((stats.totalClicks / stats.totalViews) * 100) : 0}%`}
-              description="Views to applications"
+              description={t('admin.imports.viewsToApplications')}
               icon={TrendingUp}
               trend="+3% from last month"
               color="text-emerald-600"
@@ -341,8 +343,8 @@ export function AdminDashboard() {
           <div className="grid gap-6 md:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle>Monthly Job Postings</CardTitle>
-                <CardDescription>Job postings and revenue over time</CardDescription>
+                <CardTitle>{t('admin.charts.monthlyJobPostings')}</CardTitle>
+                <CardDescription>{t('admin.charts.jobPostingsAndRevenue')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={isMobile ? 220 : 300}>
@@ -352,8 +354,8 @@ export function AdminDashboard() {
                     <YAxis yAxisId="left" />
                     <YAxis yAxisId="right" orientation="right" />
                     <Tooltip />
-                    <Bar yAxisId="left" dataKey="jobs" fill="#8884d8" name="Jobs" />
-                    <Line yAxisId="right" type="monotone" dataKey="revenue" stroke="#82ca9d" name="Revenue (€)" />
+                    <Bar yAxisId="left" dataKey="jobs" fill="#8884d8" name={t('admin.charts.jobs')} />
+                    <Line yAxisId="right" type="monotone" dataKey="revenue" stroke="#82ca9d" name={t('admin.charts.revenue')} />
                   </ComposedChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -361,8 +363,8 @@ export function AdminDashboard() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Job Categories</CardTitle>
-                <CardDescription>Distribution of job postings by category</CardDescription>
+                <CardTitle>{t('admin.charts.jobCategories')}</CardTitle>
+                <CardDescription>{t('admin.charts.distributionByCategory')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={isMobile ? 220 : 300}>
@@ -391,17 +393,17 @@ export function AdminDashboard() {
           {/* Recent Activity */}
           <Card>
             <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
-              <CardDescription>Latest system activities and imports</CardDescription>
+              <CardTitle>{t('admin.activity.title')}</CardTitle>
+              <CardDescription>{t('admin.activity.description')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {[
-                  { action: 'Job Import', source: 'Adzuna API', count: 25, time: '2 minutes ago', status: 'success' },
-                  { action: 'Payment', source: 'PayPal', count: 1, time: '5 minutes ago', status: 'success' },
-                  { action: 'Affiliate Import', source: 'Awin', count: 12, time: '15 minutes ago', status: 'success' },
-                  { action: 'Job Import', source: 'RapidAPI', count: 8, time: '1 hour ago', status: 'failed' },
-                  { action: 'User Registration', source: 'Website', count: 3, time: '2 hours ago', status: 'success' }
+                  { action: t('admin.activity.jobImport'), source: 'Adzuna API', count: 25, time: t('admin.activity.timeAgo', { minutes: 2 }), status: 'success' },
+                  { action: t('admin.activity.payment'), source: 'PayPal', count: 1, time: t('admin.activity.timeAgo', { minutes: 5 }), status: 'success' },
+                  { action: t('admin.activity.affiliateImport'), source: 'Awin', count: 12, time: t('admin.activity.timeAgo', { minutes: 15 }), status: 'success' },
+                  { action: t('admin.activity.jobImport'), source: 'RapidAPI', count: 8, time: t('admin.activity.timeAgo', { hours: 1 }), status: 'failed' },
+                  { action: t('admin.activity.userRegistration'), source: t('admin.activity.website'), count: 3, time: t('admin.activity.timeAgo', { hours: 2 }), status: 'success' }
                 ].map((activity, index) => (
                   <div key={index} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 border rounded-lg">
                     <div className="flex items-center gap-3">
@@ -411,7 +413,7 @@ export function AdminDashboard() {
                       <div>
                         <div className="font-medium">{activity.action}</div>
                         <div className="text-sm text-muted-foreground">
-                          {activity.source} • {activity.count} items
+                          {activity.source} • {activity.count} {t('admin.activity.items')}
                         </div>
                       </div>
                     </div>
@@ -424,14 +426,14 @@ export function AdminDashboard() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Blog Posts</CardTitle>
-              <CardDescription>Latest created posts with status</CardDescription>
+              <CardTitle>{t('admin.blog.posts.title')}</CardTitle>
+              <CardDescription>{t('admin.blog.posts.description')}</CardDescription>
             </CardHeader>
             <CardContent>
               {blogPostsLoading ? (
-                <div className="text-center py-8 text-muted-foreground">Loading posts...</div>
+                <div className="text-center py-8 text-muted-foreground">{t('admin.blog.posts.loading')}</div>
               ) : blogPosts.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">No posts yet</div>
+                <div className="text-center py-8 text-muted-foreground">{t('admin.blog.posts.noPosts')}</div>
               ) : (
                 <div className="space-y-3">
                   {blogPosts.map((p) => (
@@ -450,7 +452,7 @@ export function AdminDashboard() {
                             setBlogPosts((prev) => prev.map((it) => it.id === p.id ? { ...it, status: post.status, published_at: post.published_at } : it))
                           }
                         }}>
-                          {p.status === 'published' ? 'Unpublish' : 'Publish'}
+                          {p.status === 'published' ? t('admin.blog.posts.unpublish') : t('admin.blog.posts.publish')}
                         </Button>
                       </div>
                     </div>
@@ -464,20 +466,20 @@ export function AdminDashboard() {
         <TabsContent value="blog" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Blog Authors</CardTitle>
-              <CardDescription>Users allowed to create blog posts</CardDescription>
+              <CardTitle>{t('admin.blog.authors.title')}</CardTitle>
+              <CardDescription>{t('admin.blog.authors.description')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex justify-between items-center mb-4">
-                <div className="text-sm text-muted-foreground">Roles: supervisor, admin, moderator, blogger, editor</div>
+                <div className="text-sm text-muted-foreground">{t('admin.blog.authors.roles')}</div>
                 <Button asChild>
-                  <Link href="/admin/blog/create">Create New Post</Link>
+                  <Link href="/admin/blog/create">{t('admin.blog.authors.createNewPost')}</Link>
                 </Button>
               </div>
               {blogLoading ? (
-                <div className="text-center py-8 text-muted-foreground">Loading authors...</div>
+                <div className="text-center py-8 text-muted-foreground">{t('admin.blog.authors.loading')}</div>
               ) : blogAuthors.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">No authors found</div>
+                <div className="text-center py-8 text-muted-foreground">{t('admin.blog.authors.noAuthors')}</div>
               ) : (
                 <div className="space-y-3">
                   {blogAuthors.map((a) => (
@@ -485,7 +487,7 @@ export function AdminDashboard() {
                       <div className="flex items-center gap-3">
                         <Image src={a.avatar_url || '/placeholder.svg'} alt={a.full_name || a.email} width={32} height={32} className="h-8 w-8 rounded-full object-cover" />
                         <div>
-                          <div className="font-medium">{a.full_name || 'Unnamed'}</div>
+                          <div className="font-medium">{a.full_name || t('admin.blog.authors.unnamed')}</div>
                           <div className="text-xs text-muted-foreground">{a.email}</div>
                         </div>
                       </div>
@@ -502,30 +504,30 @@ export function AdminDashboard() {
           {loadingSources ? (
             <div className="text-center py-12">
               <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-accent" />
-              <p className="text-muted-foreground">Loading database statistics...</p>
+              <p className="text-muted-foreground">{t('admin.database.loading')}</p>
             </div>
           ) : realSourceData ? (
             <>
               {/* Database Overview */}
               <div className="grid gap-4 md:grid-cols-3">
                 <StatCard
-                  title="Total Jobs"
+                  title={t('admin.database.totalJobs')}
                   value={realSourceData.totals.jobs}
-                  description="From all API sources"
+                  description={t('admin.database.fromAllAPISources')}
                   icon={Briefcase}
                   color="text-blue-600"
                 />
                 <StatCard
-                  title="Total Deals"
+                  title={t('admin.database.totalDeals')}
                   value={realSourceData.totals.deals}
-                  description="Affiliate products"
+                  description={t('admin.database.affiliateProducts')}
                   icon={DollarSign}
                   color="text-green-600"
                 />
                 <StatCard
-                  title="API Sources"
+                  title={t('admin.database.apiSources')}
                   value={realSourceData.totals.sources}
-                  description="Active integrations"
+                  description={t('admin.database.activeIntegrations')}
                   icon={Building}
                   color="text-purple-600"
                 />
@@ -534,8 +536,8 @@ export function AdminDashboard() {
               {/* Job Sources Breakdown */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Job Sources Breakdown</CardTitle>
-                  <CardDescription>Real-time data from all API sources</CardDescription>
+                  <CardTitle>{t('admin.database.jobSourcesBreakdown')}</CardTitle>
+                  <CardDescription>{t('admin.database.realTimeData')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
@@ -548,7 +550,7 @@ export function AdminDashboard() {
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
                                 <Badge variant="outline">{source}</Badge>
-                                <span className="text-sm font-medium">{count.toLocaleString()} jobs</span>
+                                <span className="text-sm font-medium">{count.toLocaleString()} {t('admin.database.jobs')}</span>
                               </div>
                               <span className="text-sm text-muted-foreground">{percentage}%</span>
                             </div>
@@ -569,8 +571,8 @@ export function AdminDashboard() {
               {realSourceData.dealSources && Object.keys(realSourceData.dealSources).length > 0 && (
                 <Card>
                   <CardHeader>
-                    <CardTitle>Deal Sources Breakdown</CardTitle>
-                    <CardDescription>Affiliate products from all sources</CardDescription>
+                    <CardTitle>{t('admin.database.dealSourcesBreakdown')}</CardTitle>
+                    <CardDescription>{t('admin.database.affiliateProductsAllSources')}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
@@ -583,7 +585,7 @@ export function AdminDashboard() {
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                   <Badge variant="outline">{source}</Badge>
-                                  <span className="text-sm font-medium">{count.toLocaleString()} deals</span>
+                                  <span className="text-sm font-medium">{count.toLocaleString()} {t('admin.database.deals')}</span>
                                 </div>
                                 <span className="text-sm text-muted-foreground">{percentage}%</span>
                               </div>
@@ -605,8 +607,8 @@ export function AdminDashboard() {
               <div className="grid gap-6 md:grid-cols-2">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Job Sources Distribution</CardTitle>
-                    <CardDescription>Visual breakdown of job sources</CardDescription>
+                    <CardTitle>{t('admin.database.jobSourcesDistribution')}</CardTitle>
+                    <CardDescription>{t('admin.database.visualBreakdownJobSources')}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <ResponsiveContainer width="100%" height={isMobile ? 220 : 300}>
@@ -633,8 +635,8 @@ export function AdminDashboard() {
 
                 <Card>
                   <CardHeader>
-                    <CardTitle>Deal Sources Distribution</CardTitle>
-                    <CardDescription>Visual breakdown of deal sources</CardDescription>
+                    <CardTitle>{t('admin.database.dealSourcesDistribution')}</CardTitle>
+                    <CardDescription>{t('admin.database.visualBreakdownDealSources')}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     {realSourceData.dealSources && Object.keys(realSourceData.dealSources).length > 0 ? (
@@ -659,7 +661,7 @@ export function AdminDashboard() {
                       </ResponsiveContainer>
                     ) : (
                       <div className="text-center py-12 text-muted-foreground">
-                        No deal sources available
+                        {t('admin.database.noDealSources')}
                       </div>
                     )}
                   </CardContent>
@@ -668,7 +670,7 @@ export function AdminDashboard() {
             </>
           ) : (
             <div className="text-center py-12 text-muted-foreground">
-              No data available
+              {t('admin.database.noDataAvailable')}
             </div>
           )}
         </TabsContent>
@@ -693,8 +695,8 @@ export function AdminDashboard() {
           <div className="grid gap-6 md:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle>Import Sources</CardTitle>
-                <CardDescription>Distribution of job sources</CardDescription>
+                <CardTitle>{t('admin.analytics.importSources')}</CardTitle>
+                <CardDescription>{t('admin.analytics.distributionJobSources')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={isMobile ? 220 : 300}>
@@ -721,8 +723,8 @@ export function AdminDashboard() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Monthly Imports</CardTitle>
-                <CardDescription>Import activity over time</CardDescription>
+                <CardTitle>{t('admin.analytics.monthlyImports')}</CardTitle>
+                <CardDescription>{t('admin.analytics.importActivityTime')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={isMobile ? 220 : 300}>
@@ -742,20 +744,20 @@ export function AdminDashboard() {
           <div className="grid gap-4 md:grid-cols-3">
             <Card>
               <CardHeader>
-                <CardTitle>API Performance</CardTitle>
+                <CardTitle>{t('admin.analytics.apiPerformance')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   {[
-                    { api: 'Adzuna', status: 'Healthy', response: '245ms', success: '99.2%' },
-                    { api: 'RapidAPI', status: 'Healthy', response: '180ms', success: '97.8%' },
-                    { api: 'Awin', status: 'Warning', response: '450ms', success: '95.1%' },
-                    { api: 'Adcell', status: 'Healthy', response: '320ms', success: '98.5%' }
+                    { api: 'Adzuna', status: t('admin.analytics.healthy'), response: '245ms', success: '99.2%' },
+                    { api: 'RapidAPI', status: t('admin.analytics.healthy'), response: '180ms', success: '97.8%' },
+                    { api: 'Awin', status: t('admin.analytics.warning'), response: '450ms', success: '95.1%' },
+                    { api: 'Adcell', status: t('admin.analytics.healthy'), response: '320ms', success: '98.5%' }
                   ].map((api, index) => (
                     <div key={index} className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <div className={`w-2 h-2 rounded-full ${
-                          api.status === 'Healthy' ? 'bg-green-500' : 'bg-yellow-500'
+                          api.status === t('admin.analytics.healthy') ? 'bg-green-500' : 'bg-yellow-500'
                         }`} />
                         <span className="font-medium">{api.api}</span>
                       </div>
@@ -770,7 +772,7 @@ export function AdminDashboard() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Import Success Rate</CardTitle>
+                <CardTitle>{t('admin.analytics.importSuccessRate')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-center">
@@ -778,7 +780,7 @@ export function AdminDashboard() {
                     {stats.totalImports ? Math.round((stats.successfulImports / stats.totalImports) * 100) : 0}%
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    {stats.successfulImports} of {stats.totalImports} imports successful
+                    {stats.successfulImports} {t('admin.analytics.of')} {stats.totalImports} {t('admin.analytics.importsSuccessful')}
                   </p>
                 </div>
               </CardContent>
@@ -786,24 +788,24 @@ export function AdminDashboard() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Data Quality</CardTitle>
+                <CardTitle>{t('admin.analytics.dataQuality')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <span className="text-sm">Complete Profiles</span>
+                    <span className="text-sm">{t('admin.analytics.completeProfiles')}</span>
                     <span className="text-sm font-medium">87%</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm">Valid Emails</span>
+                    <span className="text-sm">{t('admin.analytics.validEmails')}</span>
                     <span className="text-sm font-medium">94%</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm">Salary Info</span>
+                    <span className="text-sm">{t('admin.analytics.salaryInfo')}</span>
                     <span className="text-sm font-medium">76%</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm">Company Details</span>
+                    <span className="text-sm">{t('admin.analytics.companyDetails')}</span>
                     <span className="text-sm font-medium">82%</span>
                   </div>
                 </div>
@@ -815,17 +817,16 @@ export function AdminDashboard() {
         <TabsContent value="billing" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Billing & Invoices</CardTitle>
-              <CardDescription>Create and manage invoices (UI coming soon)</CardDescription>
+              <CardTitle>{t('admin.billing.title')}</CardTitle>
+              <CardDescription>{t('admin.billing.description')}</CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground mb-4">
-                The invoice creation UI is not wired yet in this project. If you want, I can add an
-                invoices page and API routes for creating and listing invoices.
+                {t('admin.billing.notWired')}
               </p>
               <div className="flex gap-2">
                 <Button variant="outline" disabled>
-                  Create Invoice (coming soon)
+                  {t('admin.billing.createInvoice')}
                 </Button>
               </div>
             </CardContent>
@@ -835,15 +836,15 @@ export function AdminDashboard() {
         <TabsContent value="testing" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>API Testing Playground</CardTitle>
-              <CardDescription>Run live tests against your API endpoints</CardDescription>
+              <CardTitle>{t('admin.testing.title')}</CardTitle>
+              <CardDescription>{t('admin.testing.description')}</CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground mb-4">
-                Open the built-in API testing page to try endpoints like jobs, categories, imports and payments.
+                {t('admin.testing.openDescription')}
               </p>
               <Button asChild>
-                <Link href="/api-test">Open API Testing</Link>
+                <Link href="/api-test">{t('admin.testing.openAPITesting')}</Link>
               </Button>
             </CardContent>
           </Card>

@@ -6,10 +6,12 @@ import { useAuth } from "@/contexts/auth-context"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
 import { Loader2 } from "lucide-react"
+import { useTranslation } from "@/contexts/i18n-context"
 
 export default function LoginPage() {
   const { user, isLoading } = useAuth()
   const router = useRouter()
+  const { t } = useTranslation()
 
   useEffect(() => {
     // If user is already logged in, redirect to dashboard
@@ -36,7 +38,7 @@ export default function LoginPage() {
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
             <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
-            <p className="text-muted-foreground">You are already logged in. Redirecting...</p>
+            <p className="text-muted-foreground">{t('auth.alreadyLoggedInRedirect')}</p>
           </div>
         </div>
       </PageLayout>

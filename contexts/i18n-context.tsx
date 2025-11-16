@@ -6,6 +6,7 @@ import { getTranslation, tr } from '@/i18n/utils'
 
 interface I18nContextType {
   locale: Locale
+  setLocale: (locale: Locale) => void
   t: (key: string, fallback?: string) => string
   tr: (key: string, variables?: Record<string, string | number>) => string
 }
@@ -46,8 +47,17 @@ export function I18nProvider({ children }: I18nProviderProps) {
     setLocale(storedLocale)
   }, [])
 
+  const setLocaleHandler = (newLocale: Locale) => {
+    setLocale(newLocale)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('preferredLocale', newLocale)
+      document.cookie = `NEXT_LOCALE=${newLocale}; path=/; max-age=31536000`
+    }
+  }
+
   const value: I18nContextType = {
     locale,
+    setLocale: setLocaleHandler,
     t: (key: string, fallback?: string) => getTranslation(locale, key, fallback),
     tr: (key: string, variables?: Record<string, string | number>) => tr(locale, key, variables),
   }
@@ -61,6 +71,7 @@ export function useI18n() {
     // Fallback if provider is missing
     return {
       locale: defaultLocale,
+      setLocale: () => {},
       t: (key: string, fallback?: string) => getTranslation(defaultLocale, key, fallback),
       tr: (key: string, variables?: Record<string, string | number>) => tr(defaultLocale, key, variables),
     }

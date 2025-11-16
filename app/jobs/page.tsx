@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/contexts/auth-context'
 import Link from 'next/link'
+import { useTranslation } from '@/contexts/i18n-context'
 
 const sanitizeJobDescription = (text: string) => {
   if (!text) return ''
@@ -62,6 +63,7 @@ export default function JobsPage() {
   const { user } = useAuth()
   const [userJobs, setUserJobs] = useState<UserPostedJob[]>([])
   const [loadingUserJobs, setLoadingUserJobs] = useState(false)
+  const { t } = useTranslation()
 
   const { jobs, loading, error, search, refresh, pagination, meta } = useJobs()
 
@@ -161,9 +163,9 @@ export default function JobsPage() {
       <div className="space-y-8">
         {/* Header */}
         <div className="text-center space-y-4">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold px-4">Find Your Dream Job</h1>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold px-4">{t('jobs.title')}</h1>
           <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-2xl mx-auto px-4">
-            Discover jobs from 10+ sources: Glassdoor, Upwork, Y Combinator & more
+            {t('jobs.heroSubtitle')}
           </p>
           
           {/* Stats */}
@@ -171,15 +173,15 @@ export default function JobsPage() {
             <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-sm px-4">
               <div className="flex items-center gap-2">
                 <Briefcase className="w-4 h-4 text-blue-600" />
-                <span className="font-semibold">{pagination?.total || 0} Jobs</span>
+                <span className="font-semibold">{pagination?.total || 0} {t('nav.jobs')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-green-600" />
-                <span>10+ Sources</span>
+                <span>{t('jobs.sourcesCountLabel')}</span>
               </div>
               {meta.cached && (
                 <Badge variant="secondary" className="text-xs">
-                  ✓ Cached
+                  ✓ {t('jobs.cached')}
                 </Badge>
               )}
             </div>
@@ -192,9 +194,9 @@ export default function JobsPage() {
             <div className="mb-4">
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2">
                 <Briefcase className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
-                My Posted Jobs
+                {t('jobs.myPostedJobs')}
               </h2>
-              <p className="text-sm text-gray-600 mt-1">Jobs you've created and posted</p>
+              <p className="text-sm text-gray-600 mt-1">{t('jobs.myPostedJobsDescription')}</p>
             </div>
 
             {loadingUserJobs ? (
@@ -204,7 +206,7 @@ export default function JobsPage() {
             ) : userJobs.length === 0 ? (
               <div className="text-center py-8 bg-white rounded-lg border border-blue-100">
                 <Briefcase className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                <p className="text-gray-600">You haven't posted any jobs yet</p>
+                <p className="text-gray-600">{t('jobs.noUserJobs')}</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -227,7 +229,7 @@ export default function JobsPage() {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Job title, keywords..."
+                  placeholder={t('jobs.searchPlaceholder')}
                   className="pl-10"
                 />
               </div>
@@ -238,7 +240,7 @@ export default function JobsPage() {
                   type="text"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  placeholder="City, state, or country..."
+                  placeholder={t('jobs.locationPlaceholder')}
                   className="pl-10"
                 />
               </div>
@@ -252,12 +254,12 @@ export default function JobsPage() {
                   {loading ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      <span className="hidden sm:inline">Searching...</span>
+                      <span className="hidden sm:inline">{t('jobs.searching')}</span>
                     </>
                   ) : (
                     <>
                       <Search className="w-4 h-4 sm:mr-2" />
-                      <span className="hidden sm:inline">Search</span>
+                      <span className="hidden sm:inline">{t('common.search')}</span>
                     </>
                   )}
                 </Button>
@@ -278,20 +280,20 @@ export default function JobsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Employment Type
+                      {t('jobs.jobType')}
                     </label>
                     <select
                       value={employmentType}
                       onChange={(e) => setEmploymentType(e.target.value)}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                     >
-                      <option value="">All Types</option>
-                      <option value="full_time">Full Time</option>
-                      <option value="part_time">Part Time</option>
-                      <option value="contract">Contract</option>
-                      <option value="freelance">Freelance</option>
-                      <option value="internship">Internship</option>
-                      <option value="temporary">Temporary</option>
+                      <option value="">{t('jobs.allTypes')}</option>
+                      <option value="full_time">{t('jobs.fullTime')}</option>
+                      <option value="part_time">{t('jobs.partTime')}</option>
+                      <option value="contract">{t('jobs.contract')}</option>
+                      <option value="freelance">{t('jobs.freelance')}</option>
+                      <option value="internship">{t('jobs.internship')}</option>
+                      <option value="temporary">{t('jobs.temporary')}</option>
                     </select>
                   </div>
 
@@ -302,7 +304,7 @@ export default function JobsPage() {
                       onClick={handleReset}
                       className="flex-1"
                     >
-                      Reset Filters
+                      {t('jobs.resetFilters')}
                     </Button>
                     <Button
                       type="button"
@@ -326,7 +328,7 @@ export default function JobsPage() {
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
             <div className="flex items-start gap-3">
-              <div className="text-red-600 font-medium">Error loading jobs</div>
+              <div className="text-red-600 font-medium">{t('jobs.errorLoading')}</div>
             </div>
             <p className="text-red-700 mt-1">{error}</p>
             <Button
@@ -334,7 +336,7 @@ export default function JobsPage() {
               variant="outline"
               className="mt-3"
             >
-              Try Again
+              {t('common.tryAgain')}
             </Button>
           </div>
         )}
@@ -344,8 +346,8 @@ export default function JobsPage() {
           <div className="flex items-center justify-center py-20">
             <div className="text-center">
               <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
-              <p className="text-gray-600 text-lg">Loading jobs...</p>
-              <p className="text-gray-500 text-sm mt-2">Fetching from multiple sources (Adzuna, RapidAPI)</p>
+              <p className="text-gray-600 text-lg">{t('jobs.loadingJobs')}</p>
+              <p className="text-gray-500 text-sm mt-2">{t('jobs.loadingFromSources')}</p>
             </div>
           </div>
         )}
@@ -354,10 +356,10 @@ export default function JobsPage() {
         {!loading && jobs.length === 0 && !error && (
           <div className="text-center py-20">
             <Briefcase className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">No jobs found</h3>
-            <p className="text-gray-600 mb-4">Try adjusting your search criteria</p>
+            <h3 className="text-xl font-semibold text-gray-700 mb-2">{t('jobs.noJobsFound')}</h3>
+            <p className="text-gray-600 mb-4">{t('jobs.tryAdjustingFilters')}</p>
             <Button onClick={handleReset} variant="outline">
-              Reset Search
+              {t('jobs.resetSearch')}
             </Button>
           </div>
         )}
@@ -383,10 +385,10 @@ export default function JobsPage() {
                   {loading ? (
                     <>
                       <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                      Loading more...
+                      {t('jobs.loadingMore')}
                     </>
                   ) : (
-                    `Load More (${pagination.total - pagination.page * pagination.limit} remaining)`
+                    `${t('common.loadMore')} (${pagination.total - pagination.page * pagination.limit} ${t('jobs.remaining')})`
                   )}
                 </Button>
               </div>
@@ -402,15 +404,17 @@ export default function JobsPage() {
  * Job Card Component
  */
 function JobCard({ job }: { job: Job }) {
+  const { t } = useTranslation()
+  
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     const now = new Date()
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
     
-    if (diffInHours < 1) return 'Just now'
-    if (diffInHours < 24) return `${diffInHours}h ago`
-    if (diffInHours < 48) return 'Yesterday'
-    if (diffInHours < 168) return `${Math.floor(diffInHours / 24)} days ago`
+    if (diffInHours < 1) return t('jobs.time.justNow')
+    if (diffInHours < 24) return t('jobs.time.hoursAgo', { hours: diffInHours })
+    if (diffInHours < 48) return t('jobs.time.yesterday')
+    if (diffInHours < 168) return t('jobs.time.daysAgo', { days: Math.floor(diffInHours / 24) })
     return date.toLocaleDateString()
   }
 
@@ -495,8 +499,8 @@ function JobCard({ job }: { job: Job }) {
               onClick={onOpenDetails}
               className="flex items-center justify-center gap-2"
             >
-              <span className="hidden sm:inline">View Details</span>
-              <span className="sm:hidden">Details</span>
+              <span className="hidden sm:inline">{t('jobs.viewDetails')}</span>
+              <span className="sm:hidden">{t('jobs.details')}</span>
             </a>
           </Button>
           {job.applicationUrl && (
@@ -507,8 +511,8 @@ function JobCard({ job }: { job: Job }) {
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-2"
               >
-                <span className="hidden sm:inline">Apply Now</span>
-                <span className="sm:hidden">Apply</span>
+                <span className="hidden sm:inline">{t('jobs.applyNow')}</span>
+                <span className="sm:hidden">{t('jobs.apply')}</span>
                 <ExternalLink className="w-4 h-4" />
               </a>
             </Button>
@@ -523,16 +527,18 @@ function JobCard({ job }: { job: Job }) {
  * User Posted Job Card Component
  */
 function UserJobCard({ job }: { job: UserPostedJob }) {
+  const { t } = useTranslation()
+  
   const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'Not published'
+    if (!dateString) return t('jobs.notPublished')
     const date = new Date(dateString)
     const now = new Date()
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
     
-    if (diffInHours < 1) return 'Just now'
-    if (diffInHours < 24) return `${diffInHours}h ago`
-    if (diffInHours < 48) return 'Yesterday'
-    if (diffInHours < 168) return `${Math.floor(diffInHours / 24)} days ago`
+    if (diffInHours < 1) return t('jobs.time.justNow')
+    if (diffInHours < 24) return t('jobs.time.hoursAgo', { hours: diffInHours })
+    if (diffInHours < 48) return t('jobs.time.yesterday')
+    if (diffInHours < 168) return t('jobs.time.daysAgo', { days: Math.floor(diffInHours / 24) })
     return date.toLocaleDateString()
   }
 
@@ -617,25 +623,25 @@ function UserJobCard({ job }: { job: UserPostedJob }) {
             </Badge>
           )}
           <Badge variant="outline" className="text-xs">
-            {job.views_count || 0} views
+            {job.views_count || 0} {t('jobs.views')}
           </Badge>
           <Badge variant="outline" className="text-xs">
-            {job.applications_count || 0} applicants
+            {job.applications_count || 0} {t('jobs.applicants')}
           </Badge>
         </div>
 
         <div className="flex gap-2 w-full sm:w-auto">
           <Button asChild variant="outline" size="sm" className="flex-1 sm:flex-initial">
             <Link href={`/jobs/${job.id}`}>
-              <span className="hidden sm:inline">View Details</span>
-              <span className="sm:hidden">Details</span>
+              <span className="hidden sm:inline">{t('jobs.viewDetails')}</span>
+              <span className="sm:hidden">{t('jobs.details')}</span>
             </Link>
           </Button>
           <Button asChild variant="outline" size="sm" className="flex-1 sm:flex-initial">
             <Link href={`/dashboard/my-ads`}>
               <Edit className="w-4 h-4 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Manage</span>
-              <span className="sm:hidden">Edit</span>
+              <span className="hidden sm:inline">{t('jobs.manage')}</span>
+              <span className="sm:hidden">{t('jobs.edit')}</span>
             </Link>
           </Button>
         </div>

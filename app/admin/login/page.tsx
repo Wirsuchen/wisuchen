@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2, Mail, Lock, Eye, EyeOff, Shield } from 'lucide-react'
+import { useTranslation } from '@/contexts/i18n-context'
 
 const ADMIN_ROLES = ['supervisor', 'admin', 'moderator']
 
@@ -20,6 +21,7 @@ export default function AdminLoginPage() {
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
   const supabase = createClient()
+  const { t } = useTranslation()
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -40,7 +42,7 @@ export default function AdminLoginPage() {
       }
 
       if (!authData.user) {
-        setError('Authentication failed. Please try again.')
+        setError(t('auth.admin.authFailed'))
         setIsLoading(false)
         return
       }
@@ -55,7 +57,7 @@ export default function AdminLoginPage() {
       if (profileError || !profile) {
         // Sign out if profile not found
         await supabase.auth.signOut()
-        setError('User profile not found. Please contact support.')
+        setError(t('auth.admin.profileNotFound'))
         setIsLoading(false)
         return
       }
@@ -64,7 +66,7 @@ export default function AdminLoginPage() {
       if (!profile.role || !ADMIN_ROLES.includes(profile.role)) {
         // Sign out non-admin users
         await supabase.auth.signOut()
-        setError('Access denied. Admin privileges required.')
+        setError(t('auth.admin.accessDenied'))
         setIsLoading(false)
         return
       }
@@ -74,7 +76,7 @@ export default function AdminLoginPage() {
       router.refresh()
     } catch (err) {
       console.error('Admin login error:', err)
-      setError('An unexpected error occurred. Please try again.')
+      setError(t('auth.admin.unexpectedError'))
       setIsLoading(false)
     }
   }
@@ -88,9 +90,9 @@ export default function AdminLoginPage() {
               <Shield className="h-8 w-8 text-primary" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold">Admin Login</CardTitle>
+          <CardTitle className="text-2xl font-bold">{t('auth/admin.title')}</CardTitle>
           <CardDescription>
-            Enter your credentials to access the admin dashboard
+            {t('auth.admin.description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -102,7 +104,7 @@ export default function AdminLoginPage() {
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('auth.email')}</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -120,13 +122,13 @@ export default function AdminLoginPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t('auth.password')}</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="Enter your password"
+                  placeholder={t('auth.enterPassword')}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="pl-10 pr-10"
@@ -155,10 +157,10 @@ export default function AdminLoginPage() {
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Signing in...
+                  {t('auth.signingIn')}
                 </>
               ) : (
-                'Sign In'
+                t('auth.signIn')
               )}
             </Button>
           </form>

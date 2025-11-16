@@ -20,8 +20,8 @@ export function Footer() {
     
     if (!email || !email.includes('@')) {
       toast({
-        title: 'Invalid email',
-        description: 'Please enter a valid email address',
+        title: t('footer.newsletterInvalidEmailTitle'),
+        description: t('footer.newsletterInvalidEmailDescription'),
         variant: 'destructive',
       })
       return
@@ -42,22 +42,22 @@ export function Footer() {
 
       if (data.success) {
         toast({
-          title: 'Subscribed!',
-          description: 'Thank you for subscribing to our newsletter',
+          title: t('footer.newsletterSubscribedTitle'),
+          description: t('footer.newsletterSubscribedDescription'),
         })
         setEmail('')
       } else {
         toast({
-          title: 'Error',
-          description: data.error || 'Failed to subscribe. Please try again.',
+          title: t('notifications.error'),
+          description: data.error || t('footer.newsletterErrorTryAgain'),
           variant: 'destructive',
         })
       }
     } catch (error) {
       console.error('Newsletter subscription error:', error)
       toast({
-        title: 'Error',
-        description: 'Failed to subscribe. Please try again later.',
+        title: t('notifications.error'),
+        description: t('footer.newsletterErrorTryAgainLater'),
         variant: 'destructive',
       })
     } finally {
@@ -81,7 +81,7 @@ export function Footer() {
     company: [
       { name: t('footer.aboutUs'), href: "/about" },
       { name: t('footer.support'), href: "/support" },
-      { name: 'API Documentation', href: "/api-docs" },
+      { name: t('footer.apiDocs'), href: "/api-docs" },
     ],
   }
 
@@ -132,7 +132,7 @@ export function Footer() {
 
           {/* Explore Links */}
           <div>
-            <h3 className="font-semibold mb-3">Explore</h3>
+            <h3 className="font-semibold mb-3">{t('footer.explore')}</h3>
             <ul className="space-y-2">
               {footerLinks.explore.map((link) => (
                 <li key={link.name}>
@@ -149,7 +149,7 @@ export function Footer() {
 
           {/* Account Links */}
           <div>
-            <h3 className="font-semibold mb-3">Account</h3>
+            <h3 className="font-semibold mb-3">{t('footer.account')}</h3>
             <ul className="space-y-2">
               {footerLinks.account.map((link) => (
                 <li key={link.name}>
@@ -166,7 +166,7 @@ export function Footer() {
 
           {/* Company Links */}
           <div>
-            <h3 className="font-semibold mb-3">Company</h3>
+            <h3 className="font-semibold mb-3">{t('footer.company')}</h3>
             <ul className="space-y-2">
               {footerLinks.company.map((link) => (
                 <li key={link.name}>
@@ -201,7 +201,7 @@ export function Footer() {
               />
               <Button type="submit" disabled={isSubmitting}>
                 <Mail className="h-4 w-4 mr-2" />
-                {isSubmitting ? 'Subscribing...' : t('footer.subscribe')}
+                {isSubmitting ? t('footer.subscribing') : t('footer.subscribe')}
               </Button>
             </form>
           </div>

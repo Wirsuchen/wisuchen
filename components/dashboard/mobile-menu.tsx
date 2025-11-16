@@ -31,6 +31,7 @@ import {
   Megaphone,
   BarChart2,
 } from "lucide-react"
+import { useTranslation } from "@/contexts/i18n-context"
 
 export function DashboardMobileMenu() {
   const [open, setOpen] = useState(false)
@@ -38,40 +39,41 @@ export function DashboardMobileMenu() {
   const { user, logout } = useAuth()
   const role = (user as any)?.role
   const isAdmin = !!(user && ((['admin','supervisor','moderator'] as any).includes(role) || user.email === 'admin@wirsuchen.com'))
+  const { t } = useTranslation()
 
   const navigation = [
     {
-      name: "Overview",
+      name: t("dashboard.nav.overview"),
       href: "/dashboard",
       icon: LayoutDashboard,
       current: pathname === "/dashboard",
     },
     {
-      name: "My Ads",
+      name: t("dashboard.nav.myAds"),
       href: "/dashboard/my-ads",
       icon: Briefcase,
       current: pathname === "/dashboard/my-ads",
     },
     {
-      name: "My Deals",
+      name: t("dashboard.nav.myDeals"),
       href: "/dashboard/my-deals",
       icon: ShoppingBag,
       current: pathname === "/dashboard/my-deals",
     },
     {
-      name: "My Invoices",
+      name: t("dashboard.nav.myInvoices"),
       href: "/dashboard/my-invoices",
       icon: FileText,
       current: pathname === "/dashboard/my-invoices",
     },
     {
-      name: "Stats",
+      name: t("dashboard.nav.stats"),
       href: "/dashboard/stats",
       icon: BarChart3,
       current: pathname === "/dashboard/stats",
     },
     {
-      name: "Profile",
+      name: t("dashboard.nav.profile"),
       href: "/dashboard/profile",
       icon: User,
       current: pathname === "/dashboard/profile",
@@ -83,12 +85,12 @@ export function DashboardMobileMenu() {
       <SheetTrigger asChild>
         <Button variant="outline" size="sm" className="w-full sm:w-auto">
           <Menu className="h-4 w-4 mr-2" />
-          Dashboard Menu
+          {t("dashboard.nav.menuButton")}
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="w-[280px] sm:w-[320px] flex flex-col">
         <SheetHeader>
-          <SheetTitle>Dashboard</SheetTitle>
+          <SheetTitle>{t("dashboard.title")}</SheetTitle>
         </SheetHeader>
         
         {/* User Info */}
@@ -150,7 +152,7 @@ export function DashboardMobileMenu() {
                     )}
                   >
                     <PenSquare className="h-5 w-5 shrink-0" />
-                    <span className="ml-3">Manage Blogs</span>
+                    <span className="ml-3">{t("dashboard.nav.manageBlogs")}</span>
                   </Link>
                 </li>
                 <li>
@@ -165,7 +167,7 @@ export function DashboardMobileMenu() {
                     )}
                   >
                     <PenSquare className="h-5 w-5 shrink-0" />
-                    <span className="ml-3">Create Blog</span>
+                    <span className="ml-3">{t("dashboard.nav.createBlog")}</span>
                   </Link>
                 </li>
                 <li>
@@ -180,7 +182,7 @@ export function DashboardMobileMenu() {
                     )}
                   >
                     <Shield className="h-5 w-5 shrink-0" />
-                    <span className="ml-3">Admin</span>
+                    <span className="ml-3">{t("dashboard.nav.admin")}</span>
                   </Link>
                 </li>
               </>
@@ -198,7 +200,7 @@ export function DashboardMobileMenu() {
                   )}
                 >
                   <UserCheck className="h-5 w-5 shrink-0" />
-                  <span className="ml-3">Supervisor</span>
+                  <span className="ml-3">{t("dashboard.nav.supervisor")}</span>
                 </Link>
               </li>
             )}
@@ -215,7 +217,7 @@ export function DashboardMobileMenu() {
                   )}
                 >
                   <Gavel className="h-5 w-5 shrink-0" />
-                  <span className="ml-3">Moderator</span>
+                  <span className="ml-3">{t("dashboard.nav.moderator")}</span>
                 </Link>
               </li>
             )}
@@ -232,7 +234,7 @@ export function DashboardMobileMenu() {
                   )}
                 >
                   <ClipboardList className="h-5 w-5 shrink-0" />
-                  <span className="ml-3">Lister</span>
+                  <span className="ml-3">{t("dashboard.nav.lister")}</span>
                 </Link>
               </li>
             )}
@@ -249,7 +251,7 @@ export function DashboardMobileMenu() {
                   )}
                 >
                   <Megaphone className="h-5 w-5 shrink-0" />
-                  <span className="ml-3">Publisher</span>
+                  <span className="ml-3">{t("dashboard.nav.publisher")}</span>
                 </Link>
               </li>
             )}
@@ -266,7 +268,7 @@ export function DashboardMobileMenu() {
                   )}
                 >
                   <PenSquare className="h-5 w-5 shrink-0" />
-                  <span className="ml-3">Blogger</span>
+                  <span className="ml-3">{t("dashboard.nav.blogger")}</span>
                 </Link>
               </li>
             )}
@@ -283,7 +285,7 @@ export function DashboardMobileMenu() {
                   )}
                 >
                   <PenSquare className="h-5 w-5 shrink-0" />
-                  <span className="ml-3">Editor</span>
+                  <span className="ml-3">{t("dashboard.nav.editor")}</span>
                 </Link>
               </li>
             )}
@@ -300,7 +302,7 @@ export function DashboardMobileMenu() {
                   )}
                 >
                   <BarChart2 className="h-5 w-5 shrink-0" />
-                  <span className="ml-3">Analyst</span>
+                  <span className="ml-3">{t("dashboard.nav.analyst")}</span>
                 </Link>
               </li>
             )}
@@ -313,7 +315,7 @@ export function DashboardMobileMenu() {
             <Link href="/dashboard/profile" onClick={() => setOpen(false)}>
               <Button variant="outline" size="sm" className="w-full bg-transparent">
                 <Settings className="h-4 w-4 mr-2" />
-                Settings
+                {t("dashboard.settings")}
               </Button>
             </Link>
             <Button
@@ -326,7 +328,7 @@ export function DashboardMobileMenu() {
               }}
             >
               <LogOut className="h-4 w-4 mr-2" />
-              Logout
+              {t("nav.logout")}
             </Button>
           </div>
         )}

@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Loader2, Sparkles, Copy, Check, FileText } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
+import { useTranslation } from '@/contexts/i18n-context'
 
 interface BlogGeneratorProps {
   onGenerated?: (content: string) => void

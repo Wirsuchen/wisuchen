@@ -28,6 +28,7 @@ import type { Job } from "@/hooks/use-jobs"
 import { fetchWithCache } from "@/lib/utils/client-cache"
 import { useAuth } from "@/contexts/auth-context"
 import { toast } from "@/hooks/use-toast"
+import { useTranslation } from "@/contexts/i18n-context"
 
 const sanitizeJobDescription = (text: string) => {
   if (!text) return ""
@@ -47,6 +48,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
   const [improvedDescription, setImprovedDescription] = useState("")
   const searchParams = useSearchParams()
   const { user } = useAuth()
+  const { t } = useTranslation()
   const canUseAI = !!(user && (user.isSubscribed || ['pro','premium'].includes(user.plan || '')))
 
   type ExtJob = Job & {
@@ -236,8 +238,8 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
       <div className="min-h-screen">
         <Header />
         <main className="pt-28 md:pt-32 lg:pt-36 container mx-auto px-4 py-16 text-center">
-          <h1 className="text-2xl font-bold mb-2">Loading job...</h1>
-          <p className="text-muted-foreground mb-6">Please wait while we load the job details.</p>
+          <h1 className="text-2xl font-bold mb-2">{t('jobs.detail.loadingTitle')}</h1>
+          <p className="text-muted-foreground mb-6">{t('jobs.detail.loadingDescription')}</p>
         </main>
         <Footer />
       </div>
@@ -249,10 +251,10 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
       <div className="min-h-screen">
         <Header />
         <main className="pt-28 md:pt-32 lg:pt-36 container mx-auto px-4 py-16 text-center">
-          <h1 className="text-2xl font-bold mb-2">Job not found</h1>
-          <p className="text-muted-foreground mb-6">Open a job from the jobs list to view its details.</p>
+          <h1 className="text-2xl font-bold mb-2">{t('jobs.detail.notFoundTitle')}</h1>
+          <p className="text-muted-foreground mb-6">{t('jobs.detail.notFoundDescription')}</p>
           <Button asChild variant="outline" className="bg-transparent">
-            <Link href="/jobs">Back to Jobs</Link>
+            <Link href="/jobs">{t('jobs.detail.backToJobs')}</Link>
           </Button>
         </main>
         <Footer />
@@ -280,7 +282,7 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
           <Button variant="ghost" asChild className="p-0 h-auto font-normal text-muted-foreground hover:text-foreground">
             <Link href="/jobs" className="inline-flex items-center">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Jobs
+              {t('jobs.detail.backToJobs')}
             </Link>
           </Button>
         </div>
@@ -360,21 +362,21 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
                           const data = await response.json()
                           if (data.success) {
                             toast({ 
-                              title: 'Job saved', 
-                              description: 'This job has been added to your saved items.' 
+                              title: t('jobs.detail.savedTitle'), 
+                              description: t('jobs.detail.savedDescription') 
                             })
                           } else {
                             toast({ 
-                              title: 'Failed to save job', 
-                              description: data.error || 'Please try again.', 
+                              title: t('jobs.detail.saveErrorTitle'), 
+                              description: data.error || t('jobs.detail.saveErrorDescription'), 
                               variant: 'destructive' 
                             })
                           }
                         } catch (error) {
                           console.error('Error saving job:', error)
                           toast({ 
-                            title: 'Error', 
-                            description: 'Failed to save job. Please try again.', 
+                            title: t('notifications.error'), 
+                            description: t('jobs.detail.saveErrorDescription'), 
                             variant: 'destructive' 
                           })
                         }
@@ -394,7 +396,7 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
               <CardContent>
                 <div className="space-y-6">
                   <div>
-                    <h3 className="text-lg font-semibold mb-3">Job Description</h3>
+                    <h3 className="text-lg font-semibold mb-3">{t('jobs.detail.descriptionTitle')}</h3>
                     <div className="prose prose-sm max-w-none">
                       <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed">{cleanedDescription}</pre>
                     </div>
@@ -405,7 +407,7 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-3">
                       <h4 className="font-semibold flex items-center">
                         <Sparkles className="h-4 w-4 mr-2 text-accent" />
-                        AI-Enhanced Description
+                        {t('jobs.detail.aiEnhancedTitle')}
                       </h4>
                       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3 w-full sm:w-auto">
                         {!canUseAI && (
@@ -413,7 +415,7 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
                             href="/pricing"
                             className="text-xs text-muted-foreground hover:underline text-left sm:text-right"
                           >
-                            Upgrade to use
+                            {t('jobs.detail.upgradeToUse')}
                           </Link>
                         )}
                         <Button
@@ -422,9 +424,9 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
                           size="sm"
                           className="w-full sm:w-auto bg-accent text-accent-foreground"
                           aria-disabled={!canUseAI}
-                          title={!canUseAI ? 'Available for subscribers only' : undefined}
+                          title={!canUseAI ? t('jobs.detail.subscribersOnly') : undefined}
                         >
-                          {isImproving ? "Improving..." : "Improve with AI"}
+                          {isImproving ? t('jobs.detail.improving') : t('jobs.detail.improveWithAI')}
                         </Button>
                       </div>
                     </div>
@@ -437,8 +439,8 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
                     ) : (
                       <p className="text-sm text-muted-foreground">
                         {canUseAI
-                          ? 'Click "Improve with AI" to see an enhanced version of this job description with better formatting and more engaging language.'
-                          : 'This feature is available for subscribers. Upgrade to unlock AI-enhanced descriptions.'}
+                          ? t('jobs.detail.aiHelpText')
+                          : t('jobs.detail.aiUpgradeText')}
                       </p>
                     )}
                   </div>
@@ -447,7 +449,7 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
 
                   {Array.isArray((job as any).benefits) && (job as any).benefits.length > 0 && (
                     <div>
-                      <h3 className="text-lg font-semibold mb-3">Benefits & Perks</h3>
+                      <h3 className="text-lg font-semibold mb-3">{t('jobs.detail.benefitsTitle')}</h3>
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                         {(job as any).benefits.map((benefit: string) => (
                           <Badge key={benefit} variant="secondary" className="justify-center py-2">
@@ -467,14 +469,14 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
             {/* Apply Card */}
             <Card>
               <CardHeader>
-                <CardTitle>Apply for this position</CardTitle>
+                <CardTitle>{t('jobs.detail.applyTitle')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {job.applicationUrl && (
                   <Button asChild className="w-full" size="lg">
                     <a href={job.applicationUrl} target="_blank" rel="noopener noreferrer">
                       <ExternalLink className="h-4 w-4 mr-2" />
-                      Apply Now
+                      {t('jobs.apply')}
                     </a>
                   </Button>
                 )}
@@ -508,31 +510,31 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
                       const data = await response.json()
                       if (data.success) {
                         toast({ 
-                          title: 'Job saved', 
-                          description: 'This job has been added to your saved items.' 
+                          title: t('jobs.detail.savedTitle'), 
+                          description: t('jobs.detail.savedDescription') 
                         })
                       } else {
                         toast({ 
-                          title: 'Failed to save job', 
-                          description: data.error || 'Please try again.', 
+                          title: t('jobs.detail.saveErrorTitle'), 
+                          description: data.error || t('jobs.detail.saveErrorDescription'), 
                           variant: 'destructive' 
                         })
                       }
                     } catch (error) {
                       console.error('Error saving job:', error)
                       toast({ 
-                        title: 'Error', 
-                        description: 'Failed to save job. Please try again.', 
+                        title: t('notifications.error'), 
+                        description: t('jobs.detail.saveErrorDescription'), 
                         variant: 'destructive' 
                       })
                     }
                   }}
                 >
                   <Heart className="h-4 w-4 mr-2" />
-                  Save Job
+                  {t('jobs.detail.saveJobButton')}
                 </Button>
                 <p className="text-xs text-muted-foreground text-center">
-                  By applying, you agree to our Terms of Service and Privacy Policy
+                  {t('jobs.detail.termsNotice')}
                 </p>
               </CardContent>
             </Card>
@@ -540,7 +542,7 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
             {/* Company Info */}
             <Card>
               <CardHeader>
-                <CardTitle>About {job.company}</CardTitle>
+                <CardTitle>{t('jobs.detail.aboutCompany')} {job.company}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex items-center text-sm">
@@ -553,13 +555,13 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
                 </div>
                 <div className="flex items-center text-sm">
                   <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
-                  Founded in 2015
+                  {t('jobs.detail.foundedIn')} 2015
                 </div>
                 {(job as any).website && (
                   <Button variant="outline" className="w-full mt-4 bg-transparent" asChild>
                     <Link href={(job as any).website} target="_blank">
                       <ExternalLink className="h-4 w-4 mr-2" />
-                      Visit Website
+                      {t('jobs.detail.visitWebsite')}
                     </Link>
                   </Button>
                 )}
@@ -572,15 +574,15 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
         {/* Recommended Jobs - full width, 3 in a row */}
         <section className="mt-8">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">Recommended Jobs</h2>
+            <h2 className="text-xl font-semibold">{t('jobs.detail.recommendedTitle')}</h2>
             <Button variant="outline" className="bg-transparent" asChild>
-              <Link href="/jobs">View All</Link>
+              <Link href="/jobs">{t('common.viewAll')}</Link>
             </Button>
           </div>
           {loadingRelated ? (
-            <p className="text-sm text-muted-foreground text-center py-6">Loading recommended jobs...</p>
+            <p className="text-sm text-muted-foreground text-center py-6">{t('jobs.detail.loadingRecommended')}</p>
           ) : relatedJobs.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-6">No recommendations available</p>
+            <p className="text-sm text-muted-foreground text-center py-6">{t('jobs.detail.noRecommendations')}</p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {relatedJobs.map((relatedJob) => {

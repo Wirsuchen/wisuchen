@@ -1,64 +1,68 @@
+"use client"
+
 import { Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { PageLayout } from "@/components/layout/page-layout"
 import Link from "next/link"
+import { useTranslation } from "@/contexts/i18n-context"
 
 export default function PricingPage() {
+  const { t } = useTranslation()
   const plans = [
     {
       id: 'basic',
-      name: "Basic",
-      price: "Free",
+      name: t('pricing.plans.basic.name'),
+      price: t('pricing.plans.basic.price'),
       amount: "0",
-      description: "For exploring jobs and deals",
+      description: t('pricing.plans.basic.description'),
       features: [
-        "Browse jobs and deals",
-        "Save up to 10 items",
-        "Basic job alerts",
-        "Standard support",
-        "AI tools: Not included",
+        t('pricing.plans.basic.features.browse'),
+        t('pricing.plans.basic.features.save'),
+        t('pricing.plans.basic.features.alerts'),
+        t('pricing.plans.basic.features.support'),
+        t('pricing.plans.basic.features.ai'),
       ],
-      cta: "Get Started",
+      cta: t('pricing.plans.basic.cta'),
       popular: false,
       href: "/dashboard"
     },
     {
       id: 'professional',
-      name: "Professional",
+      name: t('pricing.plans.professional.name'),
       price: "€19",
       amount: "19",
-      period: "/month",
-      description: "For active seekers who want AI tools",
+      period: t('pricing.plans.professional.period'),
+      description: t('pricing.plans.professional.description'),
       features: [
-        "Everything in Basic",
-        "AI Job Description Generator",
-        "AI SEO Snippet/Meta Generator",
-        "AI Blog/Content Generator",
-        "Advanced job filters & remote-only toggle",
-        "Priority job alerts",
-        "Unlimited saved items",
-        "Priority email support",
+        t('pricing.plans.professional.features.everything'),
+        t('pricing.plans.professional.features.jobGenerator'),
+        t('pricing.plans.professional.features.seoGenerator'),
+        t('pricing.plans.professional.features.blogGenerator'),
+        t('pricing.plans.professional.features.filters'),
+        t('pricing.plans.professional.features.priorityAlerts'),
+        t('pricing.plans.professional.features.unlimited'),
+        t('pricing.plans.professional.features.prioritySupport'),
       ],
-      cta: "Upgrade to Pro",
+      cta: t('pricing.plans.professional.cta'),
       popular: true,
       href: "/dashboard/profile"
     },
     {
       id: 'business',
-      name: "Business",
+      name: t('pricing.plans.business.name'),
       price: "€49",
       amount: "49",
-      period: "/month",
-      description: "For recruiters and small teams",
+      period: t('pricing.plans.business.period'),
+      description: t('pricing.plans.business.description'),
       features: [
-        "Everything in Professional",
-        "Job posting access (requires approval)",
-        "Company profile & logo",
-        "Priority support (SLA)",
+        t('pricing.plans.business.features.everything'),
+        t('pricing.plans.business.features.posting'),
+        t('pricing.plans.business.features.profile'),
+        t('pricing.plans.business.features.sla'),
       ],
-      cta: "Talk to us",
+      cta: t('pricing.plans.business.cta'),
       popular: false,
       href: "/dashboard/profile"
     },
@@ -69,9 +73,9 @@ export default function PricingPage() {
       {/* Hero Section */}
       <section className="py-20 px-4">
         <div className="container mx-auto text-center">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6">Simple, Transparent Pricing</h1>
+          <h1 className="text-4xl md:text-6xl font-bold mb-6">{t('pricing.hero.title')}</h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Choose the perfect plan for your needs. Upgrade or downgrade at any time.
+            {t('pricing.hero.description')}
           </p>
         </div>
       </section>
@@ -83,7 +87,7 @@ export default function PricingPage() {
             {plans.map((plan, index) => (
               <Card key={index} className={`relative ${plan.popular ? "border-primary shadow-lg scale-105" : ""}`}>
                 {plan.popular && (
-                  <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary">Most Popular</Badge>
+                  <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary">{t('pricing.mostPopular')}</Badge>
                 )}
                 <CardHeader className="text-center">
                   <CardTitle className="text-2xl">{plan.name}</CardTitle>
@@ -123,30 +127,30 @@ export default function PricingPage() {
       {/* FAQ Section */}
       <section className="py-20 px-4 bg-muted/50">
         <div className="container mx-auto max-w-4xl">
-          <h2 className="text-3xl font-bold text-center mb-12">Frequently Asked Questions</h2>
+          <h2 className="text-3xl font-bold text-center mb-12">{t('pricing.faqs.title')}</h2>
           <div className="grid md:grid-cols-2 gap-8">
             <div>
-              <h3 className="font-semibold mb-2">Can I change plans anytime?</h3>
+              <h3 className="font-semibold mb-2">{t('pricing.faqs.q1.question')}</h3>
               <p className="text-muted-foreground text-sm">
-                Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately.
+                {t('pricing.faqs.q1.answer')}
               </p>
             </div>
             <div>
-              <h3 className="font-semibold mb-2">Is there a free trial?</h3>
+              <h3 className="font-semibold mb-2">{t('pricing.faqs.q2.question')}</h3>
               <p className="text-muted-foreground text-sm">
-                Yes, all paid plans come with a 14-day free trial. No credit card required.
+                {t('pricing.faqs.q2.answer')}
               </p>
             </div>
             <div>
-              <h3 className="font-semibold mb-2">What payment methods do you accept?</h3>
+              <h3 className="font-semibold mb-2">{t('pricing.faqs.q3.question')}</h3>
               <p className="text-muted-foreground text-sm">
-                We accept all major credit cards, PayPal, and bank transfers for annual plans.
+                {t('pricing.faqs.q3.answer')}
               </p>
             </div>
             <div>
-              <h3 className="font-semibold mb-2">Do you offer refunds?</h3>
+              <h3 className="font-semibold mb-2">{t('pricing.faqs.q4.question')}</h3>
               <p className="text-muted-foreground text-sm">
-                Yes, we offer a 30-day money-back guarantee for all paid plans.
+                {t('pricing.faqs.q4.answer')}
               </p>
             </div>
           </div>

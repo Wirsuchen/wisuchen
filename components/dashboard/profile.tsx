@@ -20,8 +20,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { useTranslation } from "@/contexts/i18n-context"
 
 export function Profile() {
+  const { t } = useTranslation()
   const [loading, setLoading] = useState(false)
   const [profileData, setProfileData] = useState({
     full_name: "",
@@ -116,21 +118,21 @@ export function Profile() {
       })
       if (res.ok) {
         toast({ 
-          title: 'Profile updated', 
-          description: 'Your profile information has been saved successfully.' 
+          title: t('profile.saveSuccess'), 
+          description: t('profile.saveSuccessDesc') 
         })
       } else {
         const data = await res.json().catch(() => ({}))
         toast({ 
-          title: 'Update failed', 
-          description: (data as any)?.error || 'Failed to update profile. Please try again.', 
+          title: t('common.error'), 
+          description: (data as any)?.error || t('profile.updateFailed'), 
           variant: 'destructive' 
         })
       }
     } catch (error: any) {
       toast({ 
-        title: 'Error', 
-        description: error?.message || 'An unexpected error occurred. Please try again.', 
+        title: t('common.error'), 
+        description: error?.message || t('common.unexpectedError'), 
         variant: 'destructive' 
       })
     } finally {
@@ -148,21 +150,21 @@ export function Profile() {
       })
       if (res.ok) {
         toast({ 
-          title: 'Settings saved', 
-          description: 'Your account settings have been saved successfully.' 
+          title: t('profile.settingsSaved'), 
+          description: t('profile.settingsSavedDesc') 
         })
       } else {
         const data = await res.json().catch(() => ({}))
         toast({ 
-          title: 'Update failed', 
-          description: (data as any)?.error || 'Failed to save settings. Please try again.', 
+          title: t('common.error'), 
+          description: (data as any)?.error || t('profile.settingsSaveFailed'), 
           variant: 'destructive' 
         })
       }
     } catch (error: any) {
       toast({ 
-        title: 'Error', 
-        description: error?.message || 'An unexpected error occurred. Please try again.', 
+        title: t('common.error'), 
+        description: error?.message || t('common.unexpectedError'), 
         variant: 'destructive' 
       })
     } finally {
@@ -179,11 +181,11 @@ export function Profile() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ paypalSubscriptionId: paypalSubId || undefined }),
       })
-      if (!res.ok) throw new Error('Failed to unsubscribe')
+      if (!res.ok) throw new Error(t('profile.unsubscribeFailed'))
       setSubscription({ isSubscribed: false, plan: 'free' })
-      toast({ title: 'Unsubscribed', description: 'Your plan was changed to Free.' })
+      toast({ title: t('profile.unsubscribed'), description: t('profile.unsubscribedDesc') })
     } catch (e) {
-      toast({ title: 'Error', description: 'Could not unsubscribe', variant: 'destructive' })
+      toast({ title: t('common.error'), description: t('profile.unsubscribeError'), variant: 'destructive' })
     } finally {
       setUnsubscribing(false)
     }
@@ -192,23 +194,23 @@ export function Profile() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Profile Settings</h1>
-        <p className="text-muted-foreground">Manage your account information and preferences</p>
+        <h1 className="text-3xl font-bold">{t('dashboard.profile')}</h1>
+        <p className="text-muted-foreground">{t('profile.manageAccountInfo')}</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Profile Picture */}
         <Card>
           <CardHeader>
-            <CardTitle>Profile Picture</CardTitle>
-            <CardDescription>Update your profile photo</CardDescription>
+            <CardTitle>{t('profile.profilePicture')}</CardTitle>
+            <CardDescription>{t('profile.updateProfilePhoto')}</CardDescription>
           </CardHeader>
           <CardContent className="text-center">
             <div className="relative inline-block">
               <div className="w-32 h-32 bg-primary rounded-full flex items-center justify-center text-primary-foreground text-4xl font-bold mx-auto mb-4 overflow-hidden">
                 {profileData.avatar_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={profileData.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                  <img src={profileData.avatar_url} alt={t('profile.avatar')} className="w-full h-full object-cover" />
                 ) : (
                   (profileData.full_name || 'U').substring(0,2).toUpperCase()
                 )}
@@ -231,13 +233,13 @@ export function Profile() {
                   const res = await fetch('/api/profile/avatar', { method: 'POST', body: form })
                   const data = await res.json().catch(() => ({} as any))
                   if (!res.ok || !(data as any)?.success) {
-                    toast({ title: 'Upload failed', description: (data as any)?.error || 'Could not upload avatar.', variant: 'destructive' })
+                    toast({ title: t('profile.uploadFailed'), description: (data as any)?.error || t('profile.avatarUploadError'), variant: 'destructive' })
                     return
                   }
                   setProfileData((prev) => ({ ...prev, avatar_url: (data as any)?.url || prev.avatar_url }))
-                  toast({ title: 'Avatar updated', description: 'Your profile picture was updated.' })
+                  toast({ title: t('profile.avatarUpdated'), description: t('profile.avatarUpdatedDesc') })
                 } catch (e: any) {
-                  toast({ title: 'Error', description: e?.message || 'Unexpected error during upload', variant: 'destructive' })
+                  toast({ title: t('common.error'), description: e?.message || t('common.unexpectedError'), variant: 'destructive' })
                 } finally {
                   setAvatarUploading(false)
                 }
@@ -245,7 +247,7 @@ export function Profile() {
               input.click()
             }}>
               <Upload className="h-4 w-4 mr-2" />
-              Upload New Photo
+              {t('profile.uploadNewPhoto')}
             </Button>
           </CardContent>
         </Card>
@@ -253,13 +255,13 @@ export function Profile() {
         {/* Basic Information */}
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Basic Information</CardTitle>
-            <CardDescription>Update your personal details</CardDescription>
+            <CardTitle>{t('profile.basicInfo')}</CardTitle>
+            <CardDescription>{t('profile.updatePersonalDetails')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="full_name">Full Name</Label>
+                <Label htmlFor="full_name">{t('profile.fullName')}</Label>
                 <Input
                   id="full_name"
                   value={profileData.full_name}
@@ -271,7 +273,7 @@ export function Profile() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="email">Email Address</Label>
+                <Label htmlFor="email">{t('profile.emailAddress')}</Label>
                 <Input
                   id="email"
                   type="email"
@@ -280,7 +282,7 @@ export function Profile() {
                 />
               </div>
               <div>
-                <Label htmlFor="phone">Phone Number</Label>
+                <Label htmlFor="phone">{t('profile.phoneNumber')}</Label>
                 <Input
                   id="phone"
                   value={profileData.phone}
@@ -291,7 +293,7 @@ export function Profile() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="company">Company</Label>
+                <Label htmlFor="company">{t('profile.company')}</Label>
                 <Input
                   id="company"
                   value={profileData.website_url}
@@ -299,7 +301,7 @@ export function Profile() {
                 />
               </div>
               <div>
-                <Label htmlFor="linkedin">LinkedIn</Label>
+                <Label htmlFor="linkedin">{t('profile.linkedin')}</Label>
                 <Input
                   id="linkedin"
                   value={profileData.linkedin_url}
@@ -309,7 +311,7 @@ export function Profile() {
             </div>
 
             <div>
-              <Label htmlFor="location">Location</Label>
+              <Label htmlFor="location">{t('profile.location')}</Label>
               <Input
                 id="location"
                 value={profileData.location}
@@ -318,7 +320,7 @@ export function Profile() {
             </div>
 
             <div>
-              <Label htmlFor="bio">Bio</Label>
+              <Label htmlFor="bio">{t('profile.bio')}</Label>
               <Textarea
                 id="bio"
                 value={profileData.bio}
@@ -329,7 +331,7 @@ export function Profile() {
 
             <Button onClick={handleProfileUpdate} className="w-full">
               <Save className="h-4 w-4 mr-2" />
-              Save Profile
+              {t('profile.saveProfile')}
             </Button>
           </CardContent>
         </Card>
@@ -338,36 +340,36 @@ export function Profile() {
       {/* Social Links */}
       <Card>
         <CardHeader>
-          <CardTitle>Social Links</CardTitle>
-          <CardDescription>Add your professional social media profiles</CardDescription>
+          <CardTitle>{t('profile.socialLinks')}</CardTitle>
+          <CardDescription>{t('profile.addSocialProfiles')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <Label htmlFor="website">Website</Label>
+              <Label htmlFor="website">{t('profile.website')}</Label>
               <Input
                 id="website"
                 value={profileData.website_url}
                 onChange={(e) => setProfileData({ ...profileData, website_url: e.target.value })}
-                placeholder="https://yourwebsite.com"
+                placeholder={t('profile.websitePlaceholder')}
               />
             </div>
             <div>
-              <Label htmlFor="linkedin">LinkedIn</Label>
+              <Label htmlFor="linkedin">{t('profile.linkedin')}</Label>
               <Input
                 id="linkedin"
                 value={profileData.linkedin_url}
                 onChange={(e) => setProfileData({ ...profileData, linkedin_url: e.target.value })}
-                placeholder="https://linkedin.com/in/username"
+                placeholder={t('profile.linkedinPlaceholder')}
               />
             </div>
             <div>
-              <Label htmlFor="github">GitHub</Label>
+              <Label htmlFor="github">{t('profile.github')}</Label>
               <Input
                 id="github"
                 value={profileData.github_url}
                 onChange={(e) => setProfileData({ ...profileData, github_url: e.target.value })}
-                placeholder="https://github.com/username"
+                placeholder={t('profile.githubPlaceholder')}
               />
             </div>
           </div>
@@ -377,30 +379,13 @@ export function Profile() {
       {/* Account Settings */}
       <Card>
         <CardHeader>
-          <CardTitle>Account Settings</CardTitle>
-          <CardDescription>Manage your account preferences and notifications</CardDescription>
+          <CardTitle>{t('profile.accountSettings')}</CardTitle>
+          <CardDescription>{t('profile.manageAccountPreferences')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="language">Language</Label>
-              <Select
-                value={accountSettings.language}
-                onValueChange={(value) => setAccountSettings({ ...accountSettings, language: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="en">English</SelectItem>
-                  <SelectItem value="de">Deutsch</SelectItem>
-                  <SelectItem value="fr">Français</SelectItem>
-                  <SelectItem value="it">Italiano</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="timezone">Timezone</Label>
+            <div className="md:col-span-2">
+              <Label htmlFor="timezone">{t('profile.timezone')}</Label>
               <Select
                 value={accountSettings.timezone}
                 onValueChange={(value) => setAccountSettings({ ...accountSettings, timezone: value })}
@@ -421,12 +406,12 @@ export function Profile() {
           <Separator />
 
           <div>
-            <h3 className="text-lg font-semibold mb-4">Notification Preferences</h3>
+            <h3 className="text-lg font-semibold mb-4">{t('profile.notificationPreferences')}</h3>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-medium">Email Notifications</p>
-                  <p className="text-sm text-muted-foreground">Receive important account updates</p>
+                  <p className="font-medium">{t('profile.emailNotifications')}</p>
+                  <p className="text-sm text-muted-foreground">{t('profile.emailNotificationsDesc')}</p>
                 </div>
                 <input
                   type="checkbox"
@@ -437,8 +422,8 @@ export function Profile() {
               </div>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-medium">Marketing Emails</p>
-                  <p className="text-sm text-muted-foreground">Receive promotional content and offers</p>
+                  <p className="font-medium">{t('profile.marketingEmails')}</p>
+                  <p className="text-sm text-muted-foreground">{t('profile.marketingEmailsDesc')}</p>
                 </div>
                 <input
                   type="checkbox"
@@ -449,8 +434,8 @@ export function Profile() {
               </div>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-medium">Job Alerts</p>
-                  <p className="text-sm text-muted-foreground">Get notified about new job opportunities</p>
+                  <p className="font-medium">{t('profile.jobAlerts')}</p>
+                  <p className="text-sm text-muted-foreground">{t('profile.jobAlertsDesc')}</p>
                 </div>
                 <input
                   type="checkbox"
@@ -461,8 +446,8 @@ export function Profile() {
               </div>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-medium">Deal Alerts</p>
-                  <p className="text-sm text-muted-foreground">Get notified about price drops and new deals</p>
+                  <p className="font-medium">{t('profile.dealAlerts')}</p>
+                  <p className="text-sm text-muted-foreground">{t('profile.dealAlertsDesc')}</p>
                 </div>
                 <input
                   type="checkbox"
@@ -476,30 +461,30 @@ export function Profile() {
 
           <Button onClick={handleAccountUpdate} className="w-full" disabled={loading}>
             <Save className="h-4 w-4 mr-2" />
-            {loading ? 'Saving...' : 'Save Settings'}
+            {loading ? t('profile.saving') : t('profile.saveSettings')}
           </Button>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Subscription</CardTitle>
-          <CardDescription>Manage your subscription plan</CardDescription>
+          <CardTitle>{t('profile.subscription')}</CardTitle>
+          <CardDescription>{t('profile.manageSubscription')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="md:col-span-2">
-              <p className="font-medium">Current Plan</p>
+              <p className="font-medium">{t('profile.currentPlan')}</p>
               <p className="text-sm text-muted-foreground">{subscription.isSubscribed ? (subscription.plan || 'pro') : 'free'}</p>
             </div>
             <div>
-              <Label htmlFor="paypalSubId">PayPal Subscription ID (optional)</Label>
-              <Input id="paypalSubId" value={paypalSubId} onChange={(e) => setPaypalSubId(e.target.value)} placeholder="I-XXXX..." />
+              <Label htmlFor="paypalSubId">{t('profile.paypalSubId')}</Label>
+              <Input id="paypalSubId" value={paypalSubId} onChange={(e) => setPaypalSubId(e.target.value)} placeholder={t('profile.paypalSubIdPlaceholder')} />
             </div>
           </div>
           <div className="flex justify-end">
             <Button variant="outline" className="bg-transparent" disabled={unsubscribing} onClick={() => setShowUnsubscribeDialog(true)}>
-              {unsubscribing ? 'Unsubscribing...' : 'Unsubscribe'}
+              {unsubscribing ? t('profile.unsubscribing') : t('profile.unsubscribe')}
             </Button>
           </div>
         </CardContent>
@@ -508,19 +493,19 @@ export function Profile() {
       <AlertDialog open={showUnsubscribeDialog} onOpenChange={setShowUnsubscribeDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Unsubscribe from Plan</AlertDialogTitle>
+            <AlertDialogTitle>{t('profile.unsubscribeFromPlan')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to unsubscribe and switch to the free plan? This action cannot be undone.
+              {t('profile.unsubscribeConfirm')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={unsubscribing}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={unsubscribing}>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleUnsubscribe}
               disabled={unsubscribing}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {unsubscribing ? 'Unsubscribing...' : 'Unsubscribe'}
+              {unsubscribing ? t('profile.unsubscribing') : t('profile.unsubscribe')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

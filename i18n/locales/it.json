@@ -16,6 +16,7 @@
     "sort": "Ordina",
     "close": "Chiudi",
     "back": "Indietro",
+    "backToHome": "Torna alla home",
     "next": "Avanti",
     "previous": "Precedente",
     "submit": "Invia",
@@ -27,7 +28,14 @@
     "more": "Altro",
     "less": "Meno",
     "viewAll": "Vedi tutto",
-    "readMore": "Leggi di più"
+    "readMore": "Leggi di più",
+    "navigation": "Navigazione",
+    "notAvailable": "Non disponibile al momento",
+    "tryAgain": "Riprova",
+    "loadMore": "Carica altro",
+    "photos": "Foto",
+    "videos": "Video",
+    "refresh": "Aggiorna"
   },
   "nav": {
     "home": "Home",
@@ -40,7 +48,8 @@
     "login": "Accedi",
     "register": "Registrati",
     "logout": "Esci",
-    "profile": "Profilo"
+    "profile": "Profilo",
+    "savedItems": "Elementi salvati"
   },
   "auth": {
     "signIn": "Accedi",
@@ -87,18 +96,51 @@
     "creatingAccount": "Creazione account...",
     "registrationSuccess": "Registrazione riuscita! Reindirizzamento alla dashboard...",
     "allFieldsRequired": "Si prega di compilare tutti i campi obbligatori",
-    "acceptTermsRequired": "Si prega di accettare i termini e le condizioni"
+    "acceptTermsRequired": "Si prega di accettare i termini e le condizioni",
+    "alreadyLoggedInRedirect": "Sei già connesso. Reindirizzamento...",
+    "backToLogin": "Torna al login",
+    "forgotPasswordPage": {
+      "successTitle": "Email inviata!",
+      "successDescription": "Controlla la tua email per le istruzioni di reimpostazione della password.",
+      "successInfo": "Abbiamo inviato un link per reimpostare la password a {email}",
+      "notReceived": "Non hai ricevuto l'email? Controlla la cartella spam o riprova.",
+      "tryDifferentEmail": "Prova un'altra email",
+      "pageTitle": "Hai dimenticato la password?",
+      "pageDescription": "Inserisci il tuo indirizzo email e ti invieremo un link per reimpostare la password.",
+      "formTitle": "Reimposta password",
+      "formDescription": "Ti invieremo un link sicuro per reimpostare la tua password",
+      "sending": "Invio...",
+      "sendResetLink": "Invia link di reimpostazione"
+    },
+    "admin": {
+      "title": "Login amministratore",
+      "description": "Inserisci le tue credenziali per accedere alla dashboard amministratore",
+      "authFailed": "Autenticazione non riuscita. Riprova.",
+      "profileNotFound": "Profilo utente non trovato. Contatta il supporto.",
+      "accessDenied": "Accesso negato. Sono necessari privilegi di amministratore.",
+      "unexpectedError": "Si è verificato un errore imprevisto. Riprova."
+    }
   },
   "dashboard": {
     "title": "Dashboard",
     "overview": "Bentornato! Ecco cosa sta succedendo con il tuo account.",
     "myAds": "I miei annunci",
+    "myAdsDescription": "Gestisci i tuoi annunci di lavoro e monitora le loro prestazioni",
     "savedDeals": "Offerte salvate",
     "myInvoices": "Le mie fatture",
     "settings": "Impostazioni",
     "statistics": "Statistiche",
+    "statsTitle": "Analisi e statistiche",
+    "statsDescription": "Metriche in tempo reale da Supabase",
+    "detailedAnalyticsTitle": "Analisi dettagliate",
+    "detailedAnalyticsDescription": "I grafici verranno visualizzati non appena saranno disponibili dati sufficienti",
+    "noChartData": "Nessun dato per i grafici disponibile al momento.",
     "recentActivity": "Le tue ultime attività e le loro prestazioni",
     "activeJobAds": "Annunci di lavoro attivi",
+    "totalAds": "Numero totale annunci",
+    "activeAds": "Attivi",
+    "totalViews": "Visualizzazioni totali",
+    "totalApplicants": "Candidati totali",
     "totalInvoices": "Totale fatture",
     "profileViews": "Visualizzazioni profilo",
     "noAdsYet": "Ancora nessun annuncio",
@@ -110,10 +152,67 @@
     "postNewJob": "Pubblica nuovo lavoro",
     "createInvoice": "Crea fattura",
     "viewAnalytics": "Visualizza analisi",
-    "apiTesting": "Test API"
+    "apiTesting": "Test API",
+    "mySavedDealsTitle": "Le mie offerte salvate",
+    "mySavedDealsDescription": "Tieni traccia delle tue offerte preferite e non perdere mai un affare",
+    "mySavedDealsEmptyTitle": "Nessuna offerta salvata",
+    "mySavedDealsEmptyDescription": "Inizia a salvare le tue offerte preferite facendo clic sull'icona a forma di cuore in qualsiasi offerta. Appariranno qui per un accesso rapido.",
+    "mySavedDealsStatsSavedDeals": "Offerte salvate",
+    "mySavedDealsStatsTotalSavings": "Risparmi totali",
+    "mySavedDealsStatsInStock": "Disponibili",
+    "mySavedDealsCardTitle": "Offerte salvate",
+    "mySavedDealsCardDescription": "Gestisci le tue offerte salvate e monitora le variazioni di prezzo",
+    "mySavedDealsSearchPlaceholder": "Cerca offerte...",
+    "mySavedDealsFilterByCategory": "Filtra per categoria",
+    "mySavedDealsCategoryAll": "Tutte le categorie",
+    "mySavedDealsCategoryElectronics": "Elettronica",
+    "mySavedDealsCategoryFashion": "Moda",
+    "mySavedDealsCategoryHome": "Casa e giardino",
+    "mySavedDealsCategorySports": "Sport",
+    "mySavedDealsSavedLabel": "Salvata {saved}",
+    "myAdsJobListingsTitle": "Annunci di lavoro",
+    "myAdsJobListingsDescription": "Visualizza e gestisci tutti i tuoi annunci di lavoro",
+    "myAdsSearchPlaceholder": "Cerca titoli di lavoro...",
+    "myAdsFilterByStatus": "Filtra per stato",
+    "myAdsStatusAll": "Tutti gli stati",
+    "myAdsStatusActive": "Attivi",
+    "myAdsStatusExpired": "Scaduti",
+    "myAdsStatusDraft": "Bozza",
+    "myAdsTableJobTitle": "Titolo lavoro",
+    "myAdsTableStatus": "Stato",
+    "myAdsTableViews": "Visualizzazioni",
+    "myAdsTableApplicants": "Candidati",
+    "myAdsTablePosted": "Pubblicato",
+    "myAdsTableExpires": "Scade",
+    "myAdsTableActions": "Azioni",
+    "loginRequiredTitle": "Accesso richiesto",
+    "loginRequiredDescription": "Accedi per visualizzare la tua dashboard.",
+    "goToLogin": "Vai al login",
+    "nav": {
+      "overview": "Panoramica",
+      "myAds": "I miei annunci",
+      "myDeals": "Le mie offerte",
+      "myInvoices": "Le mie fatture",
+      "stats": "Statistiche",
+      "profile": "Profilo",
+      "manageBlogs": "Gestisci blog",
+      "createBlog": "Crea blog",
+      "admin": "Admin",
+      "supervisor": "Supervisore",
+      "moderator": "Moderatore",
+      "lister": "Inserzionista",
+      "publisher": "Editore",
+      "blogger": "Blogger",
+      "editor": "Editore",
+      "analyst": "Analista",
+      "menuButton": "Menu dashboard"
+    }
   },
   "jobs": {
     "title": "Annunci di lavoro",
+    "heroSubtitle": "Scopri lavori da oltre 10 fonti: Glassdoor, Upwork, Y Combinator e altro",
+    "latestJobs": "Ultimi lavori",
+    "latestWidgetSubtitle": "{count} lavori da più fonti",
     "searchJobs": "Cerca lavori",
     "location": "Posizione",
     "category": "Categoria",
@@ -126,6 +225,7 @@
     "share": "Condividi",
     "views": "visualizzazioni",
     "applicants": "candidati",
+    "status": "Stato",
     "fullTime": "Tempo pieno",
     "partTime": "Part-time",
     "contract": "Contratto",
@@ -142,37 +242,172 @@
     "perMonth": "al mese",
     "perHour": "all'ora",
     "noJobsFound": "Nessun lavoro trovato",
-    "tryAdjustingFilters": "Prova a modificare i tuoi filtri"
+    "tryAdjustingFilters": "Prova a modificare i tuoi filtri",
+    "sourcesCountLabel": "10+ fonti",
+    "cached": "In cache",
+    "live": "Live",
+    "myPostedJobs": "I miei annunci pubblicati",
+    "myPostedJobsDescription": "Annunci che hai creato e pubblicato",
+    "noUserJobs": "Non hai ancora pubblicato annunci",
+    "searchPlaceholder": "Titolo lavoro, parole chiave...",
+    "locationPlaceholder": "Città, stato o paese...",
+    "searching": "Ricerca...",
+    "allTypes": "Tutti i tipi",
+    "resetFilters": "Reimposta filtri",
+    "errorLoading": "Errore durante il caricamento dei lavori",
+    "loadingJobs": "Caricamento lavori...",
+    "loadingFromSources": "Recupero da più fonti (Adzuna, RapidAPI)",
+    "resetSearch": "Reimposta ricerca",
+    "loadingMore": "Caricamento in corso...",
+    "remaining": "rimanenti",
+    "dataSources": "Sorgenti dati",
+    "totalJobs": "Totale lavori",
+    "cacheStatus": "Stato cache",
+    "noJobsAvailable": "Nessun lavoro disponibile",
+    "notPublished": "Non pubblicato",
+    "viewDetails": "Visualizza dettagli",
+    "details": "Dettagli",
+    "applyNow": "Candidati ora",
+    "apply": "Candidati",
+    "manage": "Gestisci",
+    "edit": "Modifica",
+    "time": {
+      "justNow": "Proprio ora",
+      "hoursAgo": "{hours}h fa",
+      "yesterday": "Ieri",
+      "daysAgo": "{days} giorni fa"
+    },
+    "detail": {
+      "loadingTitle": "Caricamento annuncio...",
+      "loadingDescription": "Attendere mentre carichiamo i dettagli dell'annuncio.",
+      "notFoundTitle": "Annuncio non trovato",
+      "notFoundDescription": "Apri un annuncio dalla lista dei lavori per vedere i dettagli.",
+      "backToJobs": "Torna ai lavori",
+      "savedTitle": "Lavoro salvato",
+      "savedDescription": "Questo lavoro è stato aggiunto ai tuoi elementi salvati.",
+      "saveErrorTitle": "Impossibile salvare il lavoro",
+      "saveErrorDescription": "Impossibile salvare il lavoro. Riprova.",
+      "descriptionTitle": "Descrizione del lavoro",
+      "aiEnhancedTitle": "Descrizione migliorata con IA",
+      "upgradeToUse": "Aggiorna per utilizzare",
+      "subscribersOnly": "Disponibile solo per gli abbonati",
+      "improving": "Miglioramento...",
+      "improveWithAI": "Migliora con IA",
+      "aiHelpText": "Clicca su \"Migliora con IA\" per vedere una versione migliorata di questa descrizione con un layout migliore e un linguaggio più coinvolgente.",
+      "aiUpgradeText": "Questa funzionalità è disponibile per gli abbonati. Aggiorna per sbloccare le descrizioni migliorate con IA.",
+      "benefitsTitle": "Benefici e vantaggi",
+      "applyTitle": "Candidati per questa posizione",
+      "saveJobButton": "Salva lavoro",
+      "termsNotice": "Candidandoti accetti i nostri Termini di servizio e l'Informativa sulla privacy.",
+      "aboutCompany": "Informazioni su",
+      "foundedIn": "Fondata nel",
+      "visitWebsite": "Visita il sito web",
+      "recommendedTitle": "Lavori consigliati",
+      "loadingRecommended": "Caricamento lavori consigliati...",
+      "noRecommendations": "Nessuna raccomandazione disponibile"
+    }
   },
   "deals": {
-    "title": "Offerte e promozioni",
+    "title": "Migliori offerte & confronta prezzi",
     "searchDeals": "Cerca offerte",
+    "searchPlaceholder": "Cerca prodotti, marche o categorie",
     "discount": "Sconto",
     "originalPrice": "Prezzo originale",
     "salePrice": "Prezzo di vendita",
     "savings": "Risparmi",
     "viewDeal": "Visualizza offerta",
     "getDeal": "Ottieni offerta",
+    "comparePrices": "Confronta prezzi",
     "expiresSoon": "Scade presto",
     "featured": "In evidenza",
     "trending": "Di tendenza",
     "newDeals": "Nuove offerte",
-    "noDealsFound": "Nessuna offerta trovata"
+    "noDealsFound": "Nessuna offerta trovata",
+    "filters": "Filtri",
+    "sortBy": "Ordina per",
+    "sort": {
+      "bestDeal": "Miglior offerta",
+      "priceLow": "Prezzo: dal più basso al più alto",
+      "priceHigh": "Prezzo: dal più alto al più basso",
+      "discount": "Sconto più alto",
+      "rating": "Miglior valutazione",
+      "newest": "Più recente"
+    },
+    "categories": "Categorie",
+    "brands": "Marche",
+    "priceRange": "Fascia di prezzo",
+    "selectRange": "Seleziona fascia",
+    "clearAllFilters": "Rimuovi tutti i filtri",
+    "loading": "Caricamento offerte...",
+    "showingCount": "Visualizzazione di {count} offerte",
+    "loadingFromApi": "Caricamento offerte dall'API...",
+    "noDealsFoundWithFilters": "Nessuna offerta trovata. Prova a modificare i filtri.",
+    "saveAmount": "Risparmia {amount}",
+    "storesCount": "{count} negozi",
+    "reviewsCount": "({count} recensioni)",
+    "outOfStock": "Non disponibile",
+    "detail": {
+      "notFoundTitle": "Offerta non trovata",
+      "notFoundDescription": "L'offerta che stai cercando non esiste.",
+      "backToDeals": "Torna alle offerte",
+      "savedTitle": "Offerta salvata",
+      "savedDescription": "Questa offerta è stata aggiunta ai tuoi elementi salvati.",
+      "saveErrorTitle": "Impossibile salvare l'offerta",
+      "saveErrorDescription": "Impossibile salvare l'offerta. Riprova.",
+      "shareSuccessTitle": "Condivisa!",
+      "shareSuccessDescription": "Offerta condivisa con successo.",
+      "linkCopiedTitle": "Link copiato!",
+      "linkCopiedDescription": "Il link dell'offerta è stato copiato negli appunti.",
+      "linkReadyTitle": "Link pronto",
+      "linkReadyDescription": "Copia il link manualmente.",
+      "backButton": "Torna alle offerte",
+      "visitSource": "Visita la fonte",
+      "visit": "Visita",
+      "youSave": "Risparmi {amount}",
+      "selectSize": "Seleziona taglia",
+      "selectColor": "Seleziona colore",
+      "availableAt": "Disponibile presso",
+      "buyNow": "Acquista ora",
+      "productDescription": "Descrizione del prodotto",
+      "productAttributes": "Caratteristiche del prodotto",
+      "offerDetailsTitle": "Dettagli offerta",
+      "offerDetailsFrom": "Da {store}",
+      "priceLabel": "Prezzo",
+      "originalPriceLabel": "Prezzo originale",
+      "shippingLabel": "Spedizione",
+      "returnsLabel": "Resi",
+      "conditionLabel": "Condizione",
+      "quickActionsTitle": "Azioni rapide",
+      "saveDealButton": "Salva offerta",
+      "shareDealButton": "Condividi offerta",
+      "productInfoTitle": "Info prodotto",
+      "categoryLabel": "Categoria",
+      "ratingLabel": "Valutazione",
+      "shareThisDealTitle": "Condividi questa offerta",
+      "shareThisDealDescription": "Hai trovato un'ottima offerta? Condividila con i tuoi amici!",
+      "browseMoreDeals": "Vedi altre offerte"
+    }
   },
-  "blog": {
-    "title": "Blog",
-    "latestPosts": "Ultimi articoli",
-    "readArticle": "Leggi l'articolo",
-    "relatedPosts": "Articoli correlati",
-    "comments": "Commenti",
-    "share": "Condividi",
-    "tags": "Tag",
-    "author": "Autore",
-    "publishedOn": "Pubblicato il",
-    "minute": "minuto",
-    "minutes": "minuti",
-    "readTime": "tempo di lettura",
-    "noPostsFound": "Nessun articolo trovato"
+  "saved": {
+    "title": "Elementi salvati",
+    "subtitle": "Tieni traccia dei tuoi lavori e offerte preferiti in un unico posto.",
+    "tabs": {
+      "jobsWithCount": "Lavori salvati ({count})",
+      "dealsWithCount": "Offerte salvate ({count})"
+    },
+    "jobs": {
+      "savedOn": "Salvato il {date}",
+      "viewJob": "Vedi lavoro",
+      "emptyTitle": "Nessun lavoro salvato",
+      "emptyDescription": "Inizia a salvare i lavori che ti interessano per ritrovarli qui."
+    },
+    "deals": {
+      "discountBadge": "{percent}% DI SCONTO",
+      "savedOn": "Salvata il {date}",
+      "goToStore": "Vai al negozio",
+      "emptyTitle": "Nessuna offerta salvata",
+      "emptyDescription": "Inizia a salvare le offerte che ti interessano per ritrovarle qui."
+    }
   },
   "footer": {
     "aboutUs": "Chi siamo",
@@ -187,21 +422,186 @@
     "newsletter": "Newsletter",
     "subscribeNewsletter": "Iscriviti alla newsletter",
     "enterEmail": "Inserisci email",
-    "subscribe": "Iscriviti",
-    "allRightsReserved": "Tutti i diritti riservati",
-    "madeWith": "Realizzato con",
-    "in": "in"
+    "subscribe": "Iscriviti"
   },
-  "pricing": {
-    "title": "Prezzi",
-    "jobPostingPrice": "€5,00 per 30 giorni",
-    "selectPlan": "Seleziona piano",
-    "basic": "Base",
-    "premium": "Premium",
-    "enterprise": "Enterprise",
-    "perMonth": "al mese",
-    "billedAnnually": "Fatturato annualmente",
-    "popular": "Popolare"
+  "about": {
+    "stats": {
+      "activeUsers": "Utenti attivi",
+      "jobsPosted": "Lavori pubblicati",
+      "dealsFound": "Offerte trovate",
+      "countries": "Paesi"
+    },
+    "hero": {
+      "title": "Collegare talenti con opportunità",
+      "description": "WIRsuchen è più di una semplice bacheca di lavoro. Stiamo costruendo il futuro del lavoro collegando individui talentuosi a opportunità incredibili aiutando tutti a risparmiare denaro sulle cose che amano.",
+      "exploreJobs": "Esplora lavori",
+      "browseDeals": "Sfoglia offerte"
+    },
+    "mission": {
+      "title": "La nostra missione",
+      "description": "Crediamo che trovare il lavoro giusto e ottenere le migliori offerte non dovrebbe essere complicato. La nostra piattaforma combina la potenza dell'IA con l'intuizione umana per creare connessioni significative tra talento e opportunità, aiutando la nostra comunità a risparmiare denaro sugli acquisti quotidiani.",
+      "forJobSeekers": {
+        "title": "Per chi cerca lavoro",
+        "description": "Capitaamo che la ricerca di lavoro può essere travolgente. Ecco perché abbiamo costruito algoritmi di corrispondenza intelligenti e forniamo raccomandazioni personalizzate per aiutarti a trovare ruoli che si adattano davvero alle tue capacità e aspirazioni.",
+        "aiMatching": "Corrispondenza lavori potenziata da IA",
+        "careerInsights": "Informazioni sulla carriera personalizzate",
+        "resumeTools": "Strumenti di ottimizzazione del CV"
+      },
+      "forEmployers": {
+        "title": "Per i datori di lavoro",
+        "description": "Trovare i talenti giusti è cruciale per il successo aziendale. La nostra piattaforma ti aiuta a raggiungere candidati qualificati in modo efficiente fornendo strumenti per gestire il processo di assunzione dall'inizio alla fine.",
+        "candidateFiltering": "Filtraggio avanzato dei candidati",
+        "hiringAnalytics": "Dashboard analitiche assunzioni",
+        "applicationManagement": "Gestione semplificata delle candidature"
+      }
+    },
+    "team": {
+      "title": "Incontra il nostro team",
+      "description": "Siamo un team diversificato di persone appassionate impegnate a rivoluzionare il modo in cui le persone trovano lavoro e scoprono grandi offerte."
+    },
+    "cta": {
+      "title": "Pronto a iniziare?",
+      "description": "Unisciti a migliaia di professionisti che hanno trovato i loro lavori dei sogni e offerte incredibili attraverso WIRsuchen.",
+      "joinToday": "Unisciti a WIRsuchen oggi"
+    }
+  },
+  "blog": {
+    "invalidEmail": "Email non valida",
+    "enterValidEmail": "Si prega di inserire un indirizzo email valido",
+    "subscribed": "Iscritto!",
+    "subscribeSuccess": "Grazie per esserti iscritto alla nostra newsletter",
+    "subscribeError": "Impossibile iscriversi. Riprova.",
+    "subscribeErrorLater": "Impossibile iscriversi. Riprova più tardi.",
+    "backToHome": "Torna alla home",
+    "title": "Blog WIRsuchen",
+    "description": "Rimani aggiornato con le ultime informazioni su carriere, reclutamento, tendenze del mercato e offerte esclusive.",
+    "searchPlaceholder": "Cerca articoli...",
+    "allCategories": "Tutte le categorie",
+    "sort": {
+      "newestFirst": "Più recenti prima",
+      "oldestFirst": "Più vecchi prima",
+      "mostPopular": "Più popolari"
+    },
+    "featured": "In evidenza",
+    "readMore": "Leggi di più",
+    "loadMoreArticles": "Carica altri articoli",
+    "stayUpdated": "Rimani aggiornato",
+    "newsletterDescription": "Iscriviti alla nostra newsletter e ricevi le ultime informazioni su carriere, tendenze del mercato del lavoro e offerte esclusive direttamente nella tua casella di posta.",
+    "enterEmailPlaceholder": "Inserisci il tuo indirizzo email",
+    "subscribing": "Iscrizione...",
+    "subscribe": "Iscriviti",
+    "admin": {
+      "title": "Gestione blog",
+      "description": "Gestisci tutti gli articoli del blog - visualizza, modifica ed elimina",
+      "createNew": "Crea nuovo articolo",
+      "searchPlaceholder": "Cerca articoli per titolo, slug o estratto...",
+      "filter": {
+        "all": "Tutti",
+        "published": "Pubblicato",
+        "draft": "Bozza"
+      },
+      "allPosts": "Tutti gli articoli del blog ({count})",
+      "manageContent": "Gestisci e modifica i tuoi contenuti del blog",
+      "noPostsFound": "Nessun articolo del blog trovato",
+      "createFirst": "Crea il tuo primo articolo",
+      "unknown": "Sconosciuto",
+      "table": {
+        "title": "Titolo",
+        "status": "Stato",
+        "category": "Categoria",
+        "author": "Autore",
+        "views": "Visualizzazioni",
+        "published": "Pubblicato",
+        "actions": "Azioni"
+      },
+      "deleteConfirm": {
+        "title": "Sei sicuro?",
+        "description": "Questa azione non può essere annullata. Questo eliminerà permanentemente l'articolo del blog."
+      },
+      "loadError": "Impossibile caricare gli articoli del blog",
+      "deleteError": "Impossibile eliminare l'articolo",
+      "deleteSuccess": "L'articolo del blog è stato eliminato con successo",
+      "deleteFailed": "Eliminazione non riuscita",
+      "updateError": "Aggiornamento non riuscito",
+      "statusUpdateError": "Impossibile aggiornare lo stato",
+      "statusUpdated": "Stato aggiornato",
+      "statusChanged": "Lo stato dell'articolo è stato cambiato in {status}",
+      "updateFailed": "Aggiornamento non riuscito",
+      "deleted": "Eliminato",
+      "deleting": "Eliminazione...",
+      "create": {
+        "title": "Crea articolo del blog",
+        "description": "Usa l'IA per generare contenuti o scrivi manualmente",
+        "hideAI": "Nascondi IA",
+        "showAIGenerator": "Mostra generatore IA",
+        "content": "Contenuto del blog",
+        "writeOrEdit": "Scrivi o modifica il tuo articolo del blog",
+        "language": "(Lingua: {lang})",
+        "titlePlaceholder": "es: Top 10 consigli per colloqui per il 2025",
+        "category": "Categoria",
+        "categories": {
+          "jobTips": "Consigli di lavoro",
+          "recruiting": "Reclutamento",
+          "marketInsights": "Analisi di mercato",
+          "careerAdvice": "Consigli di carriera",
+          "deals": "Offerte e risparmi"
+        },
+        "author": "Autore",
+        "authorPlaceholder": "Nome autore",
+        "excerpt": "Estratto / Sommario",
+        "excerptPlaceholder": "Breve sommario dell'articolo...",
+        "featuredImage": "Immagine in evidenza",
+        "featured": "In evidenza",
+        "uploading": "Caricamento...",
+        "changeImage": "Cambia immagine",
+        "uploadImage": "Carica immagine in evidenza",
+        "imageInfo": "PNG, JPG fino a ~5MB",
+        "articleContent": "Contenuto articolo",
+        "contentPlaceholder": "Scrivi qui il contenuto del tuo articolo...",
+        "wordCount": "{words} parole, {characters} caratteri",
+        "tags": "Tag (separati da virgole)",
+        "tagsPlaceholder": "ricerca lavoro, consigli carriera, lavoro remoto",
+        "seoMetadata": "Metadati SEO",
+        "metaDescription": "Meta description",
+        "seoKeywords": "Parole chiave SEO",
+        "saveDraft": "Salva bozza",
+        "publish": "Pubblica"
+      },
+      "ai": {
+        "generated": "✨ Contenuto generato!",
+        "description": "L'IA ha creato il tuo articolo del blog"
+      },
+      "image": {
+        "invalid": "File non valido",
+        "selectImage": "Seleziona un file immagine",
+        "uploaded": "Immagine caricata",
+        "set": "L'immagine in evidenza è impostata.",
+        "uploadFailed": "Caricamento non riuscito",
+        "uploadError": "Impossibile caricare l'immagine"
+      },
+      "translate": {
+        "translatedTo": "Tradotto in {lang}",
+        "translated": "Il contenuto è stato tradotto"
+      },
+      "saveError": "Salvataggio non riuscito",
+      "draftSaved": "Bozza salvata",
+      "published": "Pubblicato!",
+      "postStatus": "Articolo {status} con slug: {slug}",
+      "saveFailed": "Salvataggio non riuscito",
+      "unableToSave": "Impossibile salvare l'articolo",
+      "edit": {
+        "title": "Modifica articolo del blog",
+        "description": "Aggiorna il contenuto e le impostazioni del tuo articolo del blog",
+        "backToBlogs": "Torna ai blog",
+        "editArticle": "Modifica il tuo articolo del blog",
+        "status": "Stato",
+        "archived": "Archiviato",
+        "draftUpdated": "Bozza aggiornata",
+        "postUpdated": "Articolo aggiornato con slug: {slug}",
+        "saving": "Salvataggio...",
+        "publishing": "Pubblicazione..."
+      }
+    }
   },
   "forms": {
     "required": "Richiesto",
@@ -271,6 +671,425 @@
     "readyToStart": "Pronto per iniziare?",
     "readyToStartDesc": "Unisciti a migliaia di professionisti che si fidano di WIRsuchen per la loro crescita di carriera e i loro risparmi.",
     "findJobs": "Trova lavori",
-    "browseDeals": "Sfoglia le offerte"
+    "browseDeals": "Sfoglia le offerte",
+    "blogPost1Title": "I 10 migliori consigli per i colloqui nel 2024",
+    "blogPost1Excerpt": "Supera il tuo prossimo colloquio con queste strategie collaudate...",
+    "blogPost1Category": "Consigli di carriera",
+    "blogPost1ReadTime": "Lettura di 5 min",
+    "blogPost2Title": "Tendenze del lavoro da remoto in Germania",
+    "blogPost2Excerpt": "Come il mercato del lavoro si sta adattando alle opportunità di lavoro da remoto...",
+    "blogPost2Category": "Analisi di mercato",
+    "blogPost2ReadTime": "Lettura di 8 min",
+    "blogPost3Title": "Le migliori offerte tech di questo mese",
+    "blogPost3Excerpt": "Non perdere queste incredibili offerte e sconti tecnologici...",
+    "blogPost3Category": "Offerte",
+    "blogPost3ReadTime": "Lettura di 3 min"
+  },
+  "profile": {
+    "manageAccountInfo": "Gestisci le informazioni del tuo account e le preferenze",
+    "profilePicture": "Foto del profilo",
+    "updateProfilePhoto": "Aggiorna la tua foto del profilo",
+    "avatar": "Avatar",
+    "uploadFailed": "Caricamento fallito",
+    "avatarUploadError": "Impossibile caricare l'avatar.",
+    "avatarUpdated": "Avatar aggiornato",
+    "avatarUpdatedDesc": "La tua foto del profilo è stata aggiornata.",
+    "uploadNewPhoto": "Carica una nuova foto",
+    "basicInfo": "Informazioni di base",
+    "updatePersonalDetails": "Aggiorna i tuoi dati personali",
+    "fullName": "Nome completo",
+    "emailAddress": "Indirizzo email",
+    "phoneNumber": "Numero di telefono",
+    "company": "Azienda",
+    "linkedin": "LinkedIn",
+    "location": "Località",
+    "bio": "Bio",
+    "saveProfile": "Salva profilo",
+    "socialLinks": "Link social",
+    "addSocialProfiles": "Aggiungi i tuoi profili di social media professionali",
+    "website": "Sito web",
+    "websitePlaceholder": "https://tuosito.it",
+    "linkedinPlaceholder": "https://linkedin.com/in/nomeutente",
+    "github": "GitHub",
+    "githubPlaceholder": "https://github.com/nomeutente",
+    "accountSettings": "Impostazioni account",
+    "manageAccountPreferences": "Gestisci le preferenze del tuo account e le notifiche",
+    "language": "Lingua",
+    "english": "English",
+    "deutsch": "Deutsch",
+    "francais": "Français",
+    "italiano": "Italiano",
+    "timezone": "Fuso orario",
+    "notificationPreferences": "Preferenze di notifica",
+    "emailNotifications": "Notifiche email",
+    "emailNotificationsDesc": "Ricevi aggiornamenti importanti dell'account",
+    "marketingEmails": "Email di marketing",
+    "marketingEmailsDesc": "Ricevi contenuti promozionali e offerte",
+    "jobAlerts": "Avvisi di lavoro",
+    "jobAlertsDesc": "Ricevi notifiche su nuove opportunità di lavoro",
+    "dealAlerts": "Avvisi di offerte",
+    "dealAlertsDesc": "Ricevi notifiche su sconti e nuove offerte",
+    "saving": "Salvataggio...",
+    "saveSettings": "Salva impostazioni",
+    "subscription": "Abbonamento",
+    "manageSubscription": "Gestisci il tuo piano di abbonamento",
+    "currentPlan": "Piano attuale",
+    "paypalSubId": "ID abbonamento PayPal (opzionale)",
+    "paypalSubIdPlaceholder": "I-XXXX...",
+    "unsubscribing": "Disiscrizione...",
+    "unsubscribe": "Disiscriviti",
+    "unsubscribeFromPlan": "Disiscriviti dal piano",
+    "unsubscribeConfirm": "Sei sicuro di volerti disiscrivere e passare al piano gratuito? Questa azione non può essere annullata.",
+    "saveSuccess": "Profilo aggiornato",
+    "saveSuccessDesc": "Le informazioni del tuo profilo sono state salvate correttamente.",
+    "updateFailed": "Impossibile aggiornare il profilo. Riprova.",
+    "settingsSaved": "Impostazioni salvate",
+    "settingsSavedDesc": "Le impostazioni del tuo account sono state salvate correttamente.",
+    "settingsSaveFailed": "Impossibile salvare le impostazioni. Riprova.",
+    "unsubscribeFailed": "Disiscrizione fallita",
+    "unsubscribed": "Disiscritto",
+    "unsubscribedDesc": "Il tuo piano è stato cambiato a Gratuito.",
+    "unsubscribeError": "Impossibile disiscriversi"
+  },
+  "invoices": {
+    "subtitle": "Crea e gestisci le tue fatture",
+    "createInvoiceButton": "Crea fattura",
+    "adminOnlyNotice": "La creazione delle fatture è disponibile solo per gli amministratori",
+    "stats": {
+      "totalInvoices": "Totale fatture",
+      "totalRevenue": "Entrate totali",
+      "pending": "In sospeso",
+      "overdue": "In ritardo"
+    },
+    "status": {
+      "paid": "Pagata",
+      "pending": "In sospeso",
+      "sent": "Inviata",
+      "overdue": "In ritardo",
+      "draft": "Bozza"
+    },
+    "form": {
+      "clientNameLabel": "Nome cliente *",
+      "clientNamePlaceholder": "Nome azienda",
+      "clientEmailLabel": "Email cliente",
+      "clientEmailPlaceholder": "cliente@azienda.com",
+      "clientAddressLabel": "Indirizzo cliente",
+      "clientAddressPlaceholder": "Via, città, CAP, paese",
+      "descriptionLabel": "Descrizione *",
+      "descriptionPlaceholder": "Descrivi i servizi o i prodotti...",
+      "amountLabel": "Importo (€) *",
+      "amountPlaceholder": "1000",
+      "vatRateLabel": "Aliquota IVA (%)",
+      "vatRateOption0": "0% (Nessuna IVA)",
+      "vatRateOption7": "7% (Aliquota ridotta)",
+      "vatRateOption19": "19% (Aliquota standard)",
+      "includeWatermark": "Includi filigrana WIRsuchen",
+      "createAndDownload": "Crea e scarica"
+    },
+    "table": {
+      "title": "Storico fatture",
+      "description": "Visualizza e gestisci tutte le tue fatture",
+      "headers": {
+        "invoiceId": "ID fattura",
+        "client": "Cliente",
+        "amount": "Importo",
+        "vat": "IVA",
+        "status": "Stato",
+        "created": "Creata il",
+        "dueDate": "Data di scadenza",
+        "actions": "Azioni"
+      },
+      "empty": "Ancora nessuna fattura."
+    },
+    "preview": {
+      "title": "Anteprima fattura - {id}",
+      "description": "Visualizza l'anteprima della fattura prima di scaricarla",
+      "brandSubtitle": "Servizi professionali",
+      "badge": "FATTURA",
+      "from": "Da:",
+      "to": "A:",
+      "invoiceDate": "Data fattura:",
+      "dueDate": "Data di scadenza:",
+      "status": "Stato:",
+      "lineItems": {
+        "description": "Descrizione",
+        "amount": "Importo",
+        "invoiceTotal": "Totale fattura"
+      },
+      "summary": {
+        "subtotal": "Subtotale:",
+        "vat": "IVA ({rate}%):",
+        "total": "Totale:"
+      },
+      "footer": "Generato dal sistema di fatturazione WIRsuchen",
+      "downloadPdf": "Scarica PDF"
+    }
+  },
+  "support": {
+    "hero": {
+      "title": "Come posso aiutare?",
+      "description": "Sono un imprenditore individuale – parlerai sempre direttamente con me. Nessun bot. Nessun problema di ticket.",
+      "emailButton": "Inviami email",
+      "formButton": "Vai al modulo di contatto"
+    },
+    "contact": {
+      "title": "Contattami",
+      "email": {
+        "title": "Email",
+        "description": "Ideale per domande dettagliate",
+        "availability": "Risposte entro 24–48h",
+        "action": "Inviami email"
+      },
+      "whatsapp": {
+        "title": "WhatsApp",
+        "description": "Domande rapide e aggiornamenti",
+        "availability": "Giorni feriali 9–18",
+        "action": "Messaggio su WhatsApp"
+      },
+      "call": {
+        "title": "Prenota una chiamata di 15 min",
+        "description": "Perfetto per chiarire l'ambito",
+        "availability": "Su appuntamento",
+        "action": "Apri calendario"
+      }
+    },
+    "faqs": {
+      "title": "Domande frequenti",
+      "q1": "Quanto velocemente rispondi?",
+      "a1": "Di solito rispondo entro 24 ore nei giorni feriali (massimo 48 ore durante i periodi intensi).",
+      "q2": "Lavori nei fine settimana?",
+      "a2": "Monitoro per problemi urgenti, ma le risposte dettagliate potrebbero attendere fino a lunedì.",
+      "q3": "Qual è il modo migliore per contattarti?",
+      "a3": "Email per richieste dettagliate; WhatsApp per aggiornamenti rapidi. Usa il modulo sottostante se preferisci.",
+      "q4": "Possiamo programmare una chiamata?",
+      "a4": "Sì – usa il link del calendario sopra per scegliere un orario che funziona per te.",
+      "q5": "Offri supporto continuativo?",
+      "a5": "Sì, offro contratti di servizio flessibili e supporto su richiesta per lavoro continuativo.",
+      "q6": "Dove sei basato?",
+      "a6": "Sono basato qui nella tua città e lavoro con clienti in tutto il mondo attraverso i fusi orari."
+    },
+    "form": {
+      "title": "Preferisci scriverlo?",
+      "description": "Inviami un messaggio e ti risponderò entro 24–48 ore.",
+      "cardTitle": "Modulo di contatto",
+      "cardDescription": "Condividi tutti i dettagli che desideri – screenshot e link mi aiutano a lavorare più velocemente.",
+      "name": "Nome",
+      "namePlaceholder": "Il tuo nome",
+      "email": "Email",
+      "emailPlaceholder": "tu@esempio.com",
+      "message": "Messaggio",
+      "messagePlaceholder": "Come posso aiutare?",
+      "sendButton": "Invia messaggio"
+    },
+    "availability": {
+      "title": "Disponibilità",
+      "description": "Cerco di rispondere entro 24–48 ore nei giorni feriali. Durante i lanci, potrebbe richiedere un po' più tempo.",
+      "status": "Attualmente accetto nuovi clienti"
+    }
+  },
+  "pricing": {
+    "title": "Prezzi",
+    "hero": {
+      "title": "Prezzi semplici e trasparenti",
+      "description": "Scegli il piano perfetto per le tue esigenze. Aggiorna o retrocedi in qualsiasi momento."
+    },
+    "mostPopular": "Più popolare",
+    "plans": {
+      "basic": {
+        "name": "Basic",
+        "price": "Gratuito",
+        "description": "Per esplorare lavori e offerte",
+        "features": {
+          "browse": "Sfoglia lavori e offerte",
+          "save": "Salva fino a 10 elementi",
+          "alerts": "Avvisi di lavoro di base",
+          "support": "Supporto standard",
+          "ai": "Strumenti IA: Non inclusi"
+        },
+        "cta": "Inizia"
+      },
+      "professional": {
+        "name": "Professional",
+        "period": "/mese",
+        "description": "Per cercatori attivi che vogliono strumenti IA",
+        "features": {
+          "everything": "Tutto in Basic",
+          "jobGenerator": "Generatore di descrizioni lavoro IA",
+          "seoGenerator": "Generatore snippet/meta SEO IA",
+          "blogGenerator": "Generatore blog/contenuti IA",
+          "filters": "Filtri lavoro avanzati & interruttore solo remoto",
+          "priorityAlerts": "Avvisi di lavoro prioritari",
+          "unlimited": "Elementi salvati illimitati",
+          "prioritySupport": "Supporto email prioritario"
+        },
+        "cta": "Aggiorna a Pro"
+      },
+      "business": {
+        "name": "Business",
+        "period": "/mese",
+        "description": "Per reclutatori e piccoli team",
+        "features": {
+          "everything": "Tutto in Professional",
+          "posting": "Accesso pubblicazione lavori (richiede approvazione)",
+          "profile": "Profilo aziendale e logo",
+          "sla": "Supporto prioritario (SLA)"
+        },
+        "cta": "Parla con noi"
+      }
+    },
+    "faqs": {
+      "title": "Domande frequenti",
+      "q1": {
+        "question": "Posso cambiare piano in qualsiasi momento?",
+        "answer": "Sì, puoi aggiornare o retrocedere il tuo piano in qualsiasi momento. Le modifiche hanno effetto immediato."
+      },
+      "q2": {
+        "question": "C'è una prova gratuita?",
+        "answer": "Sì, tutti i piani a pagamento includono una prova gratuita di 14 giorni. Nessuna carta di credito richiesta."
+      },
+      "q3": {
+        "question": "Quali metodi di pagamento accettate?",
+        "answer": "Accettiamo tutte le principali carte di credito, PayPal e bonifici bancari per piani annuali."
+      },
+      "q4": {
+        "question": "Offrite rimborsi?",
+        "answer": "Sì, offriamo una garanzia di rimborso di 30 giorni per tutti i piani a pagamento."
+      }
+    }
+  },
+  "admin": {
+    "dashboard": {
+      "title": "Pannello di Amministrazione",
+      "description": "Gestisci il tuo portale di lavoro WIRsuchen",
+      "refresh": "Aggiorna"
+    },
+    "tabs": {
+      "overview": "Panoramica",
+      "database": "Database",
+      "users": "Utenti",
+      "permissions": "Autorizzazioni",
+      "jobImport": "Importazione Lavori",
+      "affiliates": "Affiliati",
+      "analytics": "Analitica",
+      "blog": "Blog",
+      "billing": "Fatturazione",
+      "apiTesting": "Test API"
+    },
+    "quickActions": {
+      "title": "Azioni Rapide",
+      "description": "Scorciatoie admin comuni",
+      "openAPITesting": "Apri Test API",
+      "openBilling": "Apri Fatturazione",
+      "refreshStats": "Aggiorna Statistiche"
+    },
+    "metrics": {
+      "totalJobs": "Totale Lavori",
+      "activeJobs": "lavori attivi",
+      "companies": "Aziende",
+      "registeredEmployers": "Datori di lavoro registrati",
+      "users": "Utenti",
+      "totalRegisteredUsers": "Totale utenti registrati",
+      "revenue": "Entrate",
+      "total": "totale"
+    },
+    "imports": {
+      "totalImports": "Totale Importazioni",
+      "successful": "riuscite",
+      "successRate": "tasso di successo",
+      "jobViews": "Visualizzazioni Lavori",
+      "totalJobPageViews": "Totale visualizzazioni pagine lavoro",
+      "applications": "Candidature",
+      "totalJobApplications": "Totale candidature lavoro",
+      "conversionRate": "Tasso di conversione",
+      "viewsToApplications": "Visualizzazioni a candidature"
+    },
+    "charts": {
+      "monthlyJobPostings": "Pubblicazioni Lavori Mensili",
+      "jobPostingsAndRevenue": "Pubblicazioni lavori e entrate nel tempo",
+      "jobs": "Lavori",
+      "revenue": "Entrate",
+      "jobCategories": "Categorie Lavori",
+      "distributionByCategory": "Distribuzione delle pubblicazioni lavoro per categoria"
+    },
+    "activity": {
+      "title": "Attività Recente",
+      "description": "Ultime attività di sistema e importazioni",
+      "jobImport": "Importazione Lavoro",
+      "payment": "Pagamento",
+      "affiliateImport": "Importazione Affiliato",
+      "userRegistration": "Registrazione Utente",
+      "website": "Sito web",
+      "items": "elementi",
+      "timeAgo": "{minutes, plural, =1 {# minuto fa} other {# minuti fa}} {hours, plural, =1 {# ora fa} other {# ore fa}}"
+    },
+    "blog": {
+      "posts": {
+        "title": "Articoli del Blog",
+        "description": "Ultimi articoli creati con stato",
+        "loading": "Caricamento articoli...",
+        "noPosts": "Nessun articolo ancora",
+        "publish": "Pubblica",
+        "unpublish": "Annulla pubblicazione"
+      },
+      "authors": {
+        "title": "Autori del Blog",
+        "description": "Utenti autorizzati a creare articoli del blog",
+        "roles": "Ruoli: supervisor, admin, moderator, blogger, editor",
+        "createNewPost": "Crea Nuovo Articolo",
+        "loading": "Caricamento autori...",
+        "noAuthors": "Nessun autore trovato",
+        "unnamed": "Senza nome"
+      }
+    },
+    "database": {
+      "loading": "Caricamento statistiche database...",
+      "totalJobs": "Totale Lavori",
+      "fromAllAPISources": "Da tutte le fonti API",
+      "totalDeals": "Totale Offerte",
+      "affiliateProducts": "Prodotti affiliati",
+      "apiSources": "Fonti API",
+      "activeIntegrations": "Integrazioni attive",
+      "jobSourcesBreakdown": "Scomposizione Fonti Lavori",
+      "realTimeData": "Dati in tempo reale da tutte le fonti API",
+      "jobs": "lavori",
+      "dealSourcesBreakdown": "Scomposizione Fonti Offerte",
+      "affiliateProductsAllSources": "Prodotti affiliati da tutte le fonti",
+      "deals": "offerte",
+      "jobSourcesDistribution": "Distribuzione Fonti Lavori",
+      "visualBreakdownJobSources": "Scomposizione visuale delle fonti lavoro",
+      "dealSourcesDistribution": "Distribuzione Fonti Offerte",
+      "visualBreakdownDealSources": "Scomposizione visuale delle fonti offerte",
+      "noDealSources": "Nessuna fonte offerte disponibile",
+      "noDataAvailable": "Nessun dato disponibile"
+    },
+    "analytics": {
+      "importSources": "Fonti Importazione",
+      "distributionJobSources": "Distribuzione delle fonti lavoro",
+      "monthlyImports": "Importazioni Mensili",
+      "importActivityTime": "Attività importazione nel tempo",
+      "apiPerformance": "Performance API",
+      "healthy": "Saluto",
+      "warning": "Avvertimento",
+      "importSuccessRate": "Tasso di Successo Importazione",
+      "of": "di",
+      "importsSuccessful": "importazioni riuscite",
+      "dataQuality": "Qualità Dati",
+      "completeProfiles": "Profili Completi",
+      "validEmails": "Email Valide",
+      "salaryInfo": "Info Stipendio",
+      "companyDetails": "Dettagli Azienda"
+    },
+    "billing": {
+      "title": "Fatturazione & Fatture",
+      "description": "Crea e gestisci fatture (UI in arrivo)",
+      "notWired": "L'interfaccia di creazione fatture non è ancora collegata in questo progetto. Se vuoi, posso aggiungere una pagina fatture e route API per creare e elencare fatture.",
+      "createInvoice": "Crea Fattura (in arrivo)"
+    },
+    "testing": {
+      "title": "Playground Test API",
+      "description": "Esegui test live contro i tuoi endpoint API",
+      "openDescription": "Apri la pagina test API integrata per provare endpoint come lavori, categorie, importazioni e pagamenti.",
+      "openAPITesting": "Apri Test API"
+    }
   }
 }

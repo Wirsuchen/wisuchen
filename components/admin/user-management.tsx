@@ -32,6 +32,7 @@ import { useToast } from '@/hooks/use-toast'
 import { Search, UserCog, Shield, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 import { format } from 'date-fns'
+import { useTranslation } from '@/contexts/i18n-context'
 
 interface User {
   id: string
@@ -44,20 +45,8 @@ interface User {
   plan?: string
 }
 
-const ROLES = [
-  { value: 'supervisor', label: 'Supervisor', color: 'bg-red-500' },
-  { value: 'admin', label: 'Admin', color: 'bg-orange-500' },
-  { value: 'moderator', label: 'Moderator', color: 'bg-yellow-500' },
-  { value: 'lister', label: 'Lister', color: 'bg-blue-500' },
-  { value: 'publisher', label: 'Publisher', color: 'bg-indigo-500' },
-  { value: 'blogger', label: 'Blogger', color: 'bg-purple-500' },
-  { value: 'editor', label: 'Editor', color: 'bg-pink-500' },
-  { value: 'analyst', label: 'Analyst', color: 'bg-cyan-500' },
-  { value: 'employer', label: 'Employer', color: 'bg-green-500' },
-  { value: 'job_seeker', label: 'Job Seeker', color: 'bg-gray-500' },
-]
-
 export function UserManagement() {
+  const { t } = useTranslation()
   const [users, setUsers] = useState<User[]>([])
   const [filteredUsers, setFilteredUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
@@ -72,6 +61,19 @@ export function UserManagement() {
   const { toast } = useToast()
   const PLANS = ['free','pro','premium']
 
+  const ROLES = [
+    { value: 'supervisor', label: t('admin.userManagement.roles.supervisor'), color: 'bg-red-500' },
+    { value: 'admin', label: t('admin.userManagement.roles.admin'), color: 'bg-orange-500' },
+    { value: 'moderator', label: t('admin.userManagement.roles.moderator'), color: 'bg-yellow-500' },
+    { value: 'lister', label: t('admin.userManagement.roles.lister'), color: 'bg-blue-500' },
+    { value: 'publisher', label: t('admin.userManagement.roles.publisher'), color: 'bg-indigo-500' },
+    { value: 'blogger', label: t('admin.userManagement.roles.blogger'), color: 'bg-purple-500' },
+    { value: 'editor', label: t('admin.userManagement.roles.editor'), color: 'bg-pink-500' },
+    { value: 'analyst', label: t('admin.userManagement.roles.analyst'), color: 'bg-cyan-500' },
+    { value: 'employer', label: t('admin.userManagement.roles.employer'), color: 'bg-green-500' },
+    { value: 'job_seeker', label: t('admin.userManagement.roles.jobSeeker'), color: 'bg-gray-500' },
+  ]
+
   useEffect(() => {
     fetchUsers()
   }, [])
@@ -84,19 +86,20 @@ export function UserManagement() {
     setLoading(true)
     try {
       const res = await fetch('/api/admin/users')
-      if (!res.ok) throw new Error('Failed to fetch users')
+      if (!res.ok) throw new Error(t('admin.userManagement.errors.fetchUsers'))
       const data = await res.json()
       setUsers(data.users || [])
     } catch (error) {
       console.error('Error fetching users:', error)
       toast({
-        title: 'Error',
-        description: 'Failed to load users',
+        title: t('admin.userManagement.errors.error'),
+        description: t('admin.userManagement.errors.loadUsers'),
         variant: 'destructive',
       })
     } finally {
       setLoading(false)
     }
+  }
 
   const updateSubscription = async (profileId: string, next: boolean) => {
     setUpdating(true)
@@ -106,11 +109,11 @@ export function UserManagement() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ profile_id: profileId, is_subscribed: next })
       })
-      if (!res.ok) throw new Error('Failed to update subscription')
-      toast({ title: next ? 'Subscribed' : 'Unsubscribed' })
+      if (!res.ok) throw new Error(t('admin.userManagement.errors.updateSubscription'))
+      toast({ title: next ? t('admin.userManagement.subscription.subscribed') : t('admin.userManagement.subscription.unsubscribed') })
       fetchUsers()
     } catch (e) {
-      toast({ title: 'Error', description: 'Could not update subscription', variant: 'destructive' })
+      toast({ title: t('admin.userManagement.errors.error'), description: t('admin.userManagement.errors.couldNotUpdateSubscription'), variant: 'destructive' })
     } finally {
       setUpdating(false)
     }
@@ -124,15 +127,14 @@ export function UserManagement() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ profile_id: profileId, plan })
       })
-      if (!res.ok) throw new Error('Failed to update plan')
-      toast({ title: 'Plan Updated', description: plan })
+      if (!res.ok) throw new Error(t('admin.userManagement.errors.updatePlan'))
+      toast({ title: t('admin.userManagement.plan.updated'), description: plan })
       fetchUsers()
     } catch (e) {
-      toast({ title: 'Error', description: 'Could not update plan', variant: 'destructive' })
+      toast({ title: t('admin.userManagement.errors.error'), description: t('admin.userManagement.errors.couldNotUpdatePlan'), variant: 'destructive' })
     } finally {
       setUpdating(false)
     }
-  }
   }
 
   const filterUsers = () => {
@@ -170,11 +172,11 @@ export function UserManagement() {
         }),
       })
 
-      if (!res.ok) throw new Error('Failed to update role')
+      if (!res.ok) throw new Error(t('admin.userManagement.errors.updateRole'))
 
       toast({
-        title: '✅ Role Updated',
-        description: `${selectedUser.email} is now ${newRole}`,
+        title: t('admin.userManagement.role.updated'),
+        description: t('admin.userManagement.role.updateDescription', { email: selectedUser.email, role: newRole }),
       })
 
       setIsDialogOpen(false)
@@ -182,8 +184,8 @@ export function UserManagement() {
     } catch (error) {
       console.error('Error updating role:', error)
       toast({
-        title: 'Error',
-        description: 'Failed to update user role',
+        title: t('admin.userManagement.errors.error'),
+        description: t('admin.userManagement.errors.updateRole'),
         variant: 'destructive',
       })
     } finally {
@@ -226,7 +228,7 @@ export function UserManagement() {
       <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('admin.userManagement.stats.totalUsers')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{users.length}</div>
@@ -251,13 +253,13 @@ export function UserManagement() {
             <div>
               <CardTitle className="flex items-center gap-2">
                 <UserCog className="h-5 w-5" />
-                User Management
+                {t('admin.userManagement.title')}
               </CardTitle>
-              <CardDescription>Manage user roles and permissions</CardDescription>
+              <CardDescription>{t('admin.userManagement.description')}</CardDescription>
             </div>
             <Button onClick={fetchUsers} variant="outline" disabled={loading}>
               <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-              Refresh
+              {t('admin.userManagement.refresh')}
             </Button>
           </div>
         </CardHeader>
@@ -267,7 +269,7 @@ export function UserManagement() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search by email or name..."
+                placeholder={t('admin.userManagement.searchPlaceholder')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -275,10 +277,10 @@ export function UserManagement() {
             </div>
             <Select value={roleFilter} onValueChange={setRoleFilter}>
               <SelectTrigger className="w-full sm:w-[200px]">
-                <SelectValue placeholder="Filter by role" />
+                <SelectValue placeholder={t('admin.userManagement.filterByRole')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Roles</SelectItem>
+                <SelectItem value="all">{t('admin.userManagement.allRoles')}</SelectItem>
                 {ROLES.map((role) => (
                   <SelectItem key={role.value} value={role.value}>
                     {role.label}
@@ -295,7 +297,7 @@ export function UserManagement() {
             </div>
           ) : filteredUsers.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
-              No users found matching your criteria
+              {t('admin.userManagement.noUsers')}
             </div>
           ) : (
             <>
@@ -303,20 +305,20 @@ export function UserManagement() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>User</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Role</TableHead>
-                      <TableHead>Subscription</TableHead>
-                      <TableHead>Plan</TableHead>
-                      <TableHead>Joined</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      <TableHead>{t('admin.userManagement.table.user')}</TableHead>
+                      <TableHead>{t('admin.userManagement.table.email')}</TableHead>
+                      <TableHead>{t('admin.userManagement.table.role')}</TableHead>
+                      <TableHead>{t('admin.userManagement.table.subscription')}</TableHead>
+                      <TableHead>{t('admin.userManagement.table.plan')}</TableHead>
+                      <TableHead>{t('admin.userManagement.table.joined')}</TableHead>
+                      <TableHead className="text-right">{t('admin.userManagement.table.actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {paginatedUsers.map((user) => (
                       <TableRow key={user.id}>
                         <TableCell className="font-medium">
-                          {user.full_name || 'No name'}
+                          {user.full_name || t('admin.userManagement.table.noName')}
                         </TableCell>
                         <TableCell>{user.email}</TableCell>
                         <TableCell>{getRoleBadge(user.role)}</TableCell>
@@ -349,7 +351,7 @@ export function UserManagement() {
                             onClick={() => openRoleDialog(user)}
                           >
                             <Shield className="h-4 w-4 mr-2" />
-                            Change Role
+                            {t('admin.userManagement.table.changeRole')}
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -362,8 +364,11 @@ export function UserManagement() {
               {totalPages > 1 && (
                 <div className="flex items-center justify-between mt-4">
                   <div className="text-sm text-muted-foreground">
-                    Showing {startIndex + 1} to {Math.min(endIndex, filteredUsers.length)} of{' '}
-                    {filteredUsers.length} users
+                    {t('admin.userManagement.pagination.showing', { 
+                      start: startIndex + 1, 
+                      end: Math.min(endIndex, filteredUsers.length), 
+                      total: filteredUsers.length 
+                    })}
                   </div>
                   <div className="flex gap-2">
                     <Button
@@ -407,13 +412,13 @@ export function UserManagement() {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Change User Role</DialogTitle>
+            <DialogTitle>{t('admin.userManagement.dialog.changeRole')}</DialogTitle>
             <DialogDescription>
-              Update the role for {selectedUser?.email}
+              {t('admin.userManagement.dialog.updateRoleFor', { email: selectedUser?.email })}
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
-            <label className="text-sm font-medium mb-2 block">Select New Role</label>
+            <label className="text-sm font-medium mb-2 block">{t('admin.userManagement.dialog.selectNewRole')}</label>
             <Select value={newRole} onValueChange={setNewRole}>
               <SelectTrigger>
                 <SelectValue />
@@ -430,15 +435,15 @@ export function UserManagement() {
               </SelectContent>
             </Select>
             <p className="text-sm text-muted-foreground mt-2">
-              Current role: <strong>{selectedUser?.role}</strong>
+              {t('admin.userManagement.dialog.currentRole')}: <strong>{selectedUser?.role}</strong>
             </p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-              Cancel
+              {t('admin.userManagement.dialog.cancel')}
             </Button>
             <Button onClick={handleRoleChange} disabled={updating || newRole === selectedUser?.role}>
-              {updating ? 'Updating...' : 'Update Role'}
+              {updating ? t('admin.userManagement.dialog.updating') : t('admin.userManagement.dialog.updateRole')}
             </Button>
           </DialogFooter>
         </DialogContent>

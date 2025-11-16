@@ -15,11 +15,13 @@ import { Save, Eye, Loader2, ArrowLeft } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
+import { useTranslation } from '@/contexts/i18n-context'
 
 export default function EditBlogPage() {
   const params = useParams()
   const router = useRouter()
   const { toast } = useToast()
+  const { t } = useTranslation()
   const postId = params.id as string
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -48,8 +50,8 @@ export default function EditBlogPage() {
       setLoading(true)
       const res = await fetch(`/api/admin/blog/posts/${postId}`)
       if (!res.ok) {
-        const error = await res.json().catch(() => ({ error: 'Failed to load' }))
-        throw new Error(error.error || 'Failed to load post')
+        const error = await res.json().catch(() => ({ error: t('blog.admin.loadError') }))
+        throw new Error(error.error || t('blog.admin.loadError'))
       }
       const data = await res.json()
       const post = data.post
@@ -77,8 +79,8 @@ export default function EditBlogPage() {
       setFeaturedImageUrl(post.featured_image_url || '')
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to load blog post',
+        title: t('common.error'),
+        description: error.message || t('blog.admin.loadError'),
         variant: 'destructive',
       })
       router.push('/dashboard/blog')
@@ -93,7 +95,7 @@ export default function EditBlogPage() {
     const file = e.target.files?.[0]
     if (!file) return
     if (!file.type.startsWith('image/')) {
-      toast({ title: 'Invalid file', description: 'Please select an image file', variant: 'destructive' })
+      toast({ title: t('blog.admin.image.invalid'), description: t('blog.admin.image.selectImage'), variant: 'destructive' })
       return
     }
     setUploadingImage(true)
@@ -136,9 +138,9 @@ export default function EditBlogPage() {
       })
 
       setFeaturedImageUrl(publicUrl)
-      toast({ title: 'Image uploaded', description: 'Featured image is set.' })
+      toast({ title: t('blog.admin.image.uploaded'), description: t('blog.admin.image.set') })
     } catch (err: any) {
-      toast({ title: 'Upload failed', description: err?.message || 'Could not upload image', variant: 'destructive' })
+      toast({ title: t('blog.admin.image.uploadFailed'), description: err?.message || t('blog.admin.image.uploadError'), variant: 'destructive' })
     } finally {
       setUploadingImage(false)
       if (fileInputRef.current) fileInputRef.current.value = ''
@@ -149,8 +151,8 @@ export default function EditBlogPage() {
     setFormData((prev) => ({ ...prev, content: translation }))
     setLanguage(targetLang)
     toast({
-      title: `Translated to ${targetLang.toUpperCase()}`,
-      description: 'Content has been translated',
+      title: t('blog.admin.translate.translatedTo', { lang: targetLang.toUpperCase() }),
+      description: t('blog.admin.translate.translated'),
     })
   }
 
@@ -191,19 +193,19 @@ export default function EditBlogPage() {
         }),
       })
       if (!res.ok) {
-        const { error } = await res.json().catch(() => ({ error: 'Failed to save' }))
-        throw new Error(error || 'Failed to save')
+        const { error } = await res.json().catch(() => ({ error: t('blog.admin.saveError') }))
+        throw new Error(error || t('blog.admin.saveError'))
       }
       const data = await res.json()
       toast({
-        title: finalStatus === 'draft' ? 'Draft Updated' : 'Published!',
-        description: `Post updated with slug: ${data.post.slug}`,
+        title: finalStatus === 'draft' ? t('blog.admin.edit.draftUpdated') : t('blog.admin.published'),
+        description: t('blog.admin.edit.postUpdated', { slug: data.post.slug }),
       })
       setTimeout(() => {
         router.push('/dashboard/blog')
       }, 1200)
     } catch (e: any) {
-      toast({ title: 'Save failed', description: e?.message || 'Unable to save post', variant: 'destructive' })
+      toast({ title: t('blog.admin.saveFailed'), description: e?.message || t('blog.admin.unableToSave'), variant: 'destructive' })
     } finally {
       setSaving(false)
     }
@@ -225,63 +227,63 @@ export default function EditBlogPage() {
             <Button variant="ghost" size="sm" asChild>
               <Link href="/dashboard/blog">
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Blogs
+                {t('blog.admin.edit.backToBlogs')}
               </Link>
             </Button>
           </div>
-          <h1 className="text-3xl font-bold">Edit Blog Article</h1>
-          <p className="text-muted-foreground">Update your blog post content and settings</p>
+          <h1 className="text-3xl font-bold">{t('blog.admin.edit.title')}</h1>
+          <p className="text-muted-foreground">{t('blog.admin.edit.description')}</p>
         </div>
       </div>
 
       {/* Manual Editor */}
       <Card>
         <CardHeader>
-          <CardTitle>Blog Content</CardTitle>
+          <CardTitle>{t('blog.admin.create.content')}</CardTitle>
           <CardDescription>
-            Edit your blog article {formData.content && `(Language: ${language.toUpperCase()})`}
+            {t('blog.admin.edit.editArticle')} {formData.content && t('blog.admin.create.language', { lang: language.toUpperCase() })}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Title */}
           <div className="space-y-2">
-            <Label htmlFor="title">Title *</Label>
+            <Label htmlFor="title">{t('blog.admin.create.title')} *</Label>
             <Input
               id="title"
               value={formData.title}
               onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
-              placeholder="e.g., Top 10 Interview Tips for 2025"
+              placeholder={t('blog.admin.create.titlePlaceholder')}
             />
           </div>
 
           {/* Category */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
+              <Label htmlFor="category">{t('blog.admin.create.category')}</Label>
               <Select value={formData.category} onValueChange={(value) => setFormData((prev) => ({ ...prev, category: value }))}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="job-tips">Job Tips</SelectItem>
-                  <SelectItem value="recruiting">Recruiting</SelectItem>
-                  <SelectItem value="market-insights">Market Insights</SelectItem>
-                  <SelectItem value="career-advice">Career Advice</SelectItem>
-                  <SelectItem value="deals">Deals & Savings</SelectItem>
+                  <SelectItem value="job-tips">{t('blog.admin.create.categories.jobTips')}</SelectItem>
+                  <SelectItem value="recruiting">{t('blog.admin.create.categories.recruiting')}</SelectItem>
+                  <SelectItem value="market-insights">{t('blog.admin.create.categories.marketInsights')}</SelectItem>
+                  <SelectItem value="career-advice">{t('blog.admin.create.categories.careerAdvice')}</SelectItem>
+                  <SelectItem value="deals">{t('blog.admin.create.categories.deals')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
+              <Label htmlFor="status">{t('blog.admin.edit.status')}</Label>
               <Select value={formData.status} onValueChange={(value: any) => setFormData((prev) => ({ ...prev, status: value }))}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="published">Published</SelectItem>
-                  <SelectItem value="archived">Archived</SelectItem>
+                  <SelectItem value="draft">{t('blog.admin.filter.draft')}</SelectItem>
+                  <SelectItem value="published">{t('blog.admin.filter.published')}</SelectItem>
+                  <SelectItem value="archived">{t('blog.admin.edit.archived')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -289,27 +291,27 @@ export default function EditBlogPage() {
 
           {/* Excerpt */}
           <div className="space-y-2">
-            <Label htmlFor="excerpt">Excerpt / Summary</Label>
+            <Label htmlFor="excerpt">{t('blog.admin.create.excerpt')}</Label>
             <Textarea
               id="excerpt"
               value={formData.excerpt}
               onChange={(e) => setFormData((prev) => ({ ...prev, excerpt: e.target.value }))}
-              placeholder="Brief summary of the article..."
+              placeholder={t('blog.admin.create.excerptPlaceholder')}
               rows={3}
             />
           </div>
 
           {/* Featured Image */}
           <div className="space-y-2">
-            <Label>Featured Image</Label>
+            <Label>{t('blog.admin.create.featuredImage')}</Label>
             {featuredImageUrl ? (
               <div className="space-y-2">
                 <div className="w-full h-48 border rounded-md overflow-hidden bg-muted">
-                  <img src={featuredImageUrl} alt="Featured" className="w-full h-full object-cover" />
+                  <img src={featuredImageUrl} alt={t('blog.admin.create.featured')} className="w-full h-full object-cover" />
                 </div>
                 <div className="flex gap-2">
                   <Button variant="outline" type="button" onClick={onPickImage} disabled={uploadingImage}>
-                    {uploadingImage ? 'Uploading...' : 'Change Image'}
+                    {uploadingImage ? t('blog.admin.create.uploading') : t('blog.admin.create.changeImage')}
                   </Button>
                   <Button
                     variant="ghost"
@@ -317,16 +319,16 @@ export default function EditBlogPage() {
                     onClick={() => setFeaturedImageUrl('')}
                     disabled={uploadingImage}
                   >
-                    Remove
+                    {t('common.remove')}
                   </Button>
                 </div>
               </div>
             ) : (
               <div className="flex items-center gap-3">
                 <Button variant="outline" type="button" onClick={onPickImage} disabled={uploadingImage}>
-                  {uploadingImage ? 'Uploading...' : 'Upload Featured Image'}
+                  {uploadingImage ? t('blog.admin.create.uploading') : t('blog.admin.create.uploadImage')}
                 </Button>
-                <p className="text-sm text-muted-foreground">PNG, JPG up to ~5MB</p>
+                <p className="text-sm text-muted-foreground">{t('blog.admin.create.imageInfo')}</p>
               </div>
             )}
             <input
@@ -341,7 +343,7 @@ export default function EditBlogPage() {
           {/* Content with Translation */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="content">Article Content *</Label>
+              <Label htmlFor="content">{t('blog.admin.create.articleContent')} *</Label>
               {formData.content && (
                 <TranslateButton
                   content={formData.content}
@@ -354,23 +356,26 @@ export default function EditBlogPage() {
             <RichTextEditor
               value={formData.content}
               onChange={(html) => setFormData((prev) => ({ ...prev, content: html }))}
-              placeholder="Write your article content here..."
+              placeholder={t('blog.admin.create.contentPlaceholder')}
             />
             {formData.content && (
               <p className="text-sm text-muted-foreground">
-                {formData.content.replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(Boolean).length} words, {formData.content.replace(/<[^>]+>/g, '').length} characters
+                {t('blog.admin.create.wordCount', { 
+                  words: formData.content.replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(Boolean).length,
+                  characters: formData.content.replace(/<[^>]+>/g, '').length
+                })}
               </p>
             )}
           </div>
 
           {/* Tags */}
           <div className="space-y-2">
-            <Label htmlFor="tags">Tags (comma-separated)</Label>
+            <Label htmlFor="tags">{t('blog.admin.create.tags')}</Label>
             <Input
               id="tags"
               value={formData.tags}
               onChange={(e) => setFormData((prev) => ({ ...prev, tags: e.target.value }))}
-              placeholder="job search, career tips, remote work"
+              placeholder={t('blog.admin.create.tagsPlaceholder')}
             />
           </div>
         </CardContent>
@@ -388,11 +393,11 @@ export default function EditBlogPage() {
       {/* SEO Fields */}
       <Card>
         <CardHeader>
-          <CardTitle>SEO Metadata</CardTitle>
+          <CardTitle>{t('blog.admin.create.seoMetadata')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label>Meta Description</Label>
+            <Label>{t('blog.admin.create.metaDescription')}</Label>
             <Textarea
               value={formData.metaDescription}
               onChange={(e) => setFormData((prev) => ({ ...prev, metaDescription: e.target.value }))}
@@ -400,7 +405,7 @@ export default function EditBlogPage() {
             />
           </div>
           <div className="space-y-2">
-            <Label>SEO Keywords</Label>
+            <Label>{t('blog.admin.create.seoKeywords')}</Label>
             <Input
               value={formData.keywords.join(', ')}
               onChange={(e) => setFormData((prev) => ({ ...prev, keywords: e.target.value.split(',').map(k => k.trim()) }))}
@@ -417,12 +422,12 @@ export default function EditBlogPage() {
               {saving ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Saving...
+                  {t('blog.admin.edit.saving')}
                 </>
               ) : (
                 <>
                   <Save className="h-4 w-4 mr-2" />
-                  Save Draft
+                  {t('blog.admin.create.saveDraft')}
                 </>
               )}
             </Button>
@@ -430,12 +435,12 @@ export default function EditBlogPage() {
               {saving ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Publishing...
+                  {t('blog.admin.edit.publishing')}
                 </>
               ) : (
                 <>
                   <Eye className="h-4 w-4 mr-2" />
-                  Publish
+                  {t('blog.admin.create.publish')}
                 </>
               )}
             </Button>

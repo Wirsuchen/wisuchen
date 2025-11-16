@@ -6,9 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ArrowLeft, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "@/contexts/auth-context"
+import { useTranslation } from "@/contexts/i18n-context"
 
 export default function DashboardPage() {
   const { user, isLoading } = useAuth()
+  const { t } = useTranslation()
 
   // Show loading while checking auth state
   if (isLoading) {
@@ -25,14 +27,14 @@ export default function DashboardPage() {
       <div className="min-h-screen flex items-center justify-center px-4">
         <Card className="max-w-md w-full text-center">
           <CardHeader>
-            <CardTitle>Login Required</CardTitle>
+            <CardTitle>{t('dashboard.loginRequiredTitle')}</CardTitle>
             <CardDescription>
-              Please sign in to view your dashboard.
+              {t('dashboard.loginRequiredDescription')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Button asChild className="w-full">
-              <Link href="/login?redirect=/dashboard">Go to Login</Link>
+              <Link href="/login?redirect=/dashboard">{t('dashboard.goToLogin')}</Link>
             </Button>
           </CardContent>
         </Card>
@@ -47,7 +49,7 @@ export default function DashboardPage() {
         <Button variant="ghost" asChild className="p-0 h-auto font-normal text-muted-foreground hover:text-foreground">
           <Link href="/" className="inline-flex items-center">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Home
+            {t('common.backToHome')}
           </Link>
         </Button>
       </div>

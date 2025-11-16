@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/auth-context"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useTranslation } from '@/contexts/i18n-context'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
@@ -13,6 +14,7 @@ interface ProtectedRouteProps {
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { user, isLoading } = useAuth()
+  const { t } = useTranslation()
 
   if (isLoading) {
     return (
@@ -27,14 +29,14 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
       <div className="min-h-screen flex items-center justify-center px-4">
         <Card className="max-w-md w-full text-center">
           <CardHeader>
-            <CardTitle>Login Required</CardTitle>
+            <CardTitle>{t('auth.loginRequired')}</CardTitle>
             <CardDescription>
-              Please sign in to access this page.
+              {t('auth.signInToAccess')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Button asChild className="w-full">
-              <Link href="/login">Go to Login</Link>
+              <Link href="/login">{t('auth.goToLogin')}</Link>
             </Button>
           </CardContent>
         </Card>

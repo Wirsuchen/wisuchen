@@ -23,6 +23,7 @@ import {
   Filter
 } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
+import { useTranslation } from '@/contexts/i18n-context'
 
 interface ImportRun {
   id: string
@@ -42,6 +43,7 @@ interface ImportRun {
 }
 
 export function JobImportManager() {
+  const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('import')
   const [isImporting, setIsImporting] = useState(false)
   const [importRuns, setImportRuns] = useState<ImportRun[]>([])
@@ -64,19 +66,19 @@ export function JobImportManager() {
   })
 
   const jobSources = [
-    { value: 'adzuna', label: 'Adzuna (German Jobs)', description: 'Official German job board API' },
-    { value: 'rapidapi-employment-agency', label: 'Employment Agency API', description: 'Via RapidAPI' },
-    { value: 'rapidapi-glassdoor', label: 'Glassdoor API', description: 'Company reviews and jobs' },
-    { value: 'rapidapi-upwork', label: 'Upwork API', description: 'Freelance projects' },
-    { value: 'rapidapi-active-jobs', label: 'Active Jobs DB', description: 'Aggregated job database' },
-    { value: 'rapidapi-aggregate', label: 'Multi-Source Import', description: 'Import from multiple APIs' }
+    { value: 'adzuna', label: t('admin.jobImport.sources.adzuna'), description: t('admin.jobImport.sources.adzunaDescription') },
+    { value: 'rapidapi-employment-agency', label: t('admin.jobImport.sources.employmentAgency'), description: t('admin.jobImport.sources.viaRapidAPI') },
+    { value: 'rapidapi-glassdoor', label: t('admin.jobImport.sources.glassdoor'), description: t('admin.jobImport.sources.glassdoorDescription') },
+    { value: 'rapidapi-upwork', label: t('admin.jobImport.sources.upwork'), description: t('admin.jobImport.sources.freelanceProjects') },
+    { value: 'rapidapi-active-jobs', label: t('admin.jobImport.sources.activeJobsDB'), description: t('admin.jobImport.sources.aggregatedDatabase') },
+    { value: 'rapidapi-aggregate', label: t('admin.jobImport.sources.multiSource'), description: t('admin.jobImport.sources.multiSourceDescription') }
   ]
 
   const handleImport = async () => {
     if (!importForm.source) {
       toast({
-        title: 'Error',
-        description: 'Please select a job source',
+        title: t('admin.jobImport.errors.error'),
+        description: t('admin.jobImport.errors.selectSource'),
         variant: 'destructive'
       })
       return
@@ -110,20 +112,20 @@ export function JobImportManager() {
 
       if (response.ok) {
         toast({
-          title: 'Import Started',
-          description: `Importing jobs from ${importForm.source}...`
+          title: t('admin.jobImport.importStarted'),
+          description: t('admin.jobImport.importingFrom', { source: importForm.source })
         })
 
         // Start polling for status
         pollImportStatus(data.import_run_id)
       } else {
-        throw new Error(data.error || 'Import failed')
+        throw new Error(data.error || t('admin.jobImport.errors.importFailed'))
       }
     } catch (error) {
       console.error('Import error:', error)
       toast({
-        title: 'Import Failed',
-        description: error instanceof Error ? error.message : 'Unknown error',
+        title: t('admin.jobImport.errors.importFailed'),
+        description: error instanceof Error ? error.message : t('admin.jobImport.errors.unknownError'),
         variant: 'destructive'
       })
     } finally {
@@ -143,15 +145,19 @@ export function JobImportManager() {
           if (data.import_run.status === 'completed') {
             clearInterval(pollInterval)
             toast({
-              title: 'Import Completed',
-              description: `Created: ${data.import_run.created_records}, Updated: ${data.import_run.updated_records}, Failed: ${data.import_run.failed_records}`
+              title: t('admin.jobImport.importCompleted'),
+              description: t('admin.jobImport.importResults', { 
+                created: data.import_run.created_records, 
+                updated: data.import_run.updated_records, 
+                failed: data.import_run.failed_records 
+              })
             })
             fetchImportRuns()
           } else if (data.import_run.status === 'failed') {
             clearInterval(pollInterval)
             toast({
-              title: 'Import Failed',
-              description: data.import_run.error_log || 'Unknown error',
+              title: t('admin.jobImport.errors.importFailed'),
+              description: data.import_run.error_log || t('admin.jobImport.errors.unknownError'),
               variant: 'destructive'
             })
           }
@@ -209,19 +215,19 @@ export function JobImportManager() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Job Import Manager</h2>
-          <p className="text-muted-foreground">Import jobs from external APIs</p>
+          <h2 className="text-2xl font-bold">{t('admin.jobImport.title')}</h2>
+          <p className="text-muted-foreground">{t('admin.jobImport.description')}</p>
         </div>
         <Button onClick={fetchImportRuns} variant="outline">
           <RefreshCw className="w-4 h-4 mr-2" />
-          Refresh
+          {t('admin.jobImport.refresh')}
         </Button>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
-          <TabsTrigger value="import">Import Jobs</TabsTrigger>
-          <TabsTrigger value="history">Import History</TabsTrigger>
+          <TabsTrigger value="import">{t('admin.jobImport.importJobs')}</TabsTrigger>
+          <TabsTrigger value="history">{t('admin.jobImport.importHistory')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="import" className="space-y-6">
@@ -229,22 +235,22 @@ export function JobImportManager() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Download className="w-5 h-5" />
-                Import Configuration
+                {t('admin.jobImport.configuration.title')}
               </CardTitle>
               <CardDescription>
-                Configure and start a new job import from external APIs
+                {t('admin.jobImport.configuration.description')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="source">Job Source</Label>
+                  <Label htmlFor="source">{t('admin.jobImport.form.jobSource')}</Label>
                   <Select
                     value={importForm.source}
                     onValueChange={(value) => setImportForm(prev => ({ ...prev, source: value }))}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select job source" />
+                      <SelectValue placeholder={t('admin.jobImport.form.selectJobSource')} />
                     </SelectTrigger>
                     <SelectContent>
                       {jobSources.map(source => (
@@ -260,7 +266,7 @@ export function JobImportManager() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="limit">Import Limit</Label>
+                  <Label htmlFor="limit">{t('admin.jobImport.form.importLimit')}</Label>
                   <Input
                     id="limit"
                     type="number"
@@ -277,10 +283,10 @@ export function JobImportManager() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="query">Search Query</Label>
+                  <Label htmlFor="query">{t('admin.jobImport.form.searchQuery')}</Label>
                   <Input
                     id="query"
-                    placeholder="e.g., software developer, marketing"
+                    placeholder={t('admin.jobImport.form.searchQueryPlaceholder')}
                     value={importForm.params.query}
                     onChange={(e) => setImportForm(prev => ({
                       ...prev,
@@ -290,10 +296,10 @@ export function JobImportManager() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="location">Location</Label>
+                  <Label htmlFor="location">{t('admin.jobImport.form.location')}</Label>
                   <Input
                     id="location"
-                    placeholder="e.g., Berlin, Munich, Hamburg"
+                    placeholder={t('admin.jobImport.form.locationPlaceholder')}
                     value={importForm.params.location}
                     onChange={(e) => setImportForm(prev => ({
                       ...prev,
@@ -305,7 +311,7 @@ export function JobImportManager() {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="employment_type">Employment Type</Label>
+                  <Label htmlFor="employment_type">{t('admin.jobImport.form.employmentType')}</Label>
                   <Select
                     value={importForm.params.employment_type}
                     onValueChange={(value) => setImportForm(prev => ({
@@ -314,20 +320,20 @@ export function JobImportManager() {
                     }))}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Any type" />
+                      <SelectValue placeholder={t('admin.jobImport.form.anyType')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="any">Any type</SelectItem>
-                      <SelectItem value="full_time">Full Time</SelectItem>
-                      <SelectItem value="part_time">Part Time</SelectItem>
-                      <SelectItem value="contract">Contract</SelectItem>
-                      <SelectItem value="freelance">Freelance</SelectItem>
+                      <SelectItem value="any">{t('admin.jobImport.form.anyType')}</SelectItem>
+                      <SelectItem value="full_time">{t('admin.jobImport.form.fullTime')}</SelectItem>
+                      <SelectItem value="part_time">{t('admin.jobImport.form.partTime')}</SelectItem>
+                      <SelectItem value="contract">{t('admin.jobImport.form.contract')}</SelectItem>
+                      <SelectItem value="freelance">{t('admin.jobImport.form.freelance')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="salary_min">Min Salary (€)</Label>
+                  <Label htmlFor="salary_min">{t('admin.jobImport.form.minSalary')}</Label>
                   <Input
                     id="salary_min"
                     type="number"
@@ -341,7 +347,7 @@ export function JobImportManager() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="salary_max">Max Salary (€)</Label>
+                  <Label htmlFor="salary_max">{t('admin.jobImport.form.maxSalary')}</Label>
                   <Input
                     id="salary_max"
                     type="number"
@@ -363,12 +369,12 @@ export function JobImportManager() {
                 {isImporting ? (
                   <>
                     <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                    Importing...
+                    {t('admin.jobImport.importing')}
                   </>
                 ) : (
                   <>
                     <Play className="w-4 h-4 mr-2" />
-                    Start Import
+                    {t('admin.jobImport.startImport')}
                   </>
                 )}
               </Button>
@@ -380,13 +386,13 @@ export function JobImportManager() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   {getStatusIcon(currentImport.status)}
-                  Current Import Status
+                  {t('admin.jobImport.currentImport.title')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <span>Source: {currentImport.source?.name}</span>
+                    <span>{t('admin.jobImport.currentImport.source')}: {currentImport.source?.name}</span>
                     <Badge className={getStatusColor(currentImport.status)}>
                       {currentImport.status}
                     </Badge>
@@ -395,7 +401,7 @@ export function JobImportManager() {
                   {currentImport.status === 'running' && (
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
-                        <span>Progress</span>
+                        <span>{t('admin.jobImport.currentImport.progress')}</span>
                         <span>{currentImport.processed_records} / {currentImport.total_records || '?'}</span>
                       </div>
                       <Progress 
@@ -410,15 +416,15 @@ export function JobImportManager() {
                     <div className="grid grid-cols-3 gap-4 text-center">
                       <div>
                         <div className="text-2xl font-bold text-green-600">{currentImport.created_records}</div>
-                        <div className="text-sm text-muted-foreground">Created</div>
+                        <div className="text-sm text-muted-foreground">{t('admin.jobImport.currentImport.created')}</div>
                       </div>
                       <div>
                         <div className="text-2xl font-bold text-blue-600">{currentImport.updated_records}</div>
-                        <div className="text-sm text-muted-foreground">Updated</div>
+                        <div className="text-sm text-muted-foreground">{t('admin.jobImport.currentImport.updated')}</div>
                       </div>
                       <div>
                         <div className="text-2xl font-bold text-red-600">{currentImport.failed_records}</div>
-                        <div className="text-sm text-muted-foreground">Failed</div>
+                        <div className="text-sm text-muted-foreground">{t('admin.jobImport.currentImport.failed')}</div>
                       </div>
                     </div>
                   )}
@@ -439,16 +445,16 @@ export function JobImportManager() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Database className="w-5 h-5" />
-                Import History
+                {t('admin.jobImport.history.title')}
               </CardTitle>
               <CardDescription>
-                View previous job import runs and their results
+                {t('admin.jobImport.history.description')}
               </CardDescription>
             </CardHeader>
             <CardContent>
               {importRuns.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
-                  No import runs found. Start your first import above.
+                  {t('admin.jobImport.history.noRuns')}
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -457,7 +463,7 @@ export function JobImportManager() {
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
                           {getStatusIcon(run.status)}
-                          <span className="font-medium">{run.source?.name || 'Unknown Source'}</span>
+                          <span className="font-medium">{run.source?.name || t('admin.jobImport.history.unknownSource')}</span>
                           <Badge variant="outline">{run.source?.type}</Badge>
                         </div>
                         <Badge className={getStatusColor(run.status)}>
@@ -467,27 +473,27 @@ export function JobImportManager() {
 
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                         <div>
-                          <div className="text-muted-foreground">Total</div>
+                          <div className="text-muted-foreground">{t('admin.jobImport.history.total')}</div>
                           <div className="font-medium">{run.total_records}</div>
                         </div>
                         <div>
-                          <div className="text-muted-foreground">Created</div>
+                          <div className="text-muted-foreground">{t('admin.jobImport.history.created')}</div>
                           <div className="font-medium text-green-600">{run.created_records}</div>
                         </div>
                         <div>
-                          <div className="text-muted-foreground">Updated</div>
+                          <div className="text-muted-foreground">{t('admin.jobImport.history.updated')}</div>
                           <div className="font-medium text-blue-600">{run.updated_records}</div>
                         </div>
                         <div>
-                          <div className="text-muted-foreground">Failed</div>
+                          <div className="text-muted-foreground">{t('admin.jobImport.history.failed')}</div>
                           <div className="font-medium text-red-600">{run.failed_records}</div>
                         </div>
                       </div>
 
                       <div className="mt-2 text-xs text-muted-foreground">
-                        Started: {new Date(run.started_at).toLocaleString()}
+                        {t('admin.jobImport.history.started')}: {new Date(run.started_at).toLocaleString()}
                         {run.completed_at && (
-                          <> • Completed: {new Date(run.completed_at).toLocaleString()}</>
+                          <> • {t('admin.jobImport.history.completed')}: {new Date(run.completed_at).toLocaleString()}</>
                         )}
                       </div>
 

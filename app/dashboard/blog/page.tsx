@@ -37,6 +37,7 @@ import {
 import { useToast } from '@/hooks/use-toast'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useTranslation } from '@/contexts/i18n-context'
 
 interface BlogPost {
   id: string
@@ -56,6 +57,7 @@ interface BlogPost {
 export default function BlogManagementPage() {
   const router = useRouter()
   const { toast } = useToast()
+  const { t, tr } = useTranslation()
   const [posts, setPosts] = useState<BlogPost[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
@@ -78,8 +80,8 @@ export default function BlogManagementPage() {
       setPosts(data.posts || [])
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to load blog posts',
+        title: t('common.error'),
+        description: error.message || t('blog.admin.loadError'),
         variant: 'destructive',
       })
     } finally {
@@ -97,13 +99,13 @@ export default function BlogManagementPage() {
       })
       
       if (!res.ok) {
-        const error = await res.json().catch(() => ({ error: 'Failed to delete' }))
-        throw new Error(error.error || 'Failed to delete post')
+        const error = await res.json().catch(() => ({ error: t('blog.admin.deleteError') }))
+        throw new Error(error.error || t('blog.admin.deleteError'))
       }
       
       toast({
-        title: 'Deleted',
-        description: 'Blog post has been deleted successfully',
+        title: t('blog.admin.deleted'),
+        description: t('blog.admin.deleteSuccess'),
       })
       
       setDeleteDialogOpen(false)
@@ -111,8 +113,8 @@ export default function BlogManagementPage() {
       loadPosts()
     } catch (error: any) {
       toast({
-        title: 'Delete failed',
-        description: error.message || 'Failed to delete blog post',
+        title: t('blog.admin.deleteFailed'),
+        description: error.message || t('blog.admin.deleteError'),
         variant: 'destructive',
       })
     } finally {
@@ -129,20 +131,20 @@ export default function BlogManagementPage() {
       })
       
       if (!res.ok) {
-        const error = await res.json().catch(() => ({ error: 'Failed to update' }))
-        throw new Error(error.error || 'Failed to update status')
+        const error = await res.json().catch(() => ({ error: t('blog.admin.updateError') }))
+        throw new Error(error.error || t('blog.admin.statusUpdateError'))
       }
       
       toast({
-        title: 'Status updated',
-        description: `Post status changed to ${newStatus}`,
+        title: t('blog.admin.statusUpdated'),
+        description: t('blog.admin.statusChanged', { status: newStatus }),
       })
       
       loadPosts()
     } catch (error: any) {
       toast({
-        title: 'Update failed',
-        description: error.message || 'Failed to update post status',
+        title: t('blog.admin.updateFailed'),
+        description: error.message || t('blog.admin.statusUpdateError'),
         variant: 'destructive',
       })
     }
@@ -174,13 +176,13 @@ export default function BlogManagementPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Blog Management</h1>
-          <p className="text-muted-foreground">Manage all blog posts - view, edit, and delete</p>
+          <h1 className="text-3xl font-bold">{t('blog.admin.title')}</h1>
+          <p className="text-muted-foreground">{t('blog.admin.description')}</p>
         </div>
         <Button asChild>
           <Link href="/dashboard/blog/create">
             <Plus className="h-4 w-4 mr-2" />
-            Create New Post
+            {t('blog.admin.createNew')}
           </Link>
         </Button>
       </div>
@@ -193,7 +195,7 @@ export default function BlogManagementPage() {
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search posts by title, slug, or excerpt..."
+                  placeholder={t('blog.admin.searchPlaceholder')}
                   className="pl-10"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -206,21 +208,21 @@ export default function BlogManagementPage() {
                 onClick={() => setStatusFilter('all')}
                 size="sm"
               >
-                All
+                {t('blog.admin.filter.all')}
               </Button>
               <Button
                 variant={statusFilter === 'published' ? 'default' : 'outline'}
                 onClick={() => setStatusFilter('published')}
                 size="sm"
               >
-                Published
+                {t('blog.admin.filter.published')}
               </Button>
               <Button
                 variant={statusFilter === 'draft' ? 'default' : 'outline'}
                 onClick={() => setStatusFilter('draft')}
                 size="sm"
               >
-                Draft
+                {t('blog.admin.filter.draft')}
               </Button>
             </div>
           </div>
@@ -230,8 +232,8 @@ export default function BlogManagementPage() {
       {/* Posts Table */}
       <Card>
         <CardHeader>
-          <CardTitle>All Blog Posts ({filteredPosts.length})</CardTitle>
-          <CardDescription>Manage and edit your blog content</CardDescription>
+          <CardTitle>{tr('blog.admin.allPosts', { count: filteredPosts.length })}</CardTitle>
+          <CardDescription>{t('blog.admin.manageContent')}</CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -241,11 +243,11 @@ export default function BlogManagementPage() {
           ) : filteredPosts.length === 0 ? (
             <div className="text-center py-12">
               <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">No blog posts found</p>
+              <p className="text-muted-foreground">{t('blog.admin.noPostsFound')}</p>
               <Button asChild className="mt-4">
                 <Link href="/dashboard/blog/create">
                   <Plus className="h-4 w-4 mr-2" />
-                  Create Your First Post
+                  {t('blog.admin.createFirst')}
                 </Link>
               </Button>
             </div>
@@ -254,13 +256,13 @@ export default function BlogManagementPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Title</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Author</TableHead>
-                    <TableHead>Views</TableHead>
-                    <TableHead>Published</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead>{t('blog.admin.table.title')}</TableHead>
+                    <TableHead>{t('blog.admin.table.status')}</TableHead>
+                    <TableHead>{t('blog.admin.table.category')}</TableHead>
+                    <TableHead>{t('blog.admin.table.author')}</TableHead>
+                    <TableHead>{t('blog.admin.table.views')}</TableHead>
+                    <TableHead>{t('blog.admin.table.published')}</TableHead>
+                    <TableHead className="text-right">{t('blog.admin.table.actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -292,7 +294,7 @@ export default function BlogManagementPage() {
                         )}
                       </TableCell>
                       <TableCell>
-                        <span className="text-sm">{post.author?.full_name || 'Unknown'}</span>
+                        <span className="text-sm">{post.author?.full_name || t('blog.admin.unknown')}</span>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center text-sm">
@@ -353,13 +355,13 @@ export default function BlogManagementPage() {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogTitle>{t('blog.admin.deleteConfirm.title')}</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the blog post.
+              {t('blog.admin.deleteConfirm.description')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={deleting}>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               disabled={deleting}
@@ -368,10 +370,10 @@ export default function BlogManagementPage() {
               {deleting ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Deleting...
+                  {t('blog.admin.deleting')}
                 </>
               ) : (
-                'Delete'
+                t('common.delete')
               )}
             </AlertDialogAction>
           </AlertDialogFooter>

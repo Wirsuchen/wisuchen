@@ -30,6 +30,7 @@ import {
 import Link from "next/link"
 import { formatEuro, formatEuroText } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
+import { useTranslation } from "@/contexts/i18n-context"
 
 interface DealDetail {
   id: string
@@ -91,6 +92,7 @@ export default function DealDetailPage() {
   const [dealId, setDealId] = useState<string | null>(null)
   const routeParams = useParams<{ id: string }>()
   const { toast } = useToast()
+  const { t, tr } = useTranslation()
 
   useEffect(() => {
     if (!routeParams) return
@@ -144,12 +146,12 @@ export default function DealDetailPage() {
         if (foundDeal) {
           setDeal(foundDeal)
         } else {
-          setError('Deal not found')
+          setError(t('deals.detail.notFoundDescription'))
         }
       } catch (err: any) {
         if (cancelled) return
         console.error('Error fetching deal:', err)
-        setError(err?.message || 'Failed to load deal details')
+        setError(err?.message || t('notifications.somethingWentWrong'))
       } finally {
         if (!cancelled) {
           setLoading(false)
@@ -186,10 +188,10 @@ export default function DealDetailPage() {
         <main className="pt-28 md:pt-32 lg:pt-36 container mx-auto px-4 py-8">
           <div className="text-center py-12">
             <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h2 className="text-2xl font-bold mb-2">Deal Not Found</h2>
-            <p className="text-muted-foreground mb-6">{error || 'The deal you\'re looking for doesn\'t exist.'}</p>
+            <h2 className="text-2xl font-bold mb-2">{t('deals.detail.notFoundTitle')}</h2>
+            <p className="text-muted-foreground mb-6">{error || t('deals.detail.notFoundDescription')}</p>
             <Button asChild>
-              <Link href="/deals">Back to Deals</Link>
+              <Link href="/deals">{t('deals.detail.backToDeals')}</Link>
             </Button>
           </div>
         </main>
@@ -233,8 +235,8 @@ export default function DealDetailPage() {
           url: shareUrl,
         })
         toast({
-          title: 'Shared!',
-          description: 'Deal shared successfully',
+          title: t('deals.detail.shareSuccessTitle'),
+          description: t('deals.detail.shareSuccessDescription'),
         })
         return
       } catch (error: any) {
@@ -250,8 +252,8 @@ export default function DealDetailPage() {
       try {
         await navigator.clipboard.writeText(`${shareTitle}\n${shareText}\n${shareUrl}`)
         toast({
-          title: 'Link copied!',
-          description: 'Deal link has been copied to your clipboard',
+          title: t('deals.detail.linkCopiedTitle'),
+          description: t('deals.detail.linkCopiedDescription'),
         })
       } catch (error) {
         console.error('Error copying to clipboard:', error)
@@ -259,8 +261,8 @@ export default function DealDetailPage() {
         const fallbackText = `${shareTitle}\n${shareText}\n${shareUrl}`
         if (window.prompt('Copy this link:', fallbackText)) {
           toast({
-            title: 'Link ready',
-            description: 'Please copy the link manually',
+            title: t('deals.detail.linkReadyTitle'),
+            description: t('deals.detail.linkReadyDescription'),
           })
         }
       }
@@ -269,8 +271,8 @@ export default function DealDetailPage() {
       const fallbackText = `${shareTitle}\n${shareText}\n${shareUrl}`
       if (window.prompt('Copy this link:', fallbackText)) {
         toast({
-          title: 'Link ready',
-          description: 'Please copy the link manually',
+          title: t('deals.detail.linkReadyTitle'),
+          description: t('deals.detail.linkReadyDescription'),
         })
       }
     }
@@ -297,21 +299,21 @@ export default function DealDetailPage() {
       const data = await response.json()
       if (data.success) {
         toast({
-          title: 'Deal saved!',
-          description: 'This deal has been added to your saved deals',
+          title: t('deals.detail.savedTitle'),
+          description: t('deals.detail.savedDescription'),
         })
       } else {
         toast({
-          title: 'Error',
-          description: data.error || 'Failed to save deal',
+          title: t('deals.detail.saveErrorTitle'),
+          description: data.error || t('deals.detail.saveErrorDescription'),
           variant: 'destructive',
         })
       }
     } catch (error) {
       console.error('Error saving deal:', error)
       toast({
-        title: 'Error',
-        description: 'Failed to save deal. Please try again.',
+        title: t('notifications.error'),
+        description: t('deals.detail.saveErrorDescription'),
         variant: 'destructive',
       })
     }
@@ -327,7 +329,7 @@ export default function DealDetailPage() {
           <Button variant="ghost" asChild className="p-0 h-auto font-normal text-muted-foreground hover:text-foreground text-sm sm:text-base">
             <Link href="/deals" className="inline-flex items-center">
               <ArrowLeft className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-              Back to Deals
+              {t('deals.detail.backButton')}
             </Link>
           </Button>
         </div>
@@ -361,11 +363,11 @@ export default function DealDetailPage() {
                       <TabsList className="grid w-full grid-cols-2">
                         <TabsTrigger value="photos">
                           <ImageIcon className="h-4 w-4 mr-2" />
-                          Photos ({photos.length})
+                          {t('common.photos')} ({photos.length})
                         </TabsTrigger>
                         <TabsTrigger value="videos">
                           <Play className="h-4 w-4 mr-2" />
-                          Videos ({videos.length})
+                          {t('common.videos')} ({videos.length})
                         </TabsTrigger>
                       </TabsList>
                       <TabsContent value="photos" className="mt-4">
@@ -427,7 +429,7 @@ export default function DealDetailPage() {
                           <div className="flex items-center">
                             <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
                             <span className="font-medium">{deal.rating}</span>
-                            <span className="text-muted-foreground ml-1">({deal.reviews} reviews)</span>
+                            <span className="text-muted-foreground ml-1">{tr('deals.reviewsCount', { count: deal.reviews })}</span>
                           </div>
                         </div>
                       </div>
@@ -435,8 +437,8 @@ export default function DealDetailPage() {
                         <Button variant="default" size="sm" className="flex-1 sm:flex-none" asChild>
                           <Link href={sourceUrl} target="_blank">
                             <ExternalLink className="h-4 w-4 mr-1" />
-                            <span className="hidden sm:inline">Visit Source</span>
-                            <span className="sm:hidden">Visit</span>
+                            <span className="hidden sm:inline">{t('deals.detail.visitSource')}</span>
+                            <span className="sm:hidden">{t('deals.detail.visit')}</span>
                           </Link>
                         </Button>
                         <Button 
@@ -464,21 +466,21 @@ export default function DealDetailPage() {
                               const data = await response.json()
                               if (data.success) {
                                 toast({ 
-                                  title: 'Deal saved', 
-                                  description: 'This deal has been added to your saved items.' 
+                                  title: t('deals.detail.savedTitle'), 
+                                  description: t('deals.detail.savedDescription') 
                                 })
                               } else {
                                 toast({ 
-                                  title: 'Failed to save deal', 
-                                  description: data.error || 'Please try again.', 
+                                  title: t('deals.detail.saveErrorTitle'), 
+                                  description: data.error || t('deals.detail.saveErrorDescription'), 
                                   variant: 'destructive' 
                                 })
                               }
                             } catch (error) {
                               console.error('Error saving deal:', error)
                               toast({ 
-                                title: 'Error', 
-                                description: 'Failed to save deal. Please try again.', 
+                                title: t('notifications.error'), 
+                                description: t('deals.detail.saveErrorDescription'), 
                                 variant: 'destructive' 
                               })
                             }
@@ -505,7 +507,7 @@ export default function DealDetailPage() {
                         </div>
                         <div className="flex items-center mt-2 text-green-600">
                           <TrendingDown className="h-4 w-4 mr-1" />
-                          <span className="text-sm sm:text-base font-medium">You save {formatEuro(deal.originalPrice - deal.currentPrice)}</span>
+                          <span className="text-sm sm:text-base font-medium">{tr('deals.detail.youSave', { amount: formatEuro(deal.originalPrice - deal.currentPrice) })}</span>
                         </div>
                       </div>
 
@@ -516,7 +518,7 @@ export default function DealDetailPage() {
                       {/* Size & Color Variants */}
                       {sizeVariants.length > 0 && (
                         <div>
-                          <label className="text-sm font-medium mb-2 block">Select Size</label>
+                          <label className="text-sm font-medium mb-2 block">{t('deals.detail.selectSize')}</label>
                           <div className="flex flex-wrap gap-2">
                             {sizeVariants.slice(0, 8).map((size, idx) => (
                               <Button
@@ -534,7 +536,7 @@ export default function DealDetailPage() {
 
                       {colorVariants.length > 0 && (
                         <div>
-                          <label className="text-sm font-medium mb-2 block">Select Color</label>
+                          <label className="text-sm font-medium mb-2 block">{t('deals.detail.selectColor')}</label>
                           <div className="flex flex-wrap gap-2">
                             {colorVariants.slice(0, 8).map((color, idx) => (
                               <div
@@ -558,7 +560,7 @@ export default function DealDetailPage() {
                         <div className="bg-muted/50 p-3 sm:p-4 rounded-lg">
                           <h3 className="text-sm sm:text-base font-semibold mb-3 flex items-center">
                             <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
-                            {offer.offer_badge || 'Available at'}
+                            {offer.offer_badge || t('deals.detail.availableAt')}
                           </h3>
                           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                             <div className="flex items-center space-x-2">
@@ -573,14 +575,14 @@ export default function DealDetailPage() {
                                 <span className="font-medium block text-sm sm:text-base truncate">{offer.store_name}</span>
                                 <div className="flex items-center text-xs sm:text-sm text-muted-foreground">
                                   <Star className="h-3 w-3 fill-yellow-400 text-yellow-400 mr-1" />
-                                  {offer.store_rating} ({offer.store_review_count} reviews)
+                                  {offer.store_rating} {tr('deals.reviewsCount', { count: offer.store_review_count })}
                                 </div>
                               </div>
                             </div>
                             <Button asChild className="w-full sm:w-auto flex-shrink-0">
                               <Link href={offer.offer_page_url} target="_blank">
                                 <ExternalLink className="h-4 w-4 mr-2" />
-                                Buy Now
+                                {t('deals.detail.buyNow')}
                               </Link>
                             </Button>
                           </div>
@@ -595,7 +597,7 @@ export default function DealDetailPage() {
                 {/* Description */}
                 <div className="space-y-4 sm:space-y-6">
                   <div>
-                    <h2 className="text-lg sm:text-xl font-semibold mb-3">Product Description</h2>
+                    <h2 className="text-lg sm:text-xl font-semibold mb-3">{t('deals.detail.productDescription')}</h2>
                     <div className="prose prose-sm max-w-none">
                       <pre className="whitespace-pre-wrap font-sans text-sm sm:text-base leading-relaxed">{deal.description}</pre>
                     </div>
@@ -607,7 +609,7 @@ export default function DealDetailPage() {
                       
                       {/* Product Attributes */}
                       <div>
-                        <h2 className="text-lg sm:text-xl font-semibold mb-3">Product Attributes</h2>
+                        <h2 className="text-lg sm:text-xl font-semibold mb-3">{t('deals.detail.productAttributes')}</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3">
                           {Object.entries(attributes).slice(0, 20).map(([key, value]) => (
                             <div key={key} className="flex justify-between py-2 border-b">
@@ -629,23 +631,23 @@ export default function DealDetailPage() {
             {offer && (
               <Card className="mt-6">
                 <CardHeader>
-                  <CardTitle>Offer Details</CardTitle>
-                  <CardDescription>From {offer.store_name}</CardDescription>
+                  <CardTitle>{t('deals.detail.offerDetailsTitle')}</CardTitle>
+                  <CardDescription>{tr('deals.detail.offerDetailsFrom', { store: offer.store_name })}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between py-3 border-b">
-                      <span className="text-muted-foreground">Price</span>
+                      <span className="text-muted-foreground">{t('deals.detail.priceLabel')}</span>
                       <span className="font-bold text-lg">{formatPrice(offer.price)}</span>
                     </div>
                     {offer.original_price && (
                       <div className="flex items-center justify-between py-3 border-b">
-                        <span className="text-muted-foreground">Original Price</span>
+                        <span className="text-muted-foreground">{t('deals.detail.originalPriceLabel')}</span>
                         <span className="line-through">{formatPrice(offer.original_price)}</span>
                       </div>
                     )}
                     <div className="flex items-center justify-between py-3 border-b">
-                      <span className="text-muted-foreground">Shipping</span>
+                      <span className="text-muted-foreground">{t('deals.detail.shippingLabel')}</span>
                       <span className="flex items-center">
                         <Truck className="h-4 w-4 mr-2" />
                         {offer.shipping}
@@ -653,12 +655,12 @@ export default function DealDetailPage() {
                     </div>
                     {offer.returns && (
                       <div className="flex items-center justify-between py-3 border-b">
-                        <span className="text-muted-foreground">Returns</span>
+                        <span className="text-muted-foreground">{t('deals.detail.returnsLabel')}</span>
                         <span>{offer.returns}</span>
                       </div>
                     )}
                     <div className="flex items-center justify-between py-3 border-b">
-                      <span className="text-muted-foreground">Condition</span>
+                      <span className="text-muted-foreground">{t('deals.detail.conditionLabel')}</span>
                       <Badge>{offer.product_condition}</Badge>
                     </div>
                     {offer.payment_methods && (
@@ -677,14 +679,14 @@ export default function DealDetailPage() {
             {/* Quick Actions */}
             <Card>
               <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
+                <CardTitle>{t('deals.detail.quickActionsTitle')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {offer ? (
                   <Button className="w-full" size="lg" asChild>
                     <Link href={offer.offer_page_url} target="_blank">
                       <ShoppingBag className="h-4 w-4 mr-2" />
-                      Buy Now - {formatPrice(offer.price)}
+                      {t('deals.detail.buyNow')} - {formatPrice(offer.price)}
                     </Link>
                   </Button>
                 ) : (
@@ -692,7 +694,7 @@ export default function DealDetailPage() {
                     <Button className="w-full" size="lg" asChild>
                       <Link href={sourceUrl} target="_blank">
                         <ExternalLink className="h-4 w-4 mr-2" />
-                        Visit Source
+                        {t('deals.detail.visitSource')}
                       </Link>
                     </Button>
                   )
@@ -703,7 +705,7 @@ export default function DealDetailPage() {
                   onClick={handleSaveDeal}
                 >
                   <Heart className="h-4 w-4 mr-2" />
-                  Save Deal
+                  {t('deals.detail.saveDealButton')}
                 </Button>
                 <Button 
                   variant="outline" 
@@ -711,7 +713,7 @@ export default function DealDetailPage() {
                   onClick={handleShareDeal}
                 >
                   <Share2 className="h-4 w-4 mr-2" />
-                  Share Deal
+                  {t('deals.detail.shareDealButton')}
                 </Button>
               </CardContent>
             </Card>
@@ -719,19 +721,19 @@ export default function DealDetailPage() {
             {/* Product Info */}
             <Card>
               <CardHeader>
-                <CardTitle>Product Info</CardTitle>
+                <CardTitle>{t('deals.detail.productInfoTitle')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Category</span>
+                  <span className="text-muted-foreground">{t('deals.detail.categoryLabel')}</span>
                   <Badge variant="outline">{deal.category}</Badge>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Rating</span>
+                  <span className="text-muted-foreground">{t('deals.detail.ratingLabel')}</span>
                   <div className="flex items-center">
                     <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
                     <span className="font-medium">{deal.rating}</span>
-                    <span className="text-muted-foreground ml-1">({deal.reviews})</span>
+                    <span className="text-muted-foreground ml-1">{tr('deals.reviewsCount', { count: deal.reviews })}</span>
                   </div>
                 </div>
               </CardContent>
@@ -740,14 +742,14 @@ export default function DealDetailPage() {
             {/* Share Options */}
             <Card>
               <CardHeader>
-                <CardTitle>Share This Deal</CardTitle>
+                <CardTitle>{t('deals.detail.shareThisDealTitle')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Found a great deal? Share it with your friends!
+                  {t('deals.detail.shareThisDealDescription')}
                 </p>
                 <Button variant="outline" className="w-full bg-transparent" asChild>
-                  <Link href="/deals">Browse More Deals</Link>
+                  <Link href="/deals">{t('deals.detail.browseMoreDeals')}</Link>
                 </Button>
               </CardContent>
             </Card>

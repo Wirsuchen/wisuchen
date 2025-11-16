@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Loader2, Sparkles, Copy, Check } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
+import { useTranslation } from '@/contexts/i18n-context'
 
 interface JobDescriptionGeneratorProps {
   onGenerated?: (description: string) => void
@@ -21,6 +22,7 @@ interface JobDescriptionGeneratorProps {
 }
 
 export function JobDescriptionGenerator({ onGenerated, initialData }: JobDescriptionGeneratorProps) {
+  const { t } = useTranslation()
   const [jobTitle, setJobTitle] = useState(initialData?.jobTitle || '')
   const [company, setCompany] = useState(initialData?.company || '')
   const [location, setLocation] = useState(initialData?.location || '')
@@ -60,8 +62,8 @@ export function JobDescriptionGenerator({ onGenerated, initialData }: JobDescrip
   const handleGenerate = async () => {
     if (!jobTitle || !company) {
       toast({
-        title: 'Missing Information',
-        description: 'Please provide at least job title and company name',
+        title: t('jobDescriptionGenerator.errors.missingInfo.title'),
+        description: t('jobDescriptionGenerator.errors.missingInfo.description'),
         variant: 'destructive',
       })
       return
@@ -112,11 +114,18 @@ export function JobDescriptionGenerator({ onGenerated, initialData }: JobDescrip
       }
       if (fullText) {
         onGenerated?.(fullText)
-        toast({ title: '✨ Description Generated!', description: 'AI has created your job description' })
+        toast({ 
+          title: t('jobDescriptionGenerator.success.generated.title'), 
+          description: t('jobDescriptionGenerator.success.generated.description') 
+        })
       }
     } catch (error) {
       console.error('Error generating description:', error)
-      toast({ title: 'Error', description: 'Failed to connect to AI service', variant: 'destructive' })
+      toast({ 
+        title: t('jobDescriptionGenerator.errors.aiService.title'), 
+        description: t('jobDescriptionGenerator.errors.aiService.description'), 
+        variant: 'destructive' 
+      })
     } finally {
       setLoading(false)
     }
@@ -126,8 +135,8 @@ export function JobDescriptionGenerator({ onGenerated, initialData }: JobDescrip
     await navigator.clipboard.writeText(generatedDescription)
     setCopied(true)
     toast({
-      title: 'Copied!',
-      description: 'Job description copied to clipboard',
+      title: t('jobDescriptionGenerator.success.copied.title'),
+      description: t('jobDescriptionGenerator.success.copied.description'),
     })
     setTimeout(() => setCopied(false), 2000)
   }
@@ -138,84 +147,84 @@ export function JobDescriptionGenerator({ onGenerated, initialData }: JobDescrip
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-purple-500" />
-            AI Job Description Generator
+            {t('jobDescriptionGenerator.title')}
           </CardTitle>
           <CardDescription>
-            Generate professional job descriptions using AI or improve existing ones
+            {t('jobDescriptionGenerator.description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="jobTitle">Job Title *</Label>
+              <Label htmlFor="jobTitle">{t('jobDescriptionGenerator.form.jobTitle')} *</Label>
               <Input
                 id="jobTitle"
                 value={jobTitle}
                 onChange={(e) => setJobTitle(e.target.value)}
-                placeholder="e.g., Senior Full Stack Developer"
+                placeholder={t('jobDescriptionGenerator.form.jobTitlePlaceholder')}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="company">Company Name *</Label>
+              <Label htmlFor="company">{t('jobDescriptionGenerator.form.companyName')} *</Label>
               <Input
                 id="company"
                 value={company}
                 onChange={(e) => setCompany(e.target.value)}
-                placeholder="e.g., Tech Corp GmbH"
+                placeholder={t('jobDescriptionGenerator.form.companyNamePlaceholder')}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="location">Location</Label>
+              <Label htmlFor="location">{t('jobDescriptionGenerator.form.location')}</Label>
               <Input
                 id="location"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                placeholder="e.g., Berlin, Germany"
+                placeholder={t('jobDescriptionGenerator.form.locationPlaceholder')}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="employmentType">Employment Type</Label>
+              <Label htmlFor="employmentType">{t('jobDescriptionGenerator.form.employmentType')}</Label>
               <Input
                 id="employmentType"
                 value={employmentType}
                 onChange={(e) => setEmploymentType(e.target.value)}
-                placeholder="e.g., Full-time"
+                placeholder={t('jobDescriptionGenerator.form.employmentTypePlaceholder')}
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="requirements">Requirements (one per line)</Label>
+            <Label htmlFor="requirements">{t('jobDescriptionGenerator.form.requirements')}</Label>
             <Textarea
               id="requirements"
               value={requirements}
               onChange={(e) => setRequirements(e.target.value)}
-              placeholder="5+ years React experience&#10;TypeScript expertise&#10;Team leadership skills"
+              placeholder={t('jobDescriptionGenerator.form.requirementsPlaceholder')}
               rows={4}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="benefits">Benefits (one per line)</Label>
+            <Label htmlFor="benefits">{t('jobDescriptionGenerator.form.benefits')}</Label>
             <Textarea
               id="benefits"
               value={benefits}
               onChange={(e) => setBenefits(e.target.value)}
-              placeholder="Competitive salary&#10;Remote work options&#10;Health insurance"
+              placeholder={t('jobDescriptionGenerator.form.benefitsPlaceholder')}
               rows={4}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="existing">Existing Description (optional - to improve)</Label>
+            <Label htmlFor="existing">{t('jobDescriptionGenerator.form.existingDescription')}</Label>
             <Textarea
               id="existing"
               value={existingDescription}
               onChange={(e) => setExistingDescription(e.target.value)}
-              placeholder="Paste your current job description here if you want to improve it..."
+              placeholder={t('jobDescriptionGenerator.form.existingDescriptionPlaceholder')}
               rows={6}
             />
           </div>
@@ -224,12 +233,12 @@ export function JobDescriptionGenerator({ onGenerated, initialData }: JobDescrip
             {loading ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Generating with AI...
+                {t('jobDescriptionGenerator.form.generating')}
               </>
             ) : (
               <>
                 <Sparkles className="h-4 w-4 mr-2" />
-                Generate Description
+                {t('jobDescriptionGenerator.form.generate')}
               </>
             )}
           </Button>
@@ -240,17 +249,17 @@ export function JobDescriptionGenerator({ onGenerated, initialData }: JobDescrip
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle>Generated Description</CardTitle>
+              <CardTitle>{t('jobDescriptionGenerator.results.title')}</CardTitle>
               <Button variant="outline" size="sm" onClick={handleCopy}>
                 {copied ? (
                   <>
                     <Check className="h-4 w-4 mr-2" />
-                    Copied!
+                    {t('jobDescriptionGenerator.results.copied')}
                   </>
                 ) : (
                   <>
                     <Copy className="h-4 w-4 mr-2" />
-                    Copy
+                    {t('jobDescriptionGenerator.results.copy')}
                   </>
                 )}
               </Button>

@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Eye, Briefcase, FileText, Heart, Loader2 } from "lucide-react"
+import { useTranslation } from "@/contexts/i18n-context"
 
 export function Stats() {
+  const { t } = useTranslation()
   const [loading, setLoading] = useState(true)
   const [userStats, setUserStats] = useState<{ activeJobAds: number; savedDeals: number; totalInvoices: number; profileViews: number } | null>(null)
 
@@ -40,17 +42,17 @@ export function Stats() {
   }
 
   const stats = [
-    { title: 'Total Views', value: userStats?.profileViews ?? 0, icon: Eye, color: 'text-blue-600' },
-    { title: 'Active Ads', value: userStats?.activeJobAds ?? 0, icon: Briefcase, color: 'text-green-600' },
-    { title: 'Total Invoices', value: userStats?.totalInvoices ?? 0, icon: FileText, color: 'text-purple-600' },
-    { title: 'Saved Deals', value: userStats?.savedDeals ?? 0, icon: Heart, color: 'text-orange-600' },
+    { title: t("dashboard.totalViews"), value: userStats?.profileViews ?? 0, icon: Eye, color: 'text-blue-600' },
+    { title: t("dashboard.activeJobAds"), value: userStats?.activeJobAds ?? 0, icon: Briefcase, color: 'text-green-600' },
+    { title: t("dashboard.totalInvoices"), value: userStats?.totalInvoices ?? 0, icon: FileText, color: 'text-purple-600' },
+    { title: t("dashboard.mySavedDealsStatsSavedDeals"), value: userStats?.savedDeals ?? 0, icon: Heart, color: 'text-orange-600' },
   ]
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Analytics & Stats</h1>
-        <p className="text-muted-foreground">Real-time metrics from Supabase</p>
+        <h1 className="text-3xl font-bold">{t("dashboard.statsTitle")}</h1>
+        <p className="text-muted-foreground">{t("dashboard.statsDescription")}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -74,12 +76,12 @@ export function Stats() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Detailed Analytics</CardTitle>
-          <CardDescription>Charts will appear here once enough data is available</CardDescription>
+          <CardTitle>{t("dashboard.detailedAnalyticsTitle")}</CardTitle>
+          <CardDescription>{t("dashboard.detailedAnalyticsDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="text-center text-muted-foreground py-12">
-            No chart data available yet.
+            {t("dashboard.noChartData")}
           </div>
         </CardContent>
       </Card>

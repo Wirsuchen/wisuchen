@@ -15,6 +15,7 @@ import { filterDeals, sortDeals } from "@/lib/filters"
 import { formatEuro, formatEuroText } from "@/lib/utils"
 import { fetchWithCache } from "@/lib/utils/client-cache"
 import { toast } from "@/hooks/use-toast"
+import { useTranslation } from "@/contexts/i18n-context"
 
 export default function DealsPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -33,6 +34,7 @@ export default function DealsPage() {
     total: 0,
     pages: 1,
   })
+  const { t, tr } = useTranslation()
 
   const handleCategoryChange = (category: string, checked: boolean) => {
     if (checked) {
@@ -133,14 +135,14 @@ export default function DealsPage() {
       <>
         {/* Search Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-4">Best Deals & Price Comparison</h1>
+          <h1 className="text-3xl font-bold mb-4">{t('deals.title')}</h1>
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="search"
-                  placeholder="Search products, brands, or categories"
+                  placeholder={t('deals.searchPlaceholder')}
                   className="pl-10"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -149,7 +151,7 @@ export default function DealsPage() {
             </div>
             <Button size="lg" className="px-8">
               <Search className="h-4 w-4 mr-2" />
-              Search Deals
+              {t('deals.searchDeals')}
             </Button>
           </div>
         </div>
@@ -161,24 +163,24 @@ export default function DealsPage() {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Filter className="h-5 w-5 mr-2" />
-                  Filters
+                  {t('deals.filters')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Sort By */}
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Sort By</label>
+                  <label className="text-sm font-medium mb-2 block">{t('deals.sortBy')}</label>
                   <Select value={sortBy} onValueChange={setSortBy}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="best-deal">Best Deal</SelectItem>
-                      <SelectItem value="price-low">Price: Low to High</SelectItem>
-                      <SelectItem value="price-high">Price: High to Low</SelectItem>
-                      <SelectItem value="discount">Highest Discount</SelectItem>
-                      <SelectItem value="rating">Highest Rated</SelectItem>
-                      <SelectItem value="newest">Newest</SelectItem>
+                      <SelectItem value="best-deal">{t('deals.sort.bestDeal')}</SelectItem>
+                      <SelectItem value="price-low">{t('deals.sort.priceLow')}</SelectItem>
+                      <SelectItem value="price-high">{t('deals.sort.priceHigh')}</SelectItem>
+                      <SelectItem value="discount">{t('deals.sort.discount')}</SelectItem>
+                      <SelectItem value="rating">{t('deals.sort.rating')}</SelectItem>
+                      <SelectItem value="newest">{t('deals.sort.newest')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -187,7 +189,7 @@ export default function DealsPage() {
 
                 {/* Categories */}
                 <div>
-                  <label className="text-sm font-medium mb-3 block">Categories</label>
+                  <label className="text-sm font-medium mb-3 block">{t('deals.categories')}</label>
                   <div className="space-y-2">
                     {categories.map((category) => (
                       <div key={category} className="flex items-center space-x-2">
@@ -208,7 +210,7 @@ export default function DealsPage() {
 
                 {/* Brands */}
                 <div>
-                  <label className="text-sm font-medium mb-3 block">Brands</label>
+                  <label className="text-sm font-medium mb-3 block">{t('deals.brands')}</label>
                   <div className="space-y-2">
                     {brands.map((brand) => (
                       <div key={brand} className="flex items-center space-x-2">
@@ -229,10 +231,10 @@ export default function DealsPage() {
 
                 {/* Price Range */}
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Price Range</label>
+                  <label className="text-sm font-medium mb-2 block">{t('deals.priceRange')}</label>
                   <Select value={priceRange} onValueChange={setPriceRange}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select range" />
+                      <SelectValue placeholder={t('deals.selectRange')} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="0-100">{formatEuro(0)} - {formatEuro(100)}</SelectItem>
@@ -245,7 +247,7 @@ export default function DealsPage() {
                 </div>
 
                 <Button variant="outline" className="w-full bg-transparent" onClick={clearAll}>
-                  Clear All Filters
+                  {t('deals.clearAllFilters')}
                 </Button>
               </CardContent>
             </Card>
@@ -255,7 +257,9 @@ export default function DealsPage() {
           <div className="flex-1">
             <div className="flex items-center justify-between mb-6">
               <p className="text-muted-foreground">
-                {loading ? 'Loading deals...' : `Showing ${sortedDeals.length} deals`}
+                {loading
+                  ? t('deals.loading')
+                  : tr('deals.showingCount', { count: sortedDeals.length })}
               </p>
               <div className="flex items-center space-x-2">
                 <Button
@@ -279,11 +283,11 @@ export default function DealsPage() {
 
             {loading ? (
               <div className="text-center py-12">
-                <p className="text-muted-foreground">Loading deals from API...</p>
+                <p className="text-muted-foreground">{t('deals.loadingFromApi')}</p>
               </div>
             ) : sortedDeals.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-muted-foreground">No deals found. Try adjusting your filters.</p>
+                <p className="text-muted-foreground">{t('deals.noDealsFoundWithFilters')}</p>
               </div>
             ) : viewMode === "grid" ? (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -326,21 +330,21 @@ export default function DealsPage() {
                                 const data = await response.json()
                                 if (data.success) {
                                   toast({ 
-                                    title: 'Deal saved', 
-                                    description: 'This deal has been added to your saved items.' 
+                                    title: t('deals.detail.savedTitle'), 
+                                    description: t('deals.detail.savedDescription') 
                                   })
                                 } else {
                                   toast({ 
-                                    title: 'Failed to save deal', 
-                                    description: data.error || 'Please try again.', 
+                                    title: t('deals.detail.saveErrorTitle'), 
+                                    description: data.error || t('deals.detail.saveErrorDescription'), 
                                     variant: 'destructive' 
                                   })
                                 }
                               } catch (error) {
                                 console.error('Error saving deal:', error)
                                 toast({ 
-                                  title: 'Error', 
-                                  description: 'Failed to save deal. Please try again.', 
+                                  title: t('notifications.error'), 
+                                  description: t('deals.detail.saveErrorDescription'), 
                                   variant: 'destructive' 
                                 })
                               }
@@ -351,7 +355,7 @@ export default function DealsPage() {
                         </div>
                         {deal.featured && (
                           <div className="absolute bottom-2 left-2">
-                            <Badge variant="secondary">Featured</Badge>
+                            <Badge variant="secondary">{t('deals.featured')}</Badge>
                           </div>
                         )}
                       </div>
@@ -378,15 +382,15 @@ export default function DealsPage() {
                         <div className="flex items-center justify-between mt-3">
                           <div className="flex items-center text-sm text-green-600">
                             <TrendingDown className="h-4 w-4 mr-1" />
-                            Save {formatEuro(deal.savings)}
+                            {tr('deals.saveAmount', { amount: formatEuro(deal.savings) })}
                           </div>
-                          <span className="text-sm text-muted-foreground">{deal.stores.length} stores</span>
+                          <span className="text-sm text-muted-foreground">{tr('deals.storesCount', { count: deal.stores.length })}</span>
                         </div>
 
                         <Button className="w-full mt-4" asChild>
                           <Link href={(deal as any).url ? (deal as any).url : `/deals/${deal.id}`} target={(deal as any).url ? '_blank' : undefined} rel={(deal as any).url ? 'noopener noreferrer' : undefined}>
                             <ShoppingBag className="h-4 w-4 mr-2" />
-                            {(deal as any).url ? 'View Deal' : 'Compare Prices'}
+                            {(deal as any).url ? t('deals.viewDeal') : t('deals.comparePrices')}
                           </Link>
                         </Button>
                       </div>
@@ -416,7 +420,7 @@ export default function DealsPage() {
                               <div className="flex items-center mt-1">
                                 <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
                                 <span className="text-sm">{deal.rating}</span>
-                                <span className="text-sm text-muted-foreground ml-1">({deal.reviews} reviews)</span>
+                                <span className="text-sm text-muted-foreground ml-1">{tr('deals.reviewsCount', { count: deal.reviews })}</span>
                               </div>
                             </div>
                             <Button variant="ghost" size="sm">
@@ -433,15 +437,15 @@ export default function DealsPage() {
                               </div>
                               <div className="flex items-center text-sm text-green-600">
                                 <TrendingDown className="h-4 w-4 mr-1" />
-                                Save {formatEuro(deal.savings)}
+                                {tr('deals.saveAmount', { amount: formatEuro(deal.savings) })}
                               </div>
                             </div>
                             <div className="flex items-center space-x-4">
-                              <span className="text-sm text-muted-foreground">{deal.stores.length} stores</span>
+                              <span className="text-sm text-muted-foreground">{tr('deals.storesCount', { count: deal.stores.length })}</span>
                               <Button asChild>
                                 <Link href={(deal as any).url ? (deal as any).url : `/deals/${deal.id}`} target={(deal as any).url ? '_blank' : undefined} rel={(deal as any).url ? 'noopener noreferrer' : undefined}>
                                   <ShoppingBag className="h-4 w-4 mr-2" />
-                                  {(deal as any).url ? 'View Deal' : 'Compare Prices'}
+                                  {(deal as any).url ? t('deals.viewDeal') : t('deals.comparePrices')}
                                 </Link>
                               </Button>
                             </div>
@@ -458,7 +462,7 @@ export default function DealsPage() {
             {pagination.pages > 1 && (
             <div className="flex items-center justify-center space-x-2 mt-8">
               <Button variant="outline" disabled className="bg-transparent">
-                Previous
+                {t('common.previous')}
               </Button>
                 {Array.from({ length: pagination.pages }, (_, index) => {
                   const pageNumber = index + 1
@@ -475,7 +479,7 @@ export default function DealsPage() {
                   )
                 })}
                 <Button variant="outline" disabled className="bg-transparent">
-                Next
+                {t('common.next')}
               </Button>
             </div>
             )}

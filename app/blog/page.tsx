@@ -12,14 +12,16 @@ import { Search, Calendar, Clock, ArrowRight, TrendingUp, ArrowLeft, Loader2 } f
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
 import { useToast } from "@/hooks/use-toast"
+import { useTranslation } from "@/contexts/i18n-context"
 
 export default function BlogPage() {
+  const { t } = useTranslation()
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [sortBy, setSortBy] = useState("newest")
   const [loading, setLoading] = useState(true)
   const [posts, setPosts] = useState<any[]>([])
-  const [categories, setCategories] = useState<{ id: string; name: string; count: number }[]>([{ id: "all", name: "All Posts", count: 0 }])
+  const [categories, setCategories] = useState<{ id: string; name: string; count: number }[]>([{ id: "all", name: t('blog.allPosts'), count: 0 }])
   const [newsletterEmail, setNewsletterEmail] = useState("")
   const [isSubscribing, setIsSubscribing] = useState(false)
   const { toast } = useToast()
@@ -56,7 +58,7 @@ export default function BlogPage() {
         if (!counts[key]) counts[key] = { name: m.category, count: 0 }
         counts[key].count++
       })
-      setCategories([{ id: 'all', name: 'All Posts', count: mapped.length }, ...Object.entries(counts).map(([id, v]) => ({ id, name: v.name, count: v.count }))])
+      setCategories([{ id: 'all', name: t('blog.allPosts'), count: mapped.length }, ...Object.entries(counts).map(([id, v]) => ({ id, name: v.name, count: v.count }))])
       setLoading(false)
     })()
   }, [])
@@ -90,8 +92,8 @@ export default function BlogPage() {
     
     if (!newsletterEmail || !newsletterEmail.includes('@')) {
       toast({
-        title: 'Invalid email',
-        description: 'Please enter a valid email address',
+        title: t('blog.invalidEmail'),
+        description: t('blog.enterValidEmail'),
         variant: 'destructive',
       })
       return
@@ -112,22 +114,22 @@ export default function BlogPage() {
 
       if (data.success) {
         toast({
-          title: 'Subscribed!',
-          description: 'Thank you for subscribing to our newsletter',
+          title: t('blog.subscribed'),
+          description: t('blog.subscribeSuccess')
         })
         setNewsletterEmail('')
       } else {
         toast({
-          title: 'Error',
-          description: data.error || 'Failed to subscribe. Please try again.',
+          title: t('common.error'),
+          description: data.error || t('blog.subscribeError'),
           variant: 'destructive',
         })
       }
     } catch (error) {
       console.error('Newsletter subscription error:', error)
       toast({
-        title: 'Error',
-        description: 'Failed to subscribe. Please try again later.',
+        title: t('common.error'),
+        description: t('blog.subscribeErrorLater'),
         variant: 'destructive',
       })
     } finally {
@@ -145,16 +147,16 @@ export default function BlogPage() {
           <Button variant="ghost" asChild className="p-0 h-auto font-normal text-muted-foreground hover:text-foreground">
             <Link href="/" className="inline-flex items-center">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Home
+              {t('blog.backToHome')}
             </Link>
           </Button>
         </div>
 
         {/* Header Section */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">WIRsuchen Blog</h1>
+          <h1 className="text-4xl font-bold mb-4">{t('blog.title')}</h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Stay updated with the latest insights on careers, recruitment, market trends, and exclusive deals.
+            {t('blog.description')}
           </p>
         </div>
 
@@ -165,7 +167,7 @@ export default function BlogPage() {
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
                 type="search"
-                placeholder="Search articles..."
+                placeholder={t('blog.searchPlaceholder')}
                 className="pl-10"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -174,7 +176,7 @@ export default function BlogPage() {
           </div>
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
             <SelectTrigger className="w-full lg:w-48">
-              <SelectValue placeholder="All Categories" />
+              <SelectValue placeholder={t('blog.allCategories')} />
             </SelectTrigger>
             <SelectContent>
               {categories.map((category) => (
@@ -189,9 +191,9 @@ export default function BlogPage() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="newest">Newest First</SelectItem>
-              <SelectItem value="oldest">Oldest First</SelectItem>
-              <SelectItem value="popular">Most Popular</SelectItem>
+              <SelectItem value="newest">{t('blog.sort.newestFirst')}</SelectItem>
+              <SelectItem value="oldest">{t('blog.sort.oldestFirst')}</SelectItem>
+              <SelectItem value="popular">{t('blog.sort.mostPopular')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -207,7 +209,7 @@ export default function BlogPage() {
                   className="w-full h-64 lg:h-full object-cover"
                 />
                 <div className="absolute top-4 left-4">
-                  <Badge className="bg-accent text-accent-foreground">Featured</Badge>
+                  <Badge className="bg-accent text-accent-foreground">{t('blog.featured')}</Badge>
                 </div>
               </div>
               <div className="p-8">
@@ -242,7 +244,7 @@ export default function BlogPage() {
                   </div>
                   <Button asChild>
                     <Link href={`/blog/${featuredPost.slug}`}>
-                      Read More
+                      {t('blog.readMore')}
                       <ArrowRight className="h-4 w-4 ml-2" />
                     </Link>
                   </Button>
@@ -264,7 +266,7 @@ export default function BlogPage() {
                 />
                 {post.featured && (
                   <div className="absolute top-2 left-2">
-                    <Badge className="bg-accent text-accent-foreground">Featured</Badge>
+                    <Badge className="bg-accent text-accent-foreground">{t('blog.featured')}</Badge>
                   </div>
                 )}
               </div>
@@ -312,7 +314,7 @@ export default function BlogPage() {
         {sortedPosts.length > 9 && (
           <div className="text-center mt-12">
             <Button variant="outline" size="lg" className="bg-transparent">
-              Load More Articles
+              {t('blog.loadMoreArticles')}
             </Button>
           </div>
         )}
@@ -320,15 +322,14 @@ export default function BlogPage() {
         {/* Newsletter Signup */}
         <Card className="mt-16 bg-muted/50">
           <CardContent className="p-8 text-center">
-            <h3 className="text-2xl font-bold mb-4">Stay Updated</h3>
+            <h3 className="text-2xl font-bold mb-4">{t('blog.stayUpdated')}</h3>
             <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-              Subscribe to our newsletter and get the latest career insights, job market trends, and exclusive deals
-              delivered to your inbox.
+              {t('blog.newsletterDescription')}
             </p>
             <form onSubmit={handleNewsletterSubscribe} className="flex flex-col md:flex-row gap-4 max-w-md mx-auto">
               <Input 
                 type="email" 
-                placeholder="Enter your email address" 
+                placeholder={t('blog.enterEmailPlaceholder')} 
                 className="flex-1" 
                 value={newsletterEmail}
                 onChange={(e) => setNewsletterEmail(e.target.value)}
@@ -339,10 +340,10 @@ export default function BlogPage() {
                 {isSubscribing ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Subscribing...
+                    {t('blog.subscribing')}
                   </>
                 ) : (
-                  'Subscribe'
+                  t('blog.subscribe')
                 )}
               </Button>
             </form>

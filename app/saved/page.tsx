@@ -8,10 +8,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PageLayout } from "@/components/layout/page-layout"
 import Link from "next/link"
 import { useEffect, useState } from "react"
+import { useTranslation } from "@/contexts/i18n-context"
 
 export default function SavedPage() {
   const [items, setItems] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const { t, tr } = useTranslation()
 
   useEffect(() => {
     ;(async () => {
@@ -56,14 +58,18 @@ export default function SavedPage() {
   return (
     <PageLayout containerClassName="container mx-auto px-4 py-8 max-w-6xl">
       <div className="mb-8 text-center md:text-left">
-        <h1 className="text-3xl md:text-4xl font-bold mb-2">Saved Items</h1>
-        <p className="text-muted-foreground">Keep track of your favorite jobs and deals in one place.</p>
+        <h1 className="text-3xl md:text-4xl font-bold mb-2">{t('saved.title')}</h1>
+        <p className="text-muted-foreground">{t('saved.subtitle')}</p>
       </div>
 
       <Tabs defaultValue="jobs" className="w-full">
         <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto md:mx-0">
-          <TabsTrigger value="jobs">Saved Jobs ({savedJobs.length}{loading ? '…' : ''})</TabsTrigger>
-          <TabsTrigger value="deals">Saved Deals ({savedDeals.length}{loading ? '…' : ''})</TabsTrigger>
+          <TabsTrigger value="jobs">
+            {tr('saved.tabs.jobsWithCount', { count: savedJobs.length })}{loading ? '…' : ''}
+          </TabsTrigger>
+          <TabsTrigger value="deals">
+            {tr('saved.tabs.dealsWithCount', { count: savedDeals.length })}{loading ? '…' : ''}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="jobs" className="mt-6">
@@ -104,16 +110,16 @@ export default function SavedPage() {
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div className="flex items-center text-sm text-muted-foreground">
                       <Calendar className="h-4 w-4 mr-1" />
-                      Saved on {new Date(job.savedDate).toLocaleDateString()}
+                      {tr('saved.jobs.savedOn', { date: new Date(job.savedDate).toLocaleDateString() })}
                     </div>
                     <div className="flex flex-wrap gap-2">
                       <Link href={`/jobs/${job.id}`}>
                         <Button variant="outline" size="sm">
                           <ExternalLink className="h-4 w-4 mr-2" />
-                          View Job
+                          {t('saved.jobs.viewJob')}
                         </Button>
                       </Link>
-                      <Button size="sm">Apply Now</Button>
+                      <Button size="sm">{t('jobs.apply')}</Button>
                     </div>
                   </div>
                 </CardContent>
@@ -124,12 +130,12 @@ export default function SavedPage() {
               <Card className="text-center py-12 max-w-2xl mx-auto">
                 <CardContent>
                   <Heart className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                  <h3 className="text-lg font-semibold mb-2">No saved jobs yet</h3>
+                  <h3 className="text-lg font-semibold mb-2">{t('saved.jobs.emptyTitle')}</h3>
                   <p className="text-muted-foreground mb-4">
-                    Start saving jobs you're interested in to keep track of them here.
+                    {t('saved.jobs.emptyDescription')}
                   </p>
                   <Link href="/jobs">
-                    <Button>Browse Jobs</Button>
+                    <Button>{t('home.findJobs')}</Button>
                   </Link>
                 </CardContent>
               </Card>
@@ -173,22 +179,22 @@ export default function SavedPage() {
                     <div className="flex items-center space-x-4">
                       <div className="text-2xl font-bold text-primary">${deal.currentPrice}</div>
                       <div className="text-sm text-muted-foreground line-through">${deal.originalPrice}</div>
-                      <Badge variant="destructive">{deal.discount}% OFF</Badge>
+                      <Badge variant="destructive">{tr('saved.deals.discountBadge', { percent: deal.discount })}</Badge>
                     </div>
                   </div>
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div className="flex items-center text-sm text-muted-foreground">
                       <Calendar className="h-4 w-4 mr-1" />
-                      Saved on {new Date(deal.savedDate).toLocaleDateString()}
+                      {tr('saved.deals.savedOn', { date: new Date(deal.savedDate).toLocaleDateString() })}
                     </div>
                     <div className="flex flex-wrap gap-2">
                       <Link href={`/deals/${deal.id}`}>
                         <Button variant="outline" size="sm">
                           <ExternalLink className="h-4 w-4 mr-2" />
-                          View Deal
+                          {t('deals.viewDeal')}
                         </Button>
                       </Link>
-                      <Button size="sm">Go to Store</Button>
+                      <Button size="sm">{t('saved.deals.goToStore')}</Button>
                     </div>
                   </div>
                 </CardContent>
@@ -199,12 +205,12 @@ export default function SavedPage() {
               <Card className="text-center py-12 max-w-2xl mx-auto">
                 <CardContent>
                   <Heart className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                  <h3 className="text-lg font-semibold mb-2">No saved deals yet</h3>
+                  <h3 className="text-lg font-semibold mb-2">{t('saved.deals.emptyTitle')}</h3>
                   <p className="text-muted-foreground mb-4">
-                    Start saving deals you're interested in to keep track of them here.
+                    {t('saved.deals.emptyDescription')}
                   </p>
                   <Link href="/deals">
-                    <Button>Browse Deals</Button>
+                    <Button>{t('home.browseDeals')}</Button>
                   </Link>
                 </CardContent>
               </Card>

@@ -26,6 +26,8 @@ import {
   BarChart2,
   LogOut,
 } from "lucide-react"
+import { LanguageSwitcher } from "@/components/i18n/language-switcher"
+import { useTranslation } from "@/contexts/i18n-context"
 
 export function DashboardSidebar() {
   const [collapsed, setCollapsed] = useState(false)
@@ -33,74 +35,42 @@ export function DashboardSidebar() {
   const { user, logout } = useAuth()
   const role = (user as any)?.role
   const isAdmin = !!(user && ((['admin','supervisor','moderator'] as any).includes(role) || user.email === 'admin@wirsuchen.com'))
+  const { t } = useTranslation()
 
-  useEffect(() => {
-    let created = false
-    const tryInit = () => {
-      const w: any = window as any
-      if (w.google?.translate?.TranslateElement && !created) {
-        try {
-          new w.google.translate.TranslateElement({
-            pageLanguage: 'en',
-            autoDisplay: false,
-            includedLanguages: 'de,en,fr,it',
-            layout: w.google.translate.TranslateElement.InlineLayout.SIMPLE,
-          }, 'google_translate_element_sidebar')
-          created = true
-        } catch {}
-      }
-    }
-    try {
-      if (typeof document !== 'undefined') {
-      const existing = document.querySelector('script[src*="translate_a/element.js"]')
-      if (!existing) {
-        const s = document.createElement('script')
-        s.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit'
-        document.body.appendChild(s)
-        }
-      }
-    } catch {}
-    if (typeof window !== 'undefined') {
-    const id = window.setInterval(tryInit, 500)
-    tryInit()
-    return () => window.clearInterval(id)
-    }
-    return () => {}
-  }, [])
 
   const navigation = [
     {
-      name: "Overview",
+      name: t("dashboard.nav.overview"),
       href: "/dashboard",
       icon: LayoutDashboard,
       current: pathname === "/dashboard",
     },
     {
-      name: "My Ads",
+      name: t("dashboard.nav.myAds"),
       href: "/dashboard/my-ads",
       icon: Briefcase,
       current: pathname === "/dashboard/my-ads",
     },
     {
-      name: "My Deals",
+      name: t("dashboard.nav.myDeals"),
       href: "/dashboard/my-deals",
       icon: ShoppingBag,
       current: pathname === "/dashboard/my-deals",
     },
     {
-      name: "My Invoices",
+      name: t("dashboard.nav.myInvoices"),
       href: "/dashboard/my-invoices",
       icon: FileText,
       current: pathname === "/dashboard/my-invoices",
     },
     {
-      name: "Stats",
+      name: t("dashboard.nav.stats"),
       href: "/dashboard/stats",
       icon: BarChart3,
       current: pathname === "/dashboard/stats",
     },
     {
-      name: "Profile",
+      name: t("dashboard.nav.profile"),
       href: "/dashboard/profile",
       icon: User,
       current: pathname === "/dashboard/profile",
@@ -112,7 +82,7 @@ export function DashboardSidebar() {
       <div className="flex flex-col h-full">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">
-          {!collapsed && <h2 className="text-lg font-semibold">Dashboard</h2>}
+          {!collapsed && <h2 className="text-lg font-semibold">{t("dashboard.title")}</h2>}
           <Button variant="ghost" size="sm" onClick={() => setCollapsed(!collapsed)} className="h-8 w-8 p-0">
             {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
           </Button>
@@ -158,7 +128,7 @@ export function DashboardSidebar() {
                     )}
                   >
                     <PenSquare className="h-4 w-4 shrink-0" />
-                    {!collapsed && <span className="ml-3">Manage Blogs</span>}
+                    {!collapsed && <span className="ml-3">{t("dashboard.nav.manageBlogs")}</span>}
                   </Link>
                 </li>
                 <li>
@@ -172,7 +142,7 @@ export function DashboardSidebar() {
                     )}
                   >
                     <PenSquare className="h-4 w-4 shrink-0" />
-                    {!collapsed && <span className="ml-3">Create Blog</span>}
+                    {!collapsed && <span className="ml-3">{t("dashboard.nav.createBlog")}</span>}
                   </Link>
                 </li>
               <li>
@@ -186,7 +156,7 @@ export function DashboardSidebar() {
                   )}
                 >
                   <Shield className="h-4 w-4 shrink-0" />
-                  {!collapsed && <span className="ml-3">Admin</span>}
+                  {!collapsed && <span className="ml-3">{t("dashboard.nav.admin")}</span>}
                 </Link>
               </li>
               </>
@@ -198,7 +168,7 @@ export function DashboardSidebar() {
                   pathname === "/supervisor" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
                 )}>
                   <UserCheck className="h-4 w-4 shrink-0" />
-                  {!collapsed && <span className="ml-3">Supervisor</span>}
+                  {!collapsed && <span className="ml-3">{t("dashboard.nav.supervisor")}</span>}
                 </Link>
               </li>
             )}
@@ -209,7 +179,7 @@ export function DashboardSidebar() {
                   pathname === "/moderator" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
                 )}>
                   <Gavel className="h-4 w-4 shrink-0" />
-                  {!collapsed && <span className="ml-3">Moderator</span>}
+                  {!collapsed && <span className="ml-3">{t("dashboard.nav.moderator")}</span>}
                 </Link>
               </li>
             )}
@@ -220,7 +190,7 @@ export function DashboardSidebar() {
                   pathname === "/lister" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
                 )}>
                   <ClipboardList className="h-4 w-4 shrink-0" />
-                  {!collapsed && <span className="ml-3">Lister</span>}
+                  {!collapsed && <span className="ml-3">{t("dashboard.nav.lister")}</span>}
                 </Link>
               </li>
             )}
@@ -231,7 +201,7 @@ export function DashboardSidebar() {
                   pathname === "/publisher" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
                 )}>
                   <Megaphone className="h-4 w-4 shrink-0" />
-                  {!collapsed && <span className="ml-3">Publisher</span>}
+                  {!collapsed && <span className="ml-3">{t("dashboard.nav.publisher")}</span>}
                 </Link>
               </li>
             )}
@@ -242,7 +212,7 @@ export function DashboardSidebar() {
                   pathname === "/blogger" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
                 )}>
                   <PenSquare className="h-4 w-4 shrink-0" />
-                  {!collapsed && <span className="ml-3">Blogger</span>}
+                  {!collapsed && <span className="ml-3">{t("dashboard.nav.blogger")}</span>}
                 </Link>
               </li>
             )}
@@ -253,7 +223,7 @@ export function DashboardSidebar() {
                   pathname === "/editor" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
                 )}>
                   <PenSquare className="h-4 w-4 shrink-0" />
-                  {!collapsed && <span className="ml-3">Editor</span>}
+                  {!collapsed && <span className="ml-3">{t("dashboard.nav.editor")}</span>}
                 </Link>
               </li>
             )}
@@ -264,7 +234,7 @@ export function DashboardSidebar() {
                   pathname === "/analyst" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
                 )}>
                   <BarChart2 className="h-4 w-4 shrink-0" />
-                  {!collapsed && <span className="ml-3">Analyst</span>}
+                  {!collapsed && <span className="ml-3">{t("dashboard.nav.analyst")}</span>}
                 </Link>
               </li>
             )}
@@ -299,7 +269,7 @@ export function DashboardSidebar() {
                 <Link href="/dashboard/profile">
                   <Button variant="outline" size="sm" className="w-full mt-3 bg-transparent">
                     <Settings className="h-4 w-4 mr-2" />
-                    Settings
+                    {t("dashboard.settings")}
                   </Button>
                 </Link>
                 <Button
@@ -309,10 +279,10 @@ export function DashboardSidebar() {
                   onClick={logout}
                 >
                   <LogOut className="h-4 w-4 mr-2" />
-                  Logout
+                  {t("nav.logout")}
                 </Button>
                 <div className="mt-3">
-                  <div id="google_translate_element_sidebar" className="min-h-[38px]" />
+                  <LanguageSwitcher variant="default" />
                 </div>
               </CardContent>
             </Card>

@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Search, MapPin, Filter, X, Briefcase, Clock, DollarSign } from 'lucide-react'
+import { useTranslation } from '@/contexts/i18n-context'
 
 interface JobSearchProps {
   categories?: Array<{ id: string; name: string; slug: string }>
@@ -30,6 +31,7 @@ export interface SearchFilters {
 }
 
 export function JobSearch({ categories = [], onFiltersChange }: JobSearchProps) {
+  const { t } = useTranslation()
   const router = useRouter()
   const searchParams = useSearchParams()
   
@@ -48,29 +50,29 @@ export function JobSearch({ categories = [], onFiltersChange }: JobSearchProps) 
   const [showAdvanced, setShowAdvanced] = useState(false)
 
   const employmentTypes = [
-    { value: 'full_time', label: 'Vollzeit' },
-    { value: 'part_time', label: 'Teilzeit' },
-    { value: 'contract', label: 'Vertrag' },
-    { value: 'freelance', label: 'Freelance' },
-    { value: 'internship', label: 'Praktikum' },
-    { value: 'temporary', label: 'Befristet' }
+    { value: 'full_time', label: t('jobSearch.employmentTypes.fullTime') },
+    { value: 'part_time', label: t('jobSearch.employmentTypes.partTime') },
+    { value: 'contract', label: t('jobSearch.employmentTypes.contract') },
+    { value: 'freelance', label: t('jobSearch.employmentTypes.freelance') },
+    { value: 'internship', label: t('jobSearch.employmentTypes.internship') },
+    { value: 'temporary', label: t('jobSearch.employmentTypes.temporary') }
   ]
 
   const experienceLevels = [
-    { value: 'entry', label: 'Einsteiger' },
-    { value: 'junior', label: 'Junior' },
-    { value: 'mid', label: 'Mid-Level' },
-    { value: 'senior', label: 'Senior' },
-    { value: 'lead', label: 'Lead' },
-    { value: 'executive', label: 'Executive' }
+    { value: 'entry', label: t('jobSearch.experienceLevels.entry') },
+    { value: 'junior', label: t('jobSearch.experienceLevels.junior') },
+    { value: 'mid', label: t('jobSearch.experienceLevels.mid') },
+    { value: 'senior', label: t('jobSearch.experienceLevels.senior') },
+    { value: 'lead', label: t('jobSearch.experienceLevels.lead') },
+    { value: 'executive', label: t('jobSearch.experienceLevels.executive') }
   ]
 
   const salaryRanges = [
-    { value: 30000, label: '30.000€+' },
-    { value: 50000, label: '50.000€+' },
-    { value: 70000, label: '70.000€+' },
-    { value: 100000, label: '100.000€+' },
-    { value: 150000, label: '150.000€+' }
+    { value: 30000, label: t('jobSearch.salaryRanges.range30k') },
+    { value: 50000, label: t('jobSearch.salaryRanges.range50k') },
+    { value: 70000, label: t('jobSearch.salaryRanges.range70k') },
+    { value: 100000, label: t('jobSearch.salaryRanges.range100k') },
+    { value: 150000, label: t('jobSearch.salaryRanges.range150k') }
   ]
 
   const updateFilters = (newFilters: Partial<SearchFilters>) => {
@@ -125,12 +127,12 @@ export function JobSearch({ categories = [], onFiltersChange }: JobSearchProps) 
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Search className="w-5 h-5" />
-            Job Search
+            {t('jobSearch.title')}
           </CardTitle>
           <div className="flex items-center gap-2">
             {hasActiveFilters && (
               <Badge variant="secondary">
-                {getActiveFiltersCount()} active filters
+                {getActiveFiltersCount()} {t('jobSearch.activeFilters')}
               </Badge>
             )}
             <Button
@@ -139,7 +141,7 @@ export function JobSearch({ categories = [], onFiltersChange }: JobSearchProps) 
               onClick={() => setShowAdvanced(!showAdvanced)}
             >
               <Filter className="w-4 h-4 mr-1" />
-              {showAdvanced ? 'Simple' : 'Advanced'}
+              {showAdvanced ? t('jobSearch.simple') : t('jobSearch.advanced')}
             </Button>
           </div>
         </div>
@@ -151,7 +153,7 @@ export function JobSearch({ categories = [], onFiltersChange }: JobSearchProps) 
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Search jobs, companies, or skills..."
+              placeholder={t('jobSearch.searchPlaceholder')}
               value={filters.search || ''}
               onChange={(e) => updateFilters({ search: e.target.value })}
               className="pl-10"
@@ -160,14 +162,14 @@ export function JobSearch({ categories = [], onFiltersChange }: JobSearchProps) 
           <div className="relative">
             <MapPin className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Location"
+              placeholder={t('jobSearch.locationPlaceholder')}
               value={filters.location || ''}
               onChange={(e) => updateFilters({ location: e.target.value })}
               className="pl-10 w-48"
             />
           </div>
           <Button type="button" onClick={() => onFiltersChange?.(filters)}>
-            Search
+            {t('jobSearch.search')}
           </Button>
         </div>
 
@@ -179,7 +181,7 @@ export function JobSearch({ categories = [], onFiltersChange }: JobSearchProps) 
               checked={filters.remote || false}
               onCheckedChange={(checked) => updateFilters({ remote: checked as boolean })}
             />
-            <Label htmlFor="remote" className="text-sm">Remote</Label>
+            <Label htmlFor="remote" className="text-sm">{t('jobSearch.filters.remote')}</Label>
           </div>
           
           <div className="flex items-center space-x-2">
@@ -188,7 +190,7 @@ export function JobSearch({ categories = [], onFiltersChange }: JobSearchProps) 
               checked={filters.hybrid || false}
               onCheckedChange={(checked) => updateFilters({ hybrid: checked as boolean })}
             />
-            <Label htmlFor="hybrid" className="text-sm">Hybrid</Label>
+            <Label htmlFor="hybrid" className="text-sm">{t('jobSearch.filters.hybrid')}</Label>
           </div>
           
           <div className="flex items-center space-x-2">
@@ -197,7 +199,7 @@ export function JobSearch({ categories = [], onFiltersChange }: JobSearchProps) 
               checked={filters.featured || false}
               onCheckedChange={(checked) => updateFilters({ featured: checked as boolean })}
             />
-            <Label htmlFor="featured" className="text-sm">Featured Only</Label>
+            <Label htmlFor="featured" className="text-sm">{t('jobSearch.filters.featuredOnly')}</Label>
           </div>
         </div>
 
@@ -210,17 +212,17 @@ export function JobSearch({ categories = [], onFiltersChange }: JobSearchProps) 
               <div className="space-y-2">
                 <Label className="flex items-center gap-1">
                   <Briefcase className="w-4 h-4" />
-                  Category
+                  {t('jobSearch.filters.category')}
                 </Label>
                 <Select
                   value={filters.category || ''}
                   onValueChange={(value) => updateFilters({ category: value })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="All categories" />
+                    <SelectValue placeholder={t('jobSearch.placeholders.allCategories')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All categories</SelectItem>
+                    <SelectItem value="">{t('jobSearch.placeholders.allCategories')}</SelectItem>
                     {categories.map((category) => (
                       <SelectItem key={category.id} value={category.id}>
                         {category.name}
@@ -234,17 +236,17 @@ export function JobSearch({ categories = [], onFiltersChange }: JobSearchProps) 
               <div className="space-y-2">
                 <Label className="flex items-center gap-1">
                   <Clock className="w-4 h-4" />
-                  Employment Type
+                  {t('jobSearch.filters.employmentType')}
                 </Label>
                 <Select
                   value={filters.type || ''}
                   onValueChange={(value) => updateFilters({ type: value })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="All types" />
+                    <SelectValue placeholder={t('jobSearch.placeholders.allTypes')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All types</SelectItem>
+                    <SelectItem value="">{t('jobSearch.placeholders.allTypes')}</SelectItem>
                     {employmentTypes.map((type) => (
                       <SelectItem key={type.value} value={type.value}>
                         {type.label}
@@ -256,16 +258,16 @@ export function JobSearch({ categories = [], onFiltersChange }: JobSearchProps) 
 
               {/* Experience Level */}
               <div className="space-y-2">
-                <Label>Experience Level</Label>
+                <Label>{t('jobSearch.filters.experienceLevel')}</Label>
                 <Select
                   value={filters.experienceLevel || ''}
                   onValueChange={(value) => updateFilters({ experienceLevel: value })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="All levels" />
+                    <SelectValue placeholder={t('jobSearch.placeholders.allLevels')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All levels</SelectItem>
+                    <SelectItem value="">{t('jobSearch.placeholders.allLevels')}</SelectItem>
                     {experienceLevels.map((level) => (
                       <SelectItem key={level.value} value={level.value}>
                         {level.label}
@@ -279,7 +281,7 @@ export function JobSearch({ categories = [], onFiltersChange }: JobSearchProps) 
               <div className="space-y-2">
                 <Label className="flex items-center gap-1">
                   <DollarSign className="w-4 h-4" />
-                  Minimum Salary
+                  {t('jobSearch.filters.minimumSalary')}
                 </Label>
                 <Select
                   value={filters.salaryMin?.toString() || ''}
@@ -288,10 +290,10 @@ export function JobSearch({ categories = [], onFiltersChange }: JobSearchProps) 
                   })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Any salary" />
+                    <SelectValue placeholder={t('jobSearch.placeholders.anySalary')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Any salary</SelectItem>
+                    <SelectItem value="">{t('jobSearch.placeholders.anySalary')}</SelectItem>
                     {salaryRanges.map((range) => (
                       <SelectItem key={range.value} value={range.value.toString()}>
                         {range.label}
@@ -346,7 +348,7 @@ export function JobSearch({ categories = [], onFiltersChange }: JobSearchProps) 
               </div>
               
               <Button variant="outline" size="sm" onClick={clearFilters}>
-                Clear All
+                {t('jobSearch.clearAll')}
               </Button>
             </div>
           </>

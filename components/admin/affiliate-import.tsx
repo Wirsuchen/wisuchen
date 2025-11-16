@@ -21,6 +21,7 @@ import {
   Package
 } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
+import { useTranslation } from '@/contexts/i18n-context'
 
 interface AffiliateProgram {
   id: string
@@ -49,6 +50,7 @@ interface ImportRun {
 }
 
 export function AffiliateImportManager() {
+  const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('import')
   const [isImporting, setIsImporting] = useState(false)
   const [programs, setPrograms] = useState<AffiliateProgram[]>([])
@@ -75,15 +77,23 @@ export function AffiliateImportManager() {
   const affiliateSources = [
     { 
       value: 'awin', 
-      label: 'Awin Network', 
-      description: 'Global affiliate network with 15,000+ advertisers',
-      features: ['High-quality brands', 'Real-time tracking', 'Global reach']
+      label: t('admin.affiliateImport.sources.awin'), 
+      description: t('admin.affiliateImport.sources.awinDescription'),
+      features: [
+        t('admin.affiliateImport.features.highQualityBrands'),
+        t('admin.affiliateImport.features.realTimeTracking'),
+        t('admin.affiliateImport.features.globalReach')
+      ]
     },
     { 
       value: 'adcell', 
-      label: 'Adcell Network', 
-      description: 'German affiliate network with local focus',
-      features: ['German market focus', 'Product feeds', 'Performance tracking']
+      label: t('admin.affiliateImport.sources.adcell'), 
+      description: t('admin.affiliateImport.sources.adcellDescription'),
+      features: [
+        t('admin.affiliateImport.features.germanMarketFocus'),
+        t('admin.affiliateImport.features.productFeeds'),
+        t('admin.affiliateImport.features.performanceTracking')
+      ]
     }
   ]
 
@@ -121,8 +131,8 @@ export function AffiliateImportManager() {
   const handleImport = async () => {
     if (!importForm.source) {
       toast({
-        title: 'Error',
-        description: 'Please select an affiliate source',
+        title: t('admin.affiliateImport.errors.error'),
+        description: t('admin.affiliateImport.errors.selectSource'),
         variant: 'destructive'
       })
       return
@@ -151,20 +161,20 @@ export function AffiliateImportManager() {
 
       if (response.ok) {
         toast({
-          title: 'Import Started',
-          description: `Importing affiliate offers from ${importForm.source}...`
+          title: t('admin.affiliateImport.importStarted'),
+          description: t('admin.affiliateImport.importingFrom', { source: importForm.source })
         })
 
         // Start polling for status
         pollImportStatus(data.import_run_id)
       } else {
-        throw new Error(data.error || 'Import failed')
+        throw new Error(data.error || t('admin.affiliateImport.errors.importFailed'))
       }
     } catch (error) {
       console.error('Import error:', error)
       toast({
-        title: 'Import Failed',
-        description: error instanceof Error ? error.message : 'Unknown error',
+        title: t('admin.affiliateImport.errors.importFailed'),
+        description: error instanceof Error ? error.message : t('admin.affiliateImport.errors.unknownError'),
         variant: 'destructive'
       })
     } finally {
@@ -184,16 +194,20 @@ export function AffiliateImportManager() {
           if (data.import_run.status === 'completed') {
             clearInterval(pollInterval)
             toast({
-              title: 'Import Completed',
-              description: `Created: ${data.import_run.created_records}, Updated: ${data.import_run.updated_records}, Failed: ${data.import_run.failed_records}`
+              title: t('admin.affiliateImport.importCompleted'),
+              description: t('admin.affiliateImport.importResults', { 
+                created: data.import_run.created_records, 
+                updated: data.import_run.updated_records, 
+                failed: data.import_run.failed_records 
+              })
             })
             fetchImportRuns()
             fetchPrograms()
           } else if (data.import_run.status === 'failed') {
             clearInterval(pollInterval)
             toast({
-              title: 'Import Failed',
-              description: data.import_run.error_log || 'Unknown error',
+              title: t('admin.affiliateImport.errors.importFailed'),
+              description: data.import_run.error_log || t('admin.affiliateImport.errors.unknownError'),
               variant: 'destructive'
             })
           }
@@ -238,20 +252,20 @@ export function AffiliateImportManager() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Affiliate Import Manager</h2>
-          <p className="text-muted-foreground">Import affiliate offers from partner networks</p>
+          <h2 className="text-2xl font-bold">{t('admin.affiliateImport.title')}</h2>
+          <p className="text-muted-foreground">{t('admin.affiliateImport.description')}</p>
         </div>
         <Button onClick={() => { fetchPrograms(); fetchImportRuns(); }} variant="outline">
           <RefreshCw className="w-4 h-4 mr-2" />
-          Refresh
+          {t('admin.affiliateImport.refresh')}
         </Button>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
-          <TabsTrigger value="import">Import Offers</TabsTrigger>
-          <TabsTrigger value="programs">Programs</TabsTrigger>
-          <TabsTrigger value="history">Import History</TabsTrigger>
+          <TabsTrigger value="import">{t('admin.affiliateImport.importOffers')}</TabsTrigger>
+          <TabsTrigger value="programs">{t('admin.affiliateImport.programs')}</TabsTrigger>
+          <TabsTrigger value="history">{t('admin.affiliateImport.importHistory')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="import" className="space-y-6">
@@ -259,22 +273,22 @@ export function AffiliateImportManager() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <DollarSign className="w-5 h-5" />
-                Import Configuration
+                {t('admin.affiliateImport.configuration.title')}
               </CardTitle>
               <CardDescription>
-                Configure and start importing affiliate offers from partner networks
+                {t('admin.affiliateImport.configuration.description')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="source">Affiliate Network</Label>
+                  <Label htmlFor="source">{t('admin.affiliateImport.form.affiliateNetwork')}</Label>
                   <Select
                     value={importForm.source}
                     onValueChange={(value) => setImportForm(prev => ({ ...prev, source: value }))}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select affiliate network" />
+                      <SelectValue placeholder={t('admin.affiliateImport.form.selectAffiliateNetwork')} />
                     </SelectTrigger>
                     <SelectContent>
                       {affiliateSources.map(source => (
@@ -290,7 +304,7 @@ export function AffiliateImportManager() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="limit">Import Limit</Label>
+                  <Label htmlFor="limit">{t('admin.affiliateImport.form.importLimit')}</Label>
                   <Input
                     id="limit"
                     type="number"
@@ -307,10 +321,10 @@ export function AffiliateImportManager() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="keywords">Keywords</Label>
+                  <Label htmlFor="keywords">{t('admin.affiliateImport.form.keywords')}</Label>
                   <Input
                     id="keywords"
-                    placeholder="e.g., technology, fashion, travel"
+                    placeholder={t('admin.affiliateImport.form.keywordsPlaceholder')}
                     value={importForm.params.keywords}
                     onChange={(e) => setImportForm(prev => ({
                       ...prev,
@@ -320,10 +334,10 @@ export function AffiliateImportManager() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="category">Category</Label>
+                  <Label htmlFor="category">{t('admin.affiliateImport.form.category')}</Label>
                   <Input
                     id="category"
-                    placeholder="e.g., Electronics, Clothing, Books"
+                    placeholder={t('admin.affiliateImport.form.categoryPlaceholder')}
                     value={importForm.params.category}
                     onChange={(e) => setImportForm(prev => ({
                       ...prev,
@@ -335,7 +349,7 @@ export function AffiliateImportManager() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="min_commission">Min Commission (%)</Label>
+                  <Label htmlFor="min_commission">{t('admin.affiliateImport.form.minCommission')}</Label>
                   <Input
                     id="min_commission"
                     type="number"
@@ -352,7 +366,7 @@ export function AffiliateImportManager() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="max_commission">Max Commission (%)</Label>
+                  <Label htmlFor="max_commission">{t('admin.affiliateImport.form.maxCommission')}</Label>
                   <Input
                     id="max_commission"
                     type="number"
@@ -380,7 +394,7 @@ export function AffiliateImportManager() {
                     }))}
                     className="rounded"
                   />
-                  <span className="text-sm">Has Coupon Code</span>
+                  <span className="text-sm">{t('admin.affiliateImport.form.hasCoupon')}</span>
                 </label>
 
                 <label className="flex items-center space-x-2">
@@ -393,7 +407,7 @@ export function AffiliateImportManager() {
                     }))}
                     className="rounded"
                   />
-                  <span className="text-sm">On Sale Only</span>
+                  <span className="text-sm">{t('admin.affiliateImport.form.onSaleOnly')}</span>
                 </label>
               </div>
 
@@ -405,12 +419,12 @@ export function AffiliateImportManager() {
                 {isImporting ? (
                   <>
                     <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                    Importing...
+                    {t('admin.affiliateImport.importing')}
                   </>
                 ) : (
                   <>
                     <Play className="w-4 h-4 mr-2" />
-                    Start Import
+                    {t('admin.affiliateImport.startImport')}
                   </>
                 )}
               </Button>
@@ -422,13 +436,13 @@ export function AffiliateImportManager() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   {getStatusIcon(currentImport.status)}
-                  Current Import Status
+                  {t('admin.affiliateImport.currentImport.title')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <span>Network: {currentImport.affiliate_program?.name}</span>
+                    <span>{t('admin.affiliateImport.currentImport.network')}: {currentImport.affiliate_program?.name}</span>
                     <Badge className={getStatusColor(currentImport.status)}>
                       {currentImport.status}
                     </Badge>
@@ -437,7 +451,7 @@ export function AffiliateImportManager() {
                   {currentImport.status === 'running' && (
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
-                        <span>Progress</span>
+                        <span>{t('admin.affiliateImport.currentImport.progress')}</span>
                         <span>{currentImport.processed_records} / {currentImport.total_records || '?'}</span>
                       </div>
                       <Progress 
@@ -452,15 +466,15 @@ export function AffiliateImportManager() {
                     <div className="grid grid-cols-3 gap-4 text-center">
                       <div>
                         <div className="text-2xl font-bold text-green-600">{currentImport.created_records}</div>
-                        <div className="text-sm text-muted-foreground">Created</div>
+                        <div className="text-sm text-muted-foreground">{t('admin.affiliateImport.currentImport.created')}</div>
                       </div>
                       <div>
                         <div className="text-2xl font-bold text-blue-600">{currentImport.updated_records}</div>
-                        <div className="text-sm text-muted-foreground">Updated</div>
+                        <div className="text-sm text-muted-foreground">{t('admin.affiliateImport.currentImport.updated')}</div>
                       </div>
                       <div>
                         <div className="text-2xl font-bold text-red-600">{currentImport.failed_records}</div>
-                        <div className="text-sm text-muted-foreground">Failed</div>
+                        <div className="text-sm text-muted-foreground">{t('admin.affiliateImport.currentImport.failed')}</div>
                       </div>
                     </div>
                   )}
@@ -481,16 +495,16 @@ export function AffiliateImportManager() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Package className="w-5 h-5" />
-                Affiliate Programs
+                {t('admin.affiliateImport.programs.title')}
               </CardTitle>
               <CardDescription>
-                Manage your affiliate program connections
+                {t('admin.affiliateImport.programs.description')}
               </CardDescription>
             </CardHeader>
             <CardContent>
               {programs.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
-                  No affiliate programs found. Start an import to create program connections.
+                  {t('admin.affiliateImport.programs.noPrograms')}
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -500,26 +514,26 @@ export function AffiliateImportManager() {
                         <div className="flex items-center justify-between mb-2">
                           <h3 className="font-medium">{program.name}</h3>
                           <Badge variant={program.is_active ? 'default' : 'secondary'}>
-                            {program.is_active ? 'Active' : 'Inactive'}
+                            {program.is_active ? t('admin.affiliateImport.programs.active') : t('admin.affiliateImport.programs.inactive')}
                           </Badge>
                         </div>
                         
                         <div className="space-y-2 text-sm">
                           <div className="flex justify-between">
-                            <span className="text-muted-foreground">Provider:</span>
+                            <span className="text-muted-foreground">{t('admin.affiliateImport.programs.provider')}:</span>
                             <span className="capitalize">{program.provider}</span>
                           </div>
                           
                           {program.commission_rate && (
                             <div className="flex justify-between">
-                              <span className="text-muted-foreground">Commission:</span>
+                              <span className="text-muted-foreground">{t('admin.affiliateImport.programs.commission')}:</span>
                               <span>{program.commission_rate}%</span>
                             </div>
                           )}
                           
                           {program.last_sync_at && (
                             <div className="flex justify-between">
-                              <span className="text-muted-foreground">Last Sync:</span>
+                              <span className="text-muted-foreground">{t('admin.affiliateImport.programs.lastSync')}:</span>
                               <span>{new Date(program.last_sync_at).toLocaleDateString()}</span>
                             </div>
                           )}
@@ -538,16 +552,16 @@ export function AffiliateImportManager() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <TrendingUp className="w-5 h-5" />
-                Import History
+                {t('admin.affiliateImport.history.title')}
               </CardTitle>
               <CardDescription>
-                View previous affiliate import runs and their results
+                {t('admin.affiliateImport.history.description')}
               </CardDescription>
             </CardHeader>
             <CardContent>
               {importRuns.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
-                  No import runs found. Start your first import above.
+                  {t('admin.affiliateImport.history.noRuns')}
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -556,7 +570,7 @@ export function AffiliateImportManager() {
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
                           {getStatusIcon(run.status)}
-                          <span className="font-medium">{run.affiliate_program?.name || 'Unknown Network'}</span>
+                          <span className="font-medium">{run.affiliate_program?.name || t('admin.affiliateImport.history.unknownNetwork')}</span>
                           <Badge variant="outline">{run.affiliate_program?.provider}</Badge>
                         </div>
                         <Badge className={getStatusColor(run.status)}>
@@ -566,27 +580,27 @@ export function AffiliateImportManager() {
 
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                         <div>
-                          <div className="text-muted-foreground">Total</div>
+                          <div className="text-muted-foreground">{t('admin.affiliateImport.history.total')}</div>
                           <div className="font-medium">{run.total_records}</div>
                         </div>
                         <div>
-                          <div className="text-muted-foreground">Created</div>
+                          <div className="text-muted-foreground">{t('admin.affiliateImport.history.created')}</div>
                           <div className="font-medium text-green-600">{run.created_records}</div>
                         </div>
                         <div>
-                          <div className="text-muted-foreground">Updated</div>
+                          <div className="text-muted-foreground">{t('admin.affiliateImport.history.updated')}</div>
                           <div className="font-medium text-blue-600">{run.updated_records}</div>
                         </div>
                         <div>
-                          <div className="text-muted-foreground">Failed</div>
+                          <div className="text-muted-foreground">{t('admin.affiliateImport.history.failed')}</div>
                           <div className="font-medium text-red-600">{run.failed_records}</div>
                         </div>
                       </div>
 
                       <div className="mt-2 text-xs text-muted-foreground">
-                        Started: {new Date(run.started_at).toLocaleString()}
+                        {t('admin.affiliateImport.history.started')}: {new Date(run.started_at).toLocaleString()}
                         {run.completed_at && (
-                          <> • Completed: {new Date(run.completed_at).toLocaleString()}</>
+                          <> • {t('admin.affiliateImport.history.completed')}: {new Date(run.completed_at).toLocaleString()}</>
                         )}
                       </div>
 

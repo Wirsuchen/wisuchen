@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useAuth } from "@/contexts/auth-context"
+import { useTranslation } from "@/contexts/i18n-context"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,34 +18,19 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { LanguageSwitcher } from "@/components/i18n/language-switcher"
 
 export function Header() {
   const [searchType, setSearchType] = useState("jobs")
   const [isOpen, setIsOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const { user, logout } = useAuth()
-  const [translateLoaded, setTranslateLoaded] = useState(false)
-  const [showTranslate, setShowTranslate] = useState(false)
+  const { t } = useTranslation()
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20)
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
-
-  useEffect(() => {
-    ;(window as any).googleTranslateElementInit = () => {
-      try {
-        // @ts-ignore
-        new (window as any).google.translate.TranslateElement({
-          pageLanguage: 'en',
-          autoDisplay: false,
-          includedLanguages: 'de,en,fr,it',
-          layout: (window as any).google.translate.TranslateElement.InlineLayout.SIMPLE,
-        }, 'google_translate_element')
-        setTranslateLoaded(true)
-      } catch {}
-    }
   }, [])
 
   // Lock background scroll when mobile menu is open
@@ -64,12 +50,12 @@ export function Header() {
   }, [isOpen])
 
   const navigation = [
-    { name: 'Jobs', href: "/jobs" },
-    { name: 'Deals', href: "/deals" },
-    { name: 'Blog', href: "/blog" },
-    { name: 'Pricing', href: "/pricing" },
-    { name: 'Support', href: "/support" },
-  ]
+    { key: 'nav.jobs', href: "/jobs" },
+    { key: 'nav.deals', href: "/deals" },
+    { key: 'nav.blog', href: "/blog" },
+    { key: 'pricing.title', href: "/pricing" },
+    { key: 'footer.support', href: "/support" },
+  ] as const
 
   // Inline style ensures a robust blur + saturation fallback (works better in Safari)
   const glassStyle = {
@@ -92,7 +78,7 @@ export function Header() {
   <div className="w-30 h-30 sm:w-30 sm:h-30 md:w-30 md:h-30 flex items-center justify-center overflow-hidden">
     <Image
       src="/logo.png"
-      alt="Logo"
+      alt="WIRsuchen"
       width={292}
       height={292}
       className="object-contain"
@@ -115,11 +101,11 @@ export function Header() {
             <nav className="hidden lg:flex items-center space-x-1">
               {navigation.map((item) => (
                 <Link
-                  key={item.name}
+                  key={item.key}
                   href={item.href}
                   className="px-3 py-2 text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-accent/50 rounded-lg transition-all duration-200 relative z-10"
                 >
-                  {item.name}
+                  {t(item.key)}
                 </Link>
               ))}
             </nav>
@@ -133,13 +119,13 @@ export function Header() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-white/6 dark:bg-gray-900/30 backdrop-blur-md border border-white/10 dark:border-gray-800/30">
-                      <SelectItem value="jobs">Jobs</SelectItem>
-                      <SelectItem value="deals">Deals</SelectItem>
+                      <SelectItem value="jobs">{t('nav.jobs')}</SelectItem>
+                      <SelectItem value="deals">{t('nav.deals')}</SelectItem>
                     </SelectContent>
                   </Select>
                   <Input
                     type="search"
-                    placeholder={`Search ${searchType}...`}
+                    placeholder={`${t('common.search')} ${searchType === 'jobs' ? t('nav.jobs') : t('nav.deals')}...`}
                     className="border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-foreground placeholder:text-muted-foreground"
                   />
                   <Button size="sm" className="h-8 w-8 m-1 rounded-md" variant="ghost">
@@ -154,7 +140,7 @@ export function Header() {
               <Link href="/saved" className="hidden md:block">
                 <Button variant="ghost" size="sm" className="h-8 px-3 text-foreground hover:bg-accent hover:text-accent-foreground">
                   <Heart className="h-4 w-4 mr-2" />
-                  <span className="hidden lg:inline">Save</span>
+                  <span className="hidden lg:inline">{t('jobs.save')}</span>
                 </Button>
               </Link>
 
@@ -163,7 +149,7 @@ export function Header() {
                   <Link href="/dashboard" className="hidden md:block">
                     <Button variant="ghost" size="sm" className="h-8 px-3 text-foreground hover:bg-accent hover:text-accent-foreground">
                       <ShoppingBag className="h-4 w-4 mr-2" />
-                      <span className="hidden lg:inline">Dashboard</span>
+                      <span className="hidden lg:inline">{t('nav.dashboard')}</span>
                     </Button>
                   </Link>
 
@@ -181,15 +167,15 @@ export function Header() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48 bg-white/6 dark:bg-gray-900/30 backdrop-blur-md border border-white/10 dark:border-gray-800/30">
                       <DropdownMenuItem asChild>
-                        <Link href="/dashboard/profile" className="text-foreground">Profile</Link>
+                        <Link href="/dashboard/profile" className="text-foreground">{t('nav.profile')}</Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
-                        <Link href="/dashboard" className="text-foreground">Dashboard</Link>
+                        <Link href="/dashboard" className="text-foreground">{t('nav.dashboard')}</Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={logout} className="text-foreground">
                         <LogOut className="h-4 w-4 mr-2" />
-                        Logout
+                        {t('nav.logout')}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -199,46 +185,20 @@ export function Header() {
                   <Link href="/login" className="hidden md:block">
                     <Button variant="outline" size="sm" className="h-8 px-3 bg-transparent text-foreground border-white/10 dark:border-gray-800/30 hover:bg-accent hover:text-accent-foreground">
                       <User className="h-4 w-4 mr-2" />
-                      <span className="hidden lg:inline">Login</span>
+                      <span className="hidden lg:inline">{t('nav.login')}</span>
                     </Button>
                   </Link>
                   <Link href="/register" className="hidden md:block">
                     <Button size="sm" className="h-8 px-3 bg-primary text-primary-foreground hover:bg-primary/90">
-                      <span className="hidden lg:inline">Register</span>
-                      <span className="lg:hidden">Register</span>
+                      <span className="hidden lg:inline">{t('auth.signUp')}</span>
+                      <span className="lg:hidden">{t('auth.signUp')}</span>
                     </Button>
                   </Link>
                 </>
               )}
 
 
-
-              <div className="relative">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 px-3 text-foreground hover:bg-accent hover:text-accent-foreground"
-                  onClick={() => {
-                    try {
-                      if (typeof document === 'undefined') return
-                      const existing = document.querySelector('script[src*="translate_a/element.js"]')
-                      if (!existing) {
-                        const s = document.createElement('script')
-                        s.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit'
-                        document.body.appendChild(s)
-                      }
-                    } catch {}
-                    setShowTranslate((v) => !v)
-                  }}
-                >
-                  Translate
-                </Button>
-                {showTranslate && (
-                  <div className="absolute right-0 mt-2 w-[220px] rounded-md border bg-background p-2 shadow-lg z-50">
-                    <div id="google_translate_element" className="min-h-[38px]" />
-                  </div>
-                )}
-              </div>
+              <LanguageSwitcher variant="compact" />
 
               {/* Mobile Menu */}
               <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -262,20 +222,20 @@ export function Header() {
                   <div className="flex flex-col space-y-6 mt-[max(1.5rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] px-2">
                     {/* Mobile Search */}
                     <div className="space-y-3">
-                      <h3 className="text-sm font-medium text-foreground/80">Search</h3>
+                      <h3 className="text-sm font-medium text-foreground/80">{t('common.search')}</h3>
                       <Select value={searchType} onValueChange={setSearchType}>
                         <SelectTrigger className="h-10 bg-card/90 border-border/60 text-foreground">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="bg-background/95 backdrop-blur-md border border-border/60">
-                          <SelectItem value="jobs">Jobs</SelectItem>
-                          <SelectItem value="deals">Deals</SelectItem>
+                          <SelectItem value="jobs">{t('nav.jobs')}</SelectItem>
+                          <SelectItem value="deals">{t('nav.deals')}</SelectItem>
                         </SelectContent>
                       </Select>
                       <div className="relative">
                         <Input
                           type="search"
-                          placeholder={`Search ${searchType}...`}
+                          placeholder={`${t('common.search')} ${searchType === 'jobs' ? t('nav.jobs') : t('nav.deals')}...`}
                           className="h-10 pr-10 bg-card/90 border-border/60 text-foreground placeholder:text-foreground/60"
                         />
                         <Button size="sm" className="absolute right-1 top-1 h-8 w-8" variant="ghost">
@@ -286,16 +246,16 @@ export function Header() {
 
                     {/* Mobile Navigation */}
                     <div className="space-y-3">
-                      <h3 className="text-sm font-medium text-foreground/80">Navigation</h3>
+                      <h3 className="text-sm font-medium text-foreground/80">{t('common.navigation')}</h3>
                       <nav className="flex flex-col space-y-1">
                         {navigation.map((item) => (
                           <Link
-                            key={item.name}
+                            key={item.key}
                             href={item.href}
                             className="flex items-center px-3 py-2 text-sm font-medium text-foreground hover:text-foreground hover:bg-accent/50 rounded-lg transition-colors min-h-[44px]"
                             onClick={() => setIsOpen(false)}
                           >
-                            {item.name}
+                            {t(item.key)}
                           </Link>
                         ))}
                       </nav>
@@ -306,7 +266,7 @@ export function Header() {
                       <Link href="/saved" onClick={() => setIsOpen(false)}>
                         <Button variant="ghost" className="justify-start w-full h-10 text-foreground hover:bg-accent hover:text-accent-foreground">
                           <Heart className="h-4 w-4 mr-3" />
-                          Saved Items
+                          {t('jobs.save')}
                         </Button>
                       </Link>
 
@@ -315,7 +275,7 @@ export function Header() {
                           <Link href="/dashboard" onClick={() => setIsOpen(false)}>
                             <Button variant="ghost" className="justify-start w-full h-10 text-foreground hover:bg-accent hover:text-accent-foreground">
                               <ShoppingBag className="h-4 w-4 mr-3" />
-                              Dashboard
+                              {t('nav.dashboard')}
                             </Button>
                           </Link>
                           <div className="flex items-center space-x-3 p-3 border border-border/60 rounded-lg bg-accent/10 backdrop-blur-sm">
@@ -339,7 +299,7 @@ export function Header() {
                             }}
                           >
                             <LogOut className="h-4 w-4 mr-3" />
-                            Logout
+                            {t('nav.logout')}
                           </Button>
                         </>
                       ) : (
@@ -347,16 +307,21 @@ export function Header() {
                           <Link href="/login" onClick={() => setIsOpen(false)}>
                             <Button variant="outline" className="justify-start w-full h-10 bg-transparent text-foreground border-border/60 hover:bg-accent hover:text-accent-foreground">
                               <User className="h-4 w-4 mr-3" />
-                              Login
+                              {t('nav.login')}
                             </Button>
                           </Link>
                           <Link href="/register" onClick={() => setIsOpen(false)}>
                             <Button className="justify-start w-full h-10 bg-primary text-primary-foreground hover:bg-primary/90">
-                              Sign Up
+                              {t('auth.signUp')}
                             </Button>
                           </Link>
                         </div>
                       )}
+
+                      {/* Language Switcher */}
+                      <div className="pt-4 border-t border-border/60">
+                        <LanguageSwitcher variant="default" />
+                      </div>
                     </div>
                   </div>
                 </SheetContent>
