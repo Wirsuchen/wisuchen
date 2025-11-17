@@ -206,7 +206,7 @@ export default function JobsPage() {
             <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-sm px-4">
               <div className="flex items-center gap-2">
                 <Briefcase className="w-4 h-4 text-blue-600" />
-                <span className="font-semibold">{uniqueJobs.length} {t('nav.jobs')}</span>
+                <span className="font-semibold">{(pagination?.total ?? uniqueJobs.length)} {t('nav.jobs')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-green-600" />
