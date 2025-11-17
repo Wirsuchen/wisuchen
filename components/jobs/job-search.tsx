@@ -50,21 +50,21 @@ export function JobSearch({ categories = [], onFiltersChange }: JobSearchProps) 
   const [showAdvanced, setShowAdvanced] = useState(false)
 
   const employmentTypes = [
-    { value: 'full_time', label: t('jobSearch.employmentTypes.fullTime') },
-    { value: 'part_time', label: t('jobSearch.employmentTypes.partTime') },
-    { value: 'contract', label: t('jobSearch.employmentTypes.contract') },
-    { value: 'freelance', label: t('jobSearch.employmentTypes.freelance') },
-    { value: 'internship', label: t('jobSearch.employmentTypes.internship') },
-    { value: 'temporary', label: t('jobSearch.employmentTypes.temporary') }
+    { value: 'full_time', label: t('jobs.full_time') },
+    { value: 'part_time', label: t('jobs.part_time') },
+    { value: 'contract', label: t('jobs.contract') },
+    { value: 'freelance', label: t('jobs.freelance') },
+    { value: 'internship', label: t('jobs.internship') },
+    { value: 'temporary', label: t('jobs.temporary') }
   ]
 
   const experienceLevels = [
-    { value: 'entry', label: t('jobSearch.experienceLevels.entry') },
-    { value: 'junior', label: t('jobSearch.experienceLevels.junior') },
-    { value: 'mid', label: t('jobSearch.experienceLevels.mid') },
-    { value: 'senior', label: t('jobSearch.experienceLevels.senior') },
-    { value: 'lead', label: t('jobSearch.experienceLevels.lead') },
-    { value: 'executive', label: t('jobSearch.experienceLevels.executive') }
+    { value: 'entry', label: t('jobs.entry') },
+    { value: 'junior', label: t('jobs.junior') },
+    { value: 'mid', label: t('jobs.mid') },
+    { value: 'senior', label: t('jobs.senior') },
+    { value: 'lead', label: t('jobs.lead') },
+    { value: 'executive', label: t('jobs.executive') }
   ]
 
   const salaryRanges = [
