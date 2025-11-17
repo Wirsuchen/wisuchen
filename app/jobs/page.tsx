@@ -5,7 +5,7 @@
  * Fetches live job data from multiple RapidAPI sources
  */
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useJobs, type Job } from '@/hooks/use-jobs'
 import { PageLayout } from '@/components/layout/page-layout'
 import { Loader2, Search, MapPin, Briefcase, DollarSign, ExternalLink, Filter, RefreshCw, TrendingUp, Edit } from 'lucide-react'
@@ -29,6 +29,30 @@ const getJobSnippet = (text?: string | null, max: number = 250) => {
   if (!text) return ''
   const cleaned = sanitizeJobDescription(text).replace(/<[^>]*>/g, '')
   return cleaned.substring(0, max)
+}
+
+// Function to deduplicate jobs based on title, company, location, and external ID
+function dedupeJobs(jobs: Job[]): Job[] {
+  const seen = new Set<string>()
+  const result: Job[] = []
+
+  for (const job of jobs) {
+    const keyParts = [
+      job.title?.toLowerCase().trim(),
+      job.company?.toLowerCase().trim(),
+      job.location?.toLowerCase().trim(),
+      (job.externalId || job.id || "").toString().toLowerCase().trim(),
+      job.source?.toLowerCase().trim(),
+    ].filter(Boolean)
+
+    const key = keyParts.join("|")
+
+    if (!seen.has(key)) {
+      seen.add(key)
+      result.push(job)
+    }
+  }
+  return result
 }
 
 interface UserPostedJob {
@@ -66,6 +90,15 @@ export default function JobsPage() {
   const { t } = useTranslation()
 
   const { jobs, loading, error, search, refresh, pagination, meta } = useJobs()
+  
+  // Deduplicate jobs to remove duplicates from different sources
+  const uniqueJobs = useMemo(() => {
+    const deduped = dedupeJobs(jobs)
+    if (jobs.length > deduped.length) {
+      console.log(`Removed ${jobs.length - deduped.length} duplicate jobs from ${jobs.length} total jobs`)
+    }
+    return deduped
+  }, [jobs])
 
   // Load jobs on mount
   useEffect(() => {
@@ -173,7 +206,7 @@ export default function JobsPage() {
             <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-sm px-4">
               <div className="flex items-center gap-2">
                 <Briefcase className="w-4 h-4 text-blue-600" />
-                <span className="font-semibold">{pagination?.total || 0} {t('nav.jobs')}</span>
+                <span className="font-semibold">{uniqueJobs.length} {t('nav.jobs')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-green-600" />
@@ -342,7 +375,7 @@ export default function JobsPage() {
         )}
 
         {/* Loading State */}
-        {loading && jobs.length === 0 && (
+        {loading && uniqueJobs.length === 0 && (
           <div className="flex items-center justify-center py-20">
             <div className="text-center">
               <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
@@ -353,7 +386,7 @@ export default function JobsPage() {
         )}
 
         {/* No Results */}
-        {!loading && jobs.length === 0 && !error && (
+        {!loading && uniqueJobs.length === 0 && !error && (
           <div className="text-center py-20">
             <Briefcase className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-700 mb-2">{t('jobs.noJobsFound')}</h3>
@@ -365,10 +398,10 @@ export default function JobsPage() {
         )}
 
         {/* Jobs List */}
-        {jobs.length > 0 && (
+        {uniqueJobs.length > 0 && (
           <>
             <div className="space-y-4">
-              {jobs.map((job) => (
+              {uniqueJobs.map((job) => (
                 <JobCard key={`${job.source}-${job.id}`} job={job} />
               ))}
             </div>
@@ -404,7 +437,7 @@ export default function JobsPage() {
  * Job Card Component
  */
 function JobCard({ job }: { job: Job }) {
-  const { t } = useTranslation()
+  const { t, tr } = useTranslation()
   
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -412,9 +445,9 @@ function JobCard({ job }: { job: Job }) {
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
     
     if (diffInHours < 1) return t('jobs.time.justNow')
-    if (diffInHours < 24) return t('jobs.time.hoursAgo', { hours: diffInHours })
+    if (diffInHours < 24) return tr('jobs.time.hoursAgo', { hours: diffInHours })
     if (diffInHours < 48) return t('jobs.time.yesterday')
-    if (diffInHours < 168) return t('jobs.time.daysAgo', { days: Math.floor(diffInHours / 24) })
+    if (diffInHours < 168) return tr('jobs.time.daysAgo', { days: Math.floor(diffInHours / 24) })
     return date.toLocaleDateString()
   }
 
@@ -475,11 +508,18 @@ function JobCard({ job }: { job: Job }) {
 
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="flex flex-wrap gap-2">
-          {job.employmentType && (
-            <Badge variant="secondary" className="text-xs">
-              {job.employmentType.replace('_', ' ')}
-            </Badge>
-          )}
+          {job.employmentType && (() => {
+            const key = job.employmentType.toLowerCase().replace(/[\s-]+/g, '_').trim()
+            const translated = t(`jobs.employmentTypes.${key}`)
+            const label = translated && translated !== `jobs.employmentTypes.${key}`
+              ? translated
+              : key.replace(/_/g, ' ')
+            return (
+              <Badge variant="secondary" className="text-xs">
+                {label}
+              </Badge>
+            )
+          })()}
           {job.experienceLevel && (
             <Badge variant="outline" className="text-xs capitalize">
               {job.experienceLevel}
@@ -527,7 +567,7 @@ function JobCard({ job }: { job: Job }) {
  * User Posted Job Card Component
  */
 function UserJobCard({ job }: { job: UserPostedJob }) {
-  const { t } = useTranslation()
+  const { t, tr } = useTranslation()
   
   const formatDate = (dateString: string | null) => {
     if (!dateString) return t('jobs.notPublished')
@@ -536,9 +576,9 @@ function UserJobCard({ job }: { job: UserPostedJob }) {
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
     
     if (diffInHours < 1) return t('jobs.time.justNow')
-    if (diffInHours < 24) return t('jobs.time.hoursAgo', { hours: diffInHours })
+    if (diffInHours < 24) return tr('jobs.time.hoursAgo', { hours: diffInHours })
     if (diffInHours < 48) return t('jobs.time.yesterday')
-    if (diffInHours < 168) return t('jobs.time.daysAgo', { days: Math.floor(diffInHours / 24) })
+    if (diffInHours < 168) return tr('jobs.time.daysAgo', { days: Math.floor(diffInHours / 24) })
     return date.toLocaleDateString()
   }
 

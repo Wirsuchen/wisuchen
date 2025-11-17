@@ -10,6 +10,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Eye, Users, Edit, RefreshCw, Trash2, Search, Plus } from "lucide-react"
 import Link from "next/link"
 import { useTranslation } from "@/contexts/i18n-context"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 export function MyAds() {
   const { t } = useTranslation()
@@ -90,7 +96,9 @@ export function MyAds() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id }),
       })
-      if (!res.ok) throw new Error('Failed to delete')
+      if (!res.ok) throw new Error('Failed to archive')
+      const result = await res.json()
+      console.log('Archive result:', result.message) // Log success message
       setAds(prev => prev.filter(a => a.id !== id))
     } catch (e) {
       console.error('Archive ad error:', e)
@@ -98,7 +106,8 @@ export function MyAds() {
   }
 
   return (
-    <div className="space-y-6">
+    <TooltipProvider>
+      <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">{t("dashboard.myAds")}</h1>
@@ -256,14 +265,21 @@ export function MyAds() {
                           <Button variant="outline" size="sm" className="bg-transparent" onClick={() => refreshAd(ad.id)}>
                             <RefreshCw className="h-4 w-4" />
                           </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-destructive hover:text-destructive bg-transparent"
-                            onClick={() => archiveAd(ad.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-destructive hover:text-destructive bg-transparent"
+                                onClick={() => archiveAd(ad.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Archive this ad (it won't be deleted permanently)</p>
+                            </TooltipContent>
+                          </Tooltip>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -274,6 +290,7 @@ export function MyAds() {
           </div>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </TooltipProvider>
   )
 }

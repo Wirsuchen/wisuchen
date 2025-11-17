@@ -29,6 +29,61 @@ interface Deal {
   image: string
 }
 
+// Normalize various employment type shapes to our i18n keys
+function normalizeEmploymentType(input: string): string {
+  const key = input.toLowerCase().replace(/[\s-]+/g, '_').trim()
+  const aliases: Record<string, string> = {
+    fulltime: 'full_time',
+    ft: 'full_time',
+    parttime: 'part_time',
+    pt: 'part_time',
+    permanent: 'full_time',
+    contract_full_time: 'full_time',
+    contract_part_time: 'part_time',
+  }
+  return aliases[key] || key
+}
+
+function dedupeJobs(jobs: Job[]): Job[] {
+  const normalize = (s?: string | null) =>
+    (s || '')
+      .toLowerCase()
+      .replace(/\([^)]*\)/g, ' ') // drop parenthetical like (all genders)
+      .replace(/&/g, ' and ')
+      .normalize('NFKD')
+      .replace(/[\u0300-\u036f]/g, '') // strip accents
+      .replace(/[^a-z0-9]+/g, ' ')
+      .trim()
+      .replace(/\s+/g, ' ')
+
+  // Prefer entries with more useful info
+  const score = (j: Job) => (j.salary?.text ? 1 : 0) + (j.applicationUrl ? 1 : 0)
+
+  const byKey = new Map<string, Job>()
+
+  for (const job of jobs) {
+    const title = normalize(job.title)
+    const company = normalize(job.company)
+    const location = normalize(job.location)
+
+    // Primary key: title + location; if location missing, fallback to company; if both missing, title only
+    const base = location || company || ''
+    const key = base ? `${title}|${base}` : title
+
+    const existing = byKey.get(key)
+    if (!existing) {
+      byKey.set(key, job)
+    } else {
+      // keep the richer one
+      if (score(job) > score(existing)) {
+        byKey.set(key, job)
+      }
+    }
+  }
+
+  return Array.from(byKey.values())
+}
+
 export default function HomePage() {
   const { t } = useTranslation()
   const [topDeals, setTopDeals] = useState<Deal[]>([])
@@ -81,7 +136,8 @@ export default function HomePage() {
         60 * 60 * 1000
       )
       const jobs: Job[] = data?.data?.jobs || []
-      setTopJobs(jobs.length > 0 ? jobs.slice(0, 4) : [])
+      const uniqueJobs = dedupeJobs(jobs)
+      setTopJobs(uniqueJobs.length > 0 ? uniqueJobs.slice(0, 4) : [])
     } catch (e) {
       console.error('Error fetching jobs:', e)
       setTopJobs([])
@@ -268,7 +324,14 @@ export default function HomePage() {
                       : undefined
                   )
 
-                  const jobType = job.employmentType ? job.employmentType.replace('_', ' ') : undefined
+                  // Normalize type to snake_case and attempt translation; fallback to humanized text
+                  const typeKey = job.employmentType
+                    ? normalizeEmploymentType(job.employmentType)
+                    : undefined
+                  const rawTypeLabel = typeKey ? t(`jobs.employmentTypes.${typeKey}`) : undefined
+                  const jobTypeLabel = rawTypeLabel && typeKey && rawTypeLabel !== `jobs.employmentTypes.${typeKey}`
+                    ? rawTypeLabel
+                    : (typeKey ? typeKey.replace(/_/g, ' ') : undefined)
                   const key = `${job.source}-${job.externalId || job.id}`
 
                   const handleOpen = () => {
@@ -296,7 +359,9 @@ export default function HomePage() {
                           </div>
                           <div className="flex items-center justify-between">
                             {salaryText && <span className="font-semibold text-accent">{salaryText}</span>}
-                            {jobType && <Badge variant="outline" className="capitalize">{jobType}</Badge>}
+                            {jobTypeLabel && (
+                              <Badge variant="outline" className="capitalize">{jobTypeLabel}</Badge>
+                            )}
                           </div>
                         </div>
                         <Button className="w-full mt-4 bg-transparent" variant="outline" asChild>

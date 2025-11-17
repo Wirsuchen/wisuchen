@@ -240,8 +240,8 @@
     "share": "Share",
     "applicants": "applicants",
     "status": "Status",
-    "fullTime": "Full-time",
-    "partTime": "Part-time",
+    "full_time": "Full-time",
+    "part_time": "Part-time",
     "contract": "Contract",
     "freelance": "Freelance",
     "internship": "Internship",
@@ -1127,8 +1127,8 @@
         "locationPlaceholder": "e.g., Berlin, Munich, Hamburg",
         "employmentType": "Employment Type",
         "anyType": "Any type",
-        "fullTime": "Full Time",
-        "partTime": "Part Time",
+        "full_time": "Full Time",
+        "part_time": "Part Time",
         "contract": "Contract",
         "freelance": "Freelance",
         "minSalary": "Min Salary (€)",
@@ -1400,22 +1400,6 @@
         "allTypes": "All types",
         "allLevels": "All levels",
         "anySalary": "Any salary"
-      },
-      "employmentTypes": {
-        "fullTime": "Full-time",
-        "partTime": "Part-time",
-        "contract": "Contract",
-        "freelance": "Freelance",
-        "internship": "Internship",
-        "temporary": "Temporary"
-      },
-      "experienceLevels": {
-        "entry": "Entry Level",
-        "junior": "Junior",
-        "mid": "Mid-Level",
-        "senior": "Senior",
-        "lead": "Lead",
-        "executive": "Executive"
       },
       "salaryRanges": {
         "range30k": "€30,000+",
@@ -1731,6 +1715,36 @@
         "error": {
           "title": "Error",
           "description": "Failed to save job. Please try again."
+        }
+      },
+      "post": {
+        "categories": {
+          "technology": "Technology",
+          "marketing": "Marketing",
+          "sales": "Sales",
+          "design": "Design",
+          "finance": "Finance",
+          "healthcare": "Healthcare",
+          "education": "Education",
+          "engineering": "Engineering"
+        },
+        "types": {
+          "full_time": "Full-time",
+          "part_time": "Part-time",
+          "contract": "Contract",
+          "freelance": "Freelance",
+          "internship": "Internship"
+        },
+        "placeholders": {
+          "selectCategory": "Select category",
+          "selectType": "Select type"
+        },
+        "ai": {
+          "upgradeRequired": "Upgrade Required",
+          "upgradeDescription": "AI features are available for Professional and Business plan subscribers. Upgrade to unlock this feature.",
+          "requirementsGenerated": "Requirements generated",
+          "benefitsGenerated": "Benefits & perks generated",
+          "generationFailed": "Generation failed"
         }
       }
     }

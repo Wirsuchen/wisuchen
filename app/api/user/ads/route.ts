@@ -32,6 +32,7 @@ export async function GET(request: NextRequest) {
       .select('id, title, status, type, created_at, expires_at, company_id')
       .eq('created_by', profile.id)
       .eq('type', 'job')
+      .neq('status', 'archived')
       .order('created_at', { ascending: false })
       .limit(limit)
 
@@ -175,10 +176,10 @@ export async function DELETE(request: NextRequest) {
 
     if (error) {
       console.error('Archive ad error:', error)
-      return NextResponse.json({ error: 'Failed to archive' }, { status: 500 })
+      return NextResponse.json({ error: 'Failed to archive ad' }, { status: 500 })
     }
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true, message: 'Ad archived successfully' })
   } catch (error) {
     console.error('User ads DELETE error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

@@ -20,10 +20,12 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/contexts/auth-context"
 import Link from "next/link"
+import { useTranslation } from "@/contexts/i18n-context"
 
 export default function PostJobPage() {
   const router = useRouter()
   const { user } = useAuth()
+  const { t } = useTranslation()
   const [step, setStep] = useState(1)
   const [showAIGenerator, setShowAIGenerator] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
@@ -55,9 +57,24 @@ export default function PostJobPage() {
     featured: false,
   })
 
-  const categories = ["Technology", "Marketing", "Sales", "Design", "Finance", "Healthcare", "Education", "Engineering"]
+  const categories = [
+    { value: "technology", label: t('jobs.post.categories.technology') },
+    { value: "marketing", label: t('jobs.post.categories.marketing') },
+    { value: "sales", label: t('jobs.post.categories.sales') },
+    { value: "design", label: t('jobs.post.categories.design') },
+    { value: "finance", label: t('jobs.post.categories.finance') },
+    { value: "healthcare", label: t('jobs.post.categories.healthcare') },
+    { value: "education", label: t('jobs.post.categories.education') },
+    { value: "engineering", label: t('jobs.post.categories.engineering') }
+  ]
 
-  const jobTypes = ["Full-time", "Part-time", "Contract", "Freelance", "Internship"]
+  const jobTypes = [
+    { value: "full_time", label: t('jobs.post.types.full_time') },
+    { value: "part_time", label: t('jobs.post.types.part_time') },
+    { value: "contract", label: t('jobs.post.types.contract') },
+    { value: "freelance", label: t('jobs.post.types.freelance') },
+    { value: "internship", label: t('jobs.post.types.internship') }
+  ]
 
   const handleInputChange = (field: string, value: string | boolean | File | null) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -89,8 +106,8 @@ export default function PostJobPage() {
   const handleGenerateRequirements = async () => {
     if (!isPaidUser) {
       toast({
-        title: 'Upgrade Required',
-        description: 'AI features are available for Professional and Business plan subscribers. Upgrade to unlock this feature.',
+        title: t('jobs.post.ai.upgradeRequired'),
+        description: t('jobs.post.ai.upgradeDescription'),
         variant: 'destructive',
       })
       return
@@ -114,9 +131,9 @@ export default function PostJobPage() {
         acc += t
         setFormData(prev => ({ ...prev, requirements: acc }))
       })
-      toast({ title: 'Requirements generated' })
+      toast({ title: t('jobs.post.ai.requirementsGenerated') })
     } catch (e) {
-      toast({ title: 'Generation failed', variant: 'destructive' })
+      toast({ title: t('jobs.post.ai.generationFailed'), variant: 'destructive' })
     } finally {
       setGenReqLoading(false)
     }
@@ -125,8 +142,8 @@ export default function PostJobPage() {
   const handleGenerateBenefits = async () => {
     if (!isPaidUser) {
       toast({
-        title: 'Upgrade Required',
-        description: 'AI features are available for Professional and Business plan subscribers. Upgrade to unlock this feature.',
+        title: t('jobs.post.ai.upgradeRequired'),
+        description: t('jobs.post.ai.upgradeDescription'),
         variant: 'destructive',
       })
       return
@@ -150,9 +167,9 @@ export default function PostJobPage() {
         acc += t
         setFormData(prev => ({ ...prev, benefits: acc }))
       })
-      toast({ title: 'Benefits & perks generated' })
+      toast({ title: t('jobs.post.ai.benefitsGenerated') })
     } catch (e) {
-      toast({ title: 'Generation failed', variant: 'destructive' })
+      toast({ title: t('jobs.post.ai.generationFailed'), variant: 'destructive' })
     } finally {
       setGenBenLoading(false)
     }
@@ -561,12 +578,12 @@ export default function PostJobPage() {
                     <Label htmlFor="category">Category *</Label>
                     <Select value={formData.category} onValueChange={(value) => handleInputChange("category", value)}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select category" />
+                        <SelectValue placeholder={t('jobs.post.placeholders.selectCategory')} />
                       </SelectTrigger>
                       <SelectContent>
                         {categories.map((category) => (
-                          <SelectItem key={category} value={category}>
-                            {category}
+                          <SelectItem key={category.value} value={category.value}>
+                            {category.label}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -576,12 +593,12 @@ export default function PostJobPage() {
                     <Label htmlFor="jobType">Job Type *</Label>
                     <Select value={formData.jobType} onValueChange={(value) => handleInputChange("jobType", value)}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select type" />
+                        <SelectValue placeholder={t('jobs.post.placeholders.selectType')} />
                       </SelectTrigger>
                       <SelectContent>
                         {jobTypes.map((type) => (
-                          <SelectItem key={type} value={type}>
-                            {type}
+                          <SelectItem key={type.value} value={type.value}>
+                            {type.label}
                           </SelectItem>
                         ))}
                       </SelectContent>
