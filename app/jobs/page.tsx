@@ -321,8 +321,8 @@ export default function JobsPage() {
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="">{t('jobs.allTypes')}</option>
-                      <option value="full_time">{t('jobs.fullTime')}</option>
-                      <option value="part_time">{t('jobs.partTime')}</option>
+                      <option value="full_time">{t('jobs.full_time')}</option>
+                      <option value="part_time">{t('jobs.part_time')}</option>
                       <option value="contract">{t('jobs.contract')}</option>
                       <option value="freelance">{t('jobs.freelance')}</option>
                       <option value="internship">{t('jobs.internship')}</option>

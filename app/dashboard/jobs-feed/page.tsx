@@ -139,8 +139,8 @@ export default function JobsFeedPage() {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">{t('jobs.allTypes')}</option>
-                <option value="full_time">{t('jobs.fullTime')}</option>
-                <option value="part_time">{t('jobs.partTime')}</option>
+                <option value="full_time">{t('jobs.full_time')}</option>
+                <option value="part_time">{t('jobs.part_time')}</option>
                 <option value="contract">{t('jobs.contract')}</option>
                 <option value="freelance">{t('jobs.freelance')}</option>
                 <option value="internship">{t('jobs.internship')}</option>
@@ -290,6 +290,23 @@ function JobCard({ job }: { job: Job }) {
     return 'bg-gray-100 text-gray-700'
   }
 
+  const normalizeKey = (value: string) =>
+    value.toLowerCase().replace(/[\s-]+/g, '_').trim()
+
+  const getEmploymentTypeLabel = (type: string) => {
+    const key = normalizeKey(type)
+    const tKey = `jobs.${key}`
+    const translated = t(tKey)
+    return translated !== tKey ? translated : type
+  }
+
+  const getExperienceLevelLabel = (level: string) => {
+    const key = normalizeKey(level)
+    const tKey = `jobs.${key}`
+    const translated = t(tKey)
+    return translated !== tKey ? translated : level
+  }
+
   return (
     <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6">
       <div className="flex items-start justify-between mb-3">
@@ -333,18 +350,18 @@ function JobCard({ job }: { job: Job }) {
         </p>
       )}
 
-      <div className="flex items-center justify-between">
-        <div className="flex flex-wrap gap-2">
-          {job.employmentType && (
-            <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium">
-              {job.employmentType.replace('_', ' ')}
-            </span>
-          )}
-          {job.experienceLevel && (
-            <span className="px-3 py-1 bg-orange-50 text-orange-700 rounded-full text-xs font-medium capitalize">
-              {job.experienceLevel}
-            </span>
-          )}
+        <div className="flex items-center justify-between">
+          <div className="flex flex-wrap gap-2">
+            {job.employmentType && (
+              <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium">
+                {getEmploymentTypeLabel(job.employmentType)}
+              </span>
+            )}
+            {job.experienceLevel && (
+              <span className="px-3 py-1 bg-orange-50 text-orange-700 rounded-full text-xs font-medium capitalize">
+                {getExperienceLevelLabel(job.experienceLevel)}
+              </span>
+            )}
           {job.skills && job.skills.slice(0, 3).map((skill, idx) => (
             <span key={idx} className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs">
               {skill}

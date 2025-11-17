@@ -135,17 +135,14 @@ function JobItem({ job }: { job: Job }) {
     return 'text-gray-600 bg-gray-50'
   }
 
+  const normalizeKey = (value: string) =>
+    value.toLowerCase().replace(/[\s-]+/g, '_').trim()
+
   const formatEmploymentType = (type: string) => {
-    const keyMap: Record<string, string> = {
-      full_time: 'jobs.fullTime',
-      part_time: 'jobs.partTime',
-      contract: 'jobs.contract',
-      freelance: 'jobs.freelance',
-      internship: 'jobs.internship',
-      temporary: 'jobs.temporary',
-    }
-    const key = keyMap[type.toLowerCase()]
-    return key ? t(key) : type.replace('_', ' ')
+    const key = normalizeKey(type)
+    const tKey = `jobs.${key}`
+    const translated = t(tKey)
+    return translated !== tKey ? translated : key.replace(/_/g, ' ')
   }
 
   return (
