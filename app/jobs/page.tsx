@@ -510,8 +510,9 @@ function JobCard({ job }: { job: Job }) {
         <div className="flex flex-wrap gap-2">
           {job.employmentType && (() => {
             const key = job.employmentType.toLowerCase().replace(/[\s-]+/g, '_').trim()
-            const translated = t(`jobs.employmentTypes.${key}`)
-            const label = translated && translated !== `jobs.employmentTypes.${key}`
+            const tKey = `jobs.${key}`
+            const translated = t(tKey)
+            const label = translated && translated !== tKey
               ? translated
               : key.replace(/_/g, ' ')
             return (
@@ -520,11 +521,17 @@ function JobCard({ job }: { job: Job }) {
               </Badge>
             )
           })()}
-          {job.experienceLevel && (
-            <Badge variant="outline" className="text-xs capitalize">
-              {job.experienceLevel}
-            </Badge>
-          )}
+          {job.experienceLevel && (() => {
+            const key = job.experienceLevel.toLowerCase().replace(/[\s-]+/g, '_').trim()
+            const tKey = `jobs.${key}`
+            const translated = t(tKey)
+            const label = translated && translated !== tKey ? translated : job.experienceLevel
+            return (
+              <Badge variant="outline" className="text-xs capitalize">
+                {label}
+              </Badge>
+            )
+          })()}
           {job.skills && job.skills.slice(0, 3).map((skill, idx) => (
             <Badge key={idx} variant="outline" className="text-xs">
               {skill}

@@ -48,12 +48,21 @@ export function JobCard({ job, variant = 'default', showCompany = true }: JobCar
     return `Ab ${formatAmount(min || max!)} ${period === 'yearly' ? '/Jahr' : period === 'monthly' ? '/Monat' : '/Stunde'}`
   }
 
+  const normalizeKey = (value: string) =>
+    value.toLowerCase().replace(/[\s-]+/g, '_').trim()
+
   const getEmploymentTypeLabel = (type: string) => {
-    return t(`jobs.employmentTypes.${type}`) || type
+    const key = normalizeKey(type)
+    const tKey = `jobs.${key}`
+    const translated = t(tKey)
+    return translated !== tKey ? translated : type
   }
 
   const getExperienceLevelLabel = (level: string) => {
-    return t(`jobs.experienceLevels.${level}`) || level
+    const key = normalizeKey(level)
+    const tKey = `jobs.${key}`
+    const translated = t(tKey)
+    return translated !== tKey ? translated : level
   }
 
   if (variant === 'compact') {

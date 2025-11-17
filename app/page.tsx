@@ -324,14 +324,17 @@ export default function HomePage() {
                       : undefined
                   )
 
-                  // Normalize type to snake_case and attempt translation; fallback to humanized text
+                  // Normalize type to snake_case and translate via jobs.<typeKey>; fallback to humanized text
                   const typeKey = job.employmentType
                     ? normalizeEmploymentType(job.employmentType)
                     : undefined
-                  const rawTypeLabel = typeKey ? t(`jobs.employmentTypes.${typeKey}`) : undefined
-                  const jobTypeLabel = rawTypeLabel && typeKey && rawTypeLabel !== `jobs.employmentTypes.${typeKey}`
-                    ? rawTypeLabel
-                    : (typeKey ? typeKey.replace(/_/g, ' ') : undefined)
+                  const jobTypeLabel = typeKey
+                    ? (() => {
+                        const tKey = `jobs.${typeKey}`
+                        const translated = t(tKey)
+                        return translated !== tKey ? translated : typeKey.replace(/_/g, ' ')
+                      })()
+                    : undefined
                   const key = `${job.source}-${job.externalId || job.id}`
 
                   const handleOpen = () => {
