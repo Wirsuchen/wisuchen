@@ -31,28 +31,47 @@ const getJobSnippet = (text?: string | null, max: number = 250) => {
   return cleaned.substring(0, max)
 }
 
-// Function to deduplicate jobs based on title, company, location, and external ID
+// Function to deduplicate jobs that may come from multiple sources
+// Uses a normalized (title + location/company) key and prefers entries
+// with richer data (salary text + application URL), similar to homepage logic.
 function dedupeJobs(jobs: Job[]): Job[] {
-  const seen = new Set<string>()
-  const result: Job[] = []
+  const normalize = (s?: string | null) =>
+    (s || '')
+      .toLowerCase()
+      .replace(/\([^)]*\)/g, ' ') // drop parentheticals like (all genders)
+      .replace(/&/g, ' and ')
+      .normalize('NFKD')
+      .replace(/[\u0300-\u036f]/g, '') // strip accents
+      .replace(/[^a-z0-9]+/g, ' ')
+      .trim()
+      .replace(/\s+/g, ' ')
+
+  // Prefer entries with more useful info
+  const score = (j: Job) => (j.salary?.text ? 1 : 0) + (j.applicationUrl ? 1 : 0)
+
+  const byKey = new Map<string, Job>()
 
   for (const job of jobs) {
-    const keyParts = [
-      job.title?.toLowerCase().trim(),
-      job.company?.toLowerCase().trim(),
-      job.location?.toLowerCase().trim(),
-      (job.externalId || job.id || "").toString().toLowerCase().trim(),
-      job.source?.toLowerCase().trim(),
-    ].filter(Boolean)
+    const title = normalize(job.title)
+    const company = normalize(job.company)
+    const location = normalize(job.location)
 
-    const key = keyParts.join("|")
+    // Primary key: title + location; if location missing, fallback to company; if both missing, title only
+    const base = location || company || ''
+    const key = base ? `${title}|${base}` : title
 
-    if (!seen.has(key)) {
-      seen.add(key)
-      result.push(job)
+    const existing = byKey.get(key)
+    if (!existing) {
+      byKey.set(key, job)
+    } else {
+      // keep the richer one
+      if (score(job) > score(existing)) {
+        byKey.set(key, job)
+      }
     }
   }
-  return result
+
+  return Array.from(byKey.values())
 }
 
 interface UserPostedJob {
