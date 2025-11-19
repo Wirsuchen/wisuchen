@@ -240,8 +240,11 @@ export default function PostJobPage() {
       // Payment is required but not processed yet
       // TODO: Integrate payment processing here
       toast({
-        title: 'Payment Required',
-        description: 'Please complete the payment to post your job. Payment processing will be integrated soon.',
+        title: t('jobs.post.paymentRequiredTitle', 'Payment Required'),
+        description: t(
+          'jobs.post.paymentRequiredDescription',
+          'Please complete the payment to post your job. Payment processing will be integrated soon.'
+        ),
         variant: 'destructive',
       })
       return
@@ -250,8 +253,8 @@ export default function PostJobPage() {
     // Validate required fields
     if (!formData.title || !formData.description || !formData.company || !formData.location || !formData.category || !formData.jobType) {
       toast({
-        title: 'Missing Fields',
-        description: 'Please fill in all required fields',
+        title: t('jobs.post.missingFieldsTitle', 'Missing Fields'),
+        description: t('jobs.post.missingFieldsDescription', 'Please fill in all required fields'),
         variant: 'destructive',
       })
       return
@@ -458,8 +461,13 @@ export default function PostJobPage() {
         // Handle job limit error
         if (res.status === 403 && data.error?.includes('Free users can create up to')) {
           toast({
-            title: 'Job Limit Reached',
-            description: data.error || 'Free users can create up to 5 jobs. Please upgrade to create more.',
+            title: t('jobs.post.jobLimitTitle', 'Job Limit Reached'),
+            description:
+              data.error ||
+              t(
+                'jobs.post.jobLimitDescription',
+                'Free users can create up to 5 jobs. Please upgrade to create more.'
+              ),
             variant: 'destructive',
           })
           setUserJobCount(5) // Update local count
@@ -469,8 +477,11 @@ export default function PostJobPage() {
       }
 
       toast({
-        title: 'Job Created!',
-        description: 'Your job posting has been submitted successfully.',
+        title: t('jobs.post.createdTitle', 'Job Created!'),
+        description: t(
+          'jobs.post.createdDescription',
+          'Your job posting has been submitted successfully.'
+        ),
       })
 
       // Update job count for free users
@@ -485,8 +496,9 @@ export default function PostJobPage() {
       }, 3000)
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to create job. Please try again.',
+        title: t('common.error', 'Error'),
+        description:
+          error.message || t('jobs.post.createError', 'Failed to create job. Please try again.'),
         variant: 'destructive',
       })
     } finally {
@@ -1023,15 +1035,22 @@ export default function PostJobPage() {
             <Card className="text-center">
               <CardContent className="py-12">
                 <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-                <h2 className="text-2xl font-bold mb-2">Job Posted Successfully!</h2>
+                <h2 className="text-2xl font-bold mb-2">
+                  {t('jobs.post.successTitle', 'Job Posted Successfully!')}
+                </h2>
                 <p className="text-muted-foreground mb-6">
-                  Your job posting is now live and visible to thousands of candidates.
+                  {t(
+                    'jobs.post.successDescription',
+                    'Your job posting is now live and visible to thousands of candidates.'
+                  )}
                 </p>
                 <div className="space-y-2">
                   <Button asChild>
-                    <a href="/jobs">View All Jobs</a>
+                    <a href="/jobs">{t('jobs.post.viewAllJobs', 'View All Jobs')}</a>
                   </Button>
-                  <p className="text-sm text-muted-foreground">Redirecting to jobs page...</p>
+                  <p className="text-sm text-muted-foreground">
+                    {t('jobs.post.redirecting', 'Redirecting to jobs page...')}
+                  </p>
                 </div>
               </CardContent>
             </Card>

@@ -16,6 +16,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { useToast } from '@/hooks/use-toast'
+import { useTranslation } from '@/contexts/i18n-context'
 
 interface TranslateButtonProps {
   content: string
@@ -29,12 +30,13 @@ export function TranslateButton({ content, currentLanguage, onTranslated, conten
   const [loading, setLoading] = useState(false)
   const [open, setOpen] = useState(false)
   const { toast } = useToast()
+  const { t } = useTranslation()
 
   const handleTranslate = async () => {
     if (!content.trim()) {
       toast({
-        title: 'No Content',
-        description: 'There is no content to translate',
+        title: t('ai.translateButton.noContentTitle', 'No Content'),
+        description: t('ai.translateButton.noContentDescription', 'There is no content to translate'),
         variant: 'destructive',
       })
       return
@@ -79,11 +81,21 @@ export function TranslateButton({ content, currentLanguage, onTranslated, conten
       if (full) {
         onTranslated(full, targetLanguage)
         setOpen(false)
-        toast({ title: '✨ Translated!', description: `Content translated to ${getLanguageName(targetLanguage)}` })
+        toast({
+          title: t('ai.translateButton.translatedTitle', '✨ Translated!'),
+          description: t(
+            'ai.translateButton.translatedDescription',
+            `Content translated to ${getLanguageName(targetLanguage)}`
+          ),
+        })
       }
     } catch (error) {
       console.error('Error translating:', error)
-      toast({ title: 'Error', description: 'Failed to connect to translation service', variant: 'destructive' })
+      toast({
+        title: t('common.error', 'Error'),
+        description: t('ai.translateButton.errorConnecting', 'Failed to connect to translation service'),
+        variant: 'destructive',
+      })
     } finally {
       setLoading(false)
     }
@@ -91,19 +103,19 @@ export function TranslateButton({ content, currentLanguage, onTranslated, conten
 
   const getLanguageName = (code: string) => {
     const names: Record<string, string> = {
-      de: 'German',
-      en: 'English',
-      fr: 'French',
-      it: 'Italian',
+      de: t('common.languages.de', 'German'),
+      en: t('common.languages.en', 'English'),
+      fr: t('common.languages.fr', 'French'),
+      it: t('common.languages.it', 'Italian'),
     }
     return names[code] || code
   }
 
   const languages = [
-    { code: 'en', flag: '🇬🇧', name: 'English' },
-    { code: 'de', flag: '🇩🇪', name: 'Deutsch' },
-    { code: 'fr', flag: '🇫🇷', name: 'Français' },
-    { code: 'it', flag: '🇮🇹', name: 'Italiano' },
+    { code: 'en', flag: '🇬🇧', name: t('common.languages.en', 'English') },
+    { code: 'de', flag: '🇩🇪', name: t('common.languages.deNative', 'Deutsch') },
+    { code: 'fr', flag: '🇫🇷', name: t('common.languages.frNative', 'Français') },
+    { code: 'it', flag: '🇮🇹', name: t('common.languages.itNative', 'Italiano') },
   ].filter((lang) => lang.code !== currentLanguage)
 
   return (
@@ -111,20 +123,25 @@ export function TranslateButton({ content, currentLanguage, onTranslated, conten
       <PopoverTrigger asChild>
         <Button variant="outline" size="sm">
           <Languages className="h-4 w-4 mr-2" />
-          Translate
+          {t('ai.translateButton.buttonLabel', 'Translate')}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80">
         <div className="space-y-4">
           <div>
-            <h4 className="font-medium mb-2">Translate Content</h4>
+            <h4 className="font-medium mb-2">
+              {t('ai.translateButton.heading', 'Translate Content')}
+            </h4>
             <p className="text-sm text-muted-foreground">
-              Current language: {getLanguageName(currentLanguage)}
+              {t('ai.translateButton.currentLanguage', 'Current language:')}{' '}
+              {getLanguageName(currentLanguage)}
             </p>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Translate to:</label>
+            <label className="text-sm font-medium">
+              {t('ai.translateButton.translateTo', 'Translate to:')}
+            </label>
             <Select value={targetLanguage} onValueChange={(v) => setTargetLanguage(v as any)}>
               <SelectTrigger>
                 <SelectValue />
@@ -143,12 +160,12 @@ export function TranslateButton({ content, currentLanguage, onTranslated, conten
             {loading ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Translating...
+                {t('ai.translateButton.translating', 'Translating...')}
               </>
             ) : (
               <>
                 <Languages className="h-4 w-4 mr-2" />
-                Translate
+                {t('ai.translateButton.buttonLabel', 'Translate')}
               </>
             )}
           </Button>

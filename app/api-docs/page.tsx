@@ -62,7 +62,7 @@ export default function ApiDocsPage() {
 
         {/* API Endpoints */}
         <Tabs defaultValue="jobs" className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-1">
             <TabsTrigger value="jobs">Jobs</TabsTrigger>
             <TabsTrigger value="deals">Deals</TabsTrigger>
             <TabsTrigger value="user">User</TabsTrigger>
@@ -74,21 +74,21 @@ export default function ApiDocsPage() {
           <TabsContent value="jobs" className="space-y-6 mt-6">
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div>
                     <CardTitle>Search Jobs (V1)</CardTitle>
                     <CardDescription>Aggregated job search from multiple sources</CardDescription>
                   </div>
-                  <Badge variant="outline">GET</Badge>
+                  <Badge variant="outline" className="w-fit">GET</Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <code className="text-sm bg-muted px-2 py-1 rounded">/api/v1/jobs/search</code>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                  <code className="text-sm bg-muted px-2 py-1 rounded break-all sm:break-normal">/api/v1/jobs/search</code>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="ml-2"
+                    className="w-fit"
                     onClick={() => copyToClipboard(`${baseUrl}/api/v1/jobs/search`, 'jobs-search')}
                   >
                     {copied === 'jobs-search' ? <CheckCircle className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
@@ -112,7 +112,7 @@ export default function ApiDocsPage() {
                 <div>
                   <h4 className="font-semibold mb-2">Example Request:</h4>
                   <div className="bg-muted p-4 rounded-lg relative">
-                    <code className="text-sm">
+                    <code className="text-xs sm:text-sm break-all block overflow-x-auto">
                       {baseUrl}/api/v1/jobs/search?query=developer&location=Berlin&limit=20&countries=de,at,ch
                     </code>
                     <Button
@@ -127,7 +127,7 @@ export default function ApiDocsPage() {
                 </div>
                 <div>
                   <h4 className="font-semibold mb-2">Response:</h4>
-                  <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-sm">
+                  <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-xs sm:text-sm">
 {`{
   "success": true,
   "data": {
@@ -155,17 +155,17 @@ export default function ApiDocsPage() {
 
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div>
                     <CardTitle>Get Jobs (Legacy)</CardTitle>
                     <CardDescription>Database-first job search</CardDescription>
                   </div>
-                  <Badge variant="outline">GET</Badge>
+                  <Badge variant="outline" className="w-fit">GET</Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <code className="text-sm bg-muted px-2 py-1 rounded">/api/jobs</code>
+                  <code className="text-sm bg-muted px-2 py-1 rounded break-all">/api/jobs</code>
                 </div>
                 <div>
                   <h4 className="font-semibold mb-2">Query Parameters:</h4>
@@ -185,21 +185,21 @@ export default function ApiDocsPage() {
 
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div>
                     <CardTitle>Create Job</CardTitle>
                     <CardDescription>Create a new job posting (Auth required)</CardDescription>
                   </div>
-                  <Badge variant="outline">POST</Badge>
+                  <Badge variant="outline" className="w-fit">POST</Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <code className="text-sm bg-muted px-2 py-1 rounded">/api/jobs</code>
+                  <code className="text-sm bg-muted px-2 py-1 rounded break-all">/api/jobs</code>
                 </div>
                 <div>
                   <h4 className="font-semibold mb-2">Request Body:</h4>
-                  <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-sm">
+                  <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-xs sm:text-sm">
 {`{
   "title": "Software Developer",
   "description": "Job description...",
@@ -217,17 +217,17 @@ export default function ApiDocsPage() {
 
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div>
                     <CardTitle>Get Categories</CardTitle>
                     <CardDescription>Get job/affiliate/blog categories</CardDescription>
                   </div>
-                  <Badge variant="outline">GET</Badge>
+                  <Badge variant="outline" className="w-fit">GET</Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <code className="text-sm bg-muted px-2 py-1 rounded">/api/categories</code>
+                  <code className="text-sm bg-muted px-2 py-1 rounded break-all">/api/categories</code>
                 </div>
                 <div>
                   <h4 className="font-semibold mb-2">Query Parameters:</h4>
@@ -243,17 +243,17 @@ export default function ApiDocsPage() {
           <TabsContent value="deals" className="space-y-6 mt-6">
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div>
                     <CardTitle>Get Deals</CardTitle>
                     <CardDescription>Get affiliate deals and offers</CardDescription>
                   </div>
-                  <Badge variant="outline">GET</Badge>
+                  <Badge variant="outline" className="w-fit">GET</Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <code className="text-sm bg-muted px-2 py-1 rounded">/api/deals</code>
+                  <code className="text-sm bg-muted px-2 py-1 rounded break-all">/api/deals</code>
                 </div>
                 <div>
                   <h4 className="font-semibold mb-2">Query Parameters:</h4>
@@ -271,17 +271,17 @@ export default function ApiDocsPage() {
 
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div>
                     <CardTitle>Search Offers (V1)</CardTitle>
                     <CardDescription>Search affiliate offers from multiple sources</CardDescription>
                   </div>
-                  <Badge variant="outline">GET</Badge>
+                  <Badge variant="outline" className="w-fit">GET</Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <code className="text-sm bg-muted px-2 py-1 rounded">/api/v1/offers/search</code>
+                  <code className="text-sm bg-muted px-2 py-1 rounded break-all">/api/v1/offers/search</code>
                 </div>
                 <div>
                   <h4 className="font-semibold mb-2">Query Parameters:</h4>
@@ -303,55 +303,55 @@ export default function ApiDocsPage() {
           <TabsContent value="user" className="space-y-6 mt-6">
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div>
                     <CardTitle>Get Current User</CardTitle>
                     <CardDescription>Get authenticated user profile (Auth required)</CardDescription>
                   </div>
-                  <Badge variant="outline">GET</Badge>
+                  <Badge variant="outline" className="w-fit">GET</Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <code className="text-sm bg-muted px-2 py-1 rounded">/api/me</code>
+                  <code className="text-sm bg-muted px-2 py-1 rounded break-all">/api/me</code>
                 </div>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div>
                     <CardTitle>Get Saved Jobs</CardTitle>
                     <CardDescription>Get user's saved jobs (Auth required)</CardDescription>
                   </div>
-                  <Badge variant="outline">GET</Badge>
+                  <Badge variant="outline" className="w-fit">GET</Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <code className="text-sm bg-muted px-2 py-1 rounded">/api/saved/jobs</code>
+                  <code className="text-sm bg-muted px-2 py-1 rounded break-all">/api/saved/jobs</code>
                 </div>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div>
                     <CardTitle>Save Job</CardTitle>
                     <CardDescription>Save a job to user's favorites (Auth required)</CardDescription>
                   </div>
-                  <Badge variant="outline">POST</Badge>
+                  <Badge variant="outline" className="w-fit">POST</Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <code className="text-sm bg-muted px-2 py-1 rounded">/api/saved/jobs</code>
+                  <code className="text-sm bg-muted px-2 py-1 rounded break-all">/api/saved/jobs</code>
                 </div>
                 <div>
                   <h4 className="font-semibold mb-2">Request Body:</h4>
-                  <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-sm">
+                  <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-xs sm:text-sm">
 {`{
   "id": "job-id",
   "title": "Job Title",
@@ -365,38 +365,38 @@ export default function ApiDocsPage() {
 
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div>
                     <CardTitle>Get Saved Deals</CardTitle>
                     <CardDescription>Get user's saved deals (Auth required)</CardDescription>
                   </div>
-                  <Badge variant="outline">GET</Badge>
+                  <Badge variant="outline" className="w-fit">GET</Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <code className="text-sm bg-muted px-2 py-1 rounded">/api/saved/deals</code>
+                  <code className="text-sm bg-muted px-2 py-1 rounded break-all">/api/saved/deals</code>
                 </div>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div>
                     <CardTitle>Submit Application</CardTitle>
                     <CardDescription>Submit job application (Auth required)</CardDescription>
                   </div>
-                  <Badge variant="outline">POST</Badge>
+                  <Badge variant="outline" className="w-fit">POST</Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <code className="text-sm bg-muted px-2 py-1 rounded">/api/applications</code>
+                  <code className="text-sm bg-muted px-2 py-1 rounded break-all">/api/applications</code>
                 </div>
                 <div>
                   <h4 className="font-semibold mb-2">Request Body:</h4>
-                  <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-sm">
+                  <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-xs sm:text-sm">
 {`{
   "offer_id": "job-uuid",
   "notes": "Application notes"
@@ -411,21 +411,21 @@ export default function ApiDocsPage() {
           <TabsContent value="admin" className="space-y-6 mt-6">
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div>
                     <CardTitle>Import Jobs</CardTitle>
                     <CardDescription>Import jobs from external APIs (Admin only)</CardDescription>
                   </div>
-                  <Badge variant="outline">POST</Badge>
+                  <Badge variant="outline" className="w-fit">POST</Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <code className="text-sm bg-muted px-2 py-1 rounded">/api/import/jobs</code>
+                  <code className="text-sm bg-muted px-2 py-1 rounded break-all">/api/import/jobs</code>
                 </div>
                 <div>
                   <h4 className="font-semibold mb-2">Request Body:</h4>
-                  <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-sm">
+                  <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-xs sm:text-sm">
 {`{
   "source": "adzuna",
   "params": {
@@ -450,21 +450,21 @@ export default function ApiDocsPage() {
 
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div>
                     <CardTitle>Import Affiliates</CardTitle>
                     <CardDescription>Import affiliate deals (Admin only)</CardDescription>
                   </div>
-                  <Badge variant="outline">POST</Badge>
+                  <Badge variant="outline" className="w-fit">POST</Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <code className="text-sm bg-muted px-2 py-1 rounded">/api/import/affiliates</code>
+                  <code className="text-sm bg-muted px-2 py-1 rounded break-all">/api/import/affiliates</code>
                 </div>
                 <div>
                   <h4 className="font-semibold mb-2">Request Body:</h4>
-                  <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-sm">
+                  <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-xs sm:text-sm">
 {`{
   "source": "awin",
   "params": {
@@ -486,17 +486,17 @@ export default function ApiDocsPage() {
 
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div>
                     <CardTitle>Get Admin Stats</CardTitle>
                     <CardDescription>Get platform statistics (Admin only)</CardDescription>
                   </div>
-                  <Badge variant="outline">GET</Badge>
+                  <Badge variant="outline" className="w-fit">GET</Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <code className="text-sm bg-muted px-2 py-1 rounded">/api/admin/stats</code>
+                  <code className="text-sm bg-muted px-2 py-1 rounded break-all">/api/admin/stats</code>
                 </div>
               </CardContent>
             </Card>
@@ -506,21 +506,21 @@ export default function ApiDocsPage() {
           <TabsContent value="payment" className="space-y-6 mt-6">
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div>
                     <CardTitle>Create PayPal Order</CardTitle>
                     <CardDescription>Create a PayPal payment order (Auth required)</CardDescription>
                   </div>
-                  <Badge variant="outline">POST</Badge>
+                  <Badge variant="outline" className="w-fit">POST</Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <code className="text-sm bg-muted px-2 py-1 rounded">/api/payment/paypal</code>
+                  <code className="text-sm bg-muted px-2 py-1 rounded break-all">/api/payment/paypal</code>
                 </div>
                 <div>
                   <h4 className="font-semibold mb-2">Request Body:</h4>
-                  <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-sm">
+                  <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-xs sm:text-sm">
 {`{
   "amount": "29.99",
   "currency": "EUR",
@@ -540,17 +540,17 @@ export default function ApiDocsPage() {
 
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div>
                     <CardTitle>Get Payment Status</CardTitle>
                     <CardDescription>Get PayPal order status</CardDescription>
                   </div>
-                  <Badge variant="outline">GET</Badge>
+                  <Badge variant="outline" className="w-fit">GET</Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <code className="text-sm bg-muted px-2 py-1 rounded">/api/payment/paypal?order_id=ORDER_ID</code>
+                  <code className="text-sm bg-muted px-2 py-1 rounded break-all">/api/payment/paypal?order_id=ORDER_ID</code>
                 </div>
               </CardContent>
             </Card>
@@ -566,7 +566,7 @@ export default function ApiDocsPage() {
             <p className="text-sm text-muted-foreground mb-4">
               All API responses follow a consistent format:
             </p>
-            <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-sm">
+            <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-xs sm:text-sm">
 {`{
   "success": true | false,
   "data": { ... },

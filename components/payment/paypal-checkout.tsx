@@ -208,11 +208,14 @@ export function PayPalCheckout({ selectedPlan }: PayPalCheckoutProps) {
       if (response.ok) {
         setPaymentOrder(data)
         
-        if (data.approval_url) {
+          if (data.approval_url) {
           setStep('approval')
           toast({
-            title: 'Payment Order Created',
-            description: 'Redirecting to PayPal for payment approval...'
+            title: t('payment.orderCreatedTitle', 'Payment Order Created'),
+            description: t(
+              'payment.orderCreatedDescription',
+              'Redirecting to PayPal for payment approval...'
+            ),
           })
           
           // Redirect to PayPal
@@ -372,10 +375,13 @@ export function PayPalCheckout({ selectedPlan }: PayPalCheckoutProps) {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Euro className="w-5 h-5" />
-              Select Payment Package
+              {t('payment.selectPackageTitle', 'Select Payment Package')}
             </CardTitle>
             <CardDescription>
-              Choose a job posting package or create a custom payment
+              {t(
+                'payment.selectPackageDescription',
+                'Choose a job posting package or create a custom payment'
+              )}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -481,7 +487,7 @@ export function PayPalCheckout({ selectedPlan }: PayPalCheckoutProps) {
                     <span>€{paymentForm.amount}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>VAT (19%)</span>
+                    <span>{t('payment.vatLabel', 'VAT (19%)')}</span>
                     <span>€{(parseFloat(paymentForm.amount) * 0.19).toFixed(2)}</span>
                   </div>
                   <Separator />
@@ -502,12 +508,12 @@ export function PayPalCheckout({ selectedPlan }: PayPalCheckoutProps) {
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Creating Order...
+                  {t('payment.creatingPaymentOrder', 'Creating Order...')}
                 </>
               ) : (
                 <>
                   <CreditCard className="w-4 h-4 mr-2" />
-                  Pay with PayPal
+                  {t('payment.payWithPayPal', 'Pay with PayPal')}
                 </>
               )}
             </Button>
@@ -563,7 +569,10 @@ export function PayPalCheckout({ selectedPlan }: PayPalCheckoutProps) {
             <CheckCircle className="w-12 h-12 mx-auto mb-4 text-green-500" />
             <h3 className="text-lg font-medium mb-2">{t('payment.paymentCompleted')}</h3>
             <p className="text-muted-foreground mb-4">
-              Your payment has been successfully processed.
+              {t(
+                'payment.paymentCompletedDescription',
+                'Your payment has been successfully processed.'
+              )}
             </p>
 
             <div className="bg-green-50 rounded-lg p-4 mb-4">

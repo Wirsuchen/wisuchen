@@ -55,17 +55,23 @@ export function BlogPost({ post }: BlogPostProps) {
 
   const handleShare = async (platform: string) => {
     const url = typeof window !== 'undefined' ? window.location.href : ''
-    const text = `Check out this article: ${post.title}`
+    const text = `${t('blogPost.shareText', 'Check out this article:')} ${post.title}`
 
     try {
       switch (platform) {
         case "native": {
           if (navigator.share) {
             await navigator.share({ title: post.title, text, url })
-            toast({ title: "Shared", description: "Thanks for sharing this article." })
+            toast({
+              title: t('blogPost.shareSharedTitle', 'Shared'),
+              description: t('blogPost.shareSharedDescription', 'Thanks for sharing this article.'),
+            })
           } else {
             await navigator.clipboard.writeText(url)
-            toast({ title: "Link copied", description: "Share it with your friends." })
+            toast({
+              title: t('blogPost.linkCopiedTitle', 'Link copied'),
+              description: t('blogPost.linkCopiedDescription', 'Share it with your friends.'),
+            })
           }
           break
         }
@@ -80,11 +86,18 @@ export function BlogPost({ post }: BlogPostProps) {
           break
         case "copy":
           await navigator.clipboard.writeText(url)
-          toast({ title: "Link copied", description: "URL copied to clipboard." })
+          toast({
+            title: t('blogPost.linkCopiedTitle', 'Link copied'),
+            description: t('blogPost.linkCopiedClipboard', 'URL copied to clipboard.'),
+          })
           break
       }
     } catch (e: any) {
-      toast({ title: "Share failed", description: e?.message || "Unable to share right now.", variant: "destructive" })
+      toast({
+        title: t('blogPost.shareErrorTitle', 'Share failed'),
+        description: e?.message || t('blogPost.shareErrorDescription', 'Unable to share right now.'),
+        variant: 'destructive',
+      })
     }
   }
 
@@ -93,8 +106,8 @@ export function BlogPost({ post }: BlogPostProps) {
     
     if (!newsletterEmail || !newsletterEmail.includes('@')) {
       toast({
-        title: 'Invalid email',
-        description: 'Please enter a valid email address',
+        title: t('blog.invalidEmail', 'Invalid email'),
+        description: t('blog.enterValidEmail', 'Please enter a valid email address'),
         variant: 'destructive',
       })
       return
@@ -115,22 +128,22 @@ export function BlogPost({ post }: BlogPostProps) {
 
       if (data.success) {
         toast({
-          title: 'Subscribed!',
-          description: 'Thank you for subscribing to our newsletter',
+          title: t('blog.subscribed', 'Subscribed!'),
+          description: t('blog.subscribeSuccess', 'Thank you for subscribing to our newsletter'),
         })
         setNewsletterEmail('')
       } else {
         toast({
-          title: 'Error',
-          description: data.error || 'Failed to subscribe. Please try again.',
+          title: t('common.error', 'Error'),
+          description: data.error || t('blog.subscribeError', 'Failed to subscribe. Please try again.'),
           variant: 'destructive',
         })
       }
     } catch (error) {
       console.error('Newsletter subscription error:', error)
       toast({
-        title: 'Error',
-        description: 'Failed to subscribe. Please try again later.',
+        title: t('common.error', 'Error'),
+        description: t('blog.subscribeErrorLater', 'Failed to subscribe. Please try again later.'),
         variant: 'destructive',
       })
     } finally {
@@ -168,7 +181,7 @@ export function BlogPost({ post }: BlogPostProps) {
       <nav className="mb-8">
         <Link href="/blog" className="text-accent hover:underline flex items-center">
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Blog
+          {t('blogPost.backToBlog', 'Back to Blog')}
         </Link>
       </nav>
 
@@ -190,7 +203,7 @@ export function BlogPost({ post }: BlogPostProps) {
           </div>
           <div className="flex items-center text-sm text-muted-foreground">
             <TrendingUp className="h-4 w-4 mr-1" />
-            {post.views} views
+            {post.views} {t('blogPost.viewsLabel', 'views')}
           </div>
         </div>
 
@@ -258,7 +271,9 @@ export function BlogPost({ post }: BlogPostProps) {
 
           {/* Share Buttons */}
           <div className="mt-8 pt-8 border-t">
-            <h3 className="text-lg font-semibold mb-4">Share this article</h3>
+            <h3 className="text-lg font-semibold mb-4">
+              {t('blogPost.shareSectionTitle', 'Share this article')}
+            </h3>
             <div className="flex space-x-2">
               <Button variant="outline" size="sm" onClick={() => handleShare("twitter")} className="bg-transparent">
                 <Twitter className="h-4 w-4 mr-2" />
@@ -295,7 +310,10 @@ export function BlogPost({ post }: BlogPostProps) {
                   </div>
                   <h4 className="font-semibold mb-2">{post.author}</h4>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Content Writer specializing in career advice and market insights.
+                    {t(
+                      'blogPost.authorBio',
+                      'Content Writer specializing in career advice and market insights.'
+                    )}
                   </p>
                   <Button variant="outline" size="sm" className="w-full bg-transparent">
                     <User className="h-4 w-4 mr-2" />

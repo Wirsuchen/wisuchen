@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { PageLayout } from '@/components/layout/page-layout'
+import { defaultLocale } from '@/i18n/config'
+import { getTranslation } from '@/i18n/utils'
 
 export default async function EditorPage() {
   const supabase = await createClient()
@@ -11,7 +13,9 @@ export default async function EditorPage() {
   return (
     <PageLayout showBackButton={false} containerClassName="max-w-7xl">
       <div className="space-y-4">
-        <h1 className="text-3xl font-bold">Editor Panel</h1>
+        <h1 className="text-3xl font-bold">
+          {getTranslation(defaultLocale, 'admin.roles.editorPanelTitle', 'Editor Panel')}
+        </h1>
       </div>
     </PageLayout>
   )

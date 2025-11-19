@@ -233,7 +233,11 @@ export function MyAds() {
                         <div>
                           <div className="flex items-center space-x-2">
                             <span className="font-medium">{ad.title}</span>
-                            {ad.featured && <Badge variant="secondary">Featured</Badge>}
+                            {ad.featured && (
+                              <Badge variant="secondary">
+                                {t('jobs.badges.featured', 'Featured')}
+                              </Badge>
+                            )}
                           </div>
                           <p className="text-sm text-muted-foreground">{ad.company || '—'}</p>
                         </div>
@@ -277,7 +281,12 @@ export function MyAds() {
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent>
-                              <p>Archive this ad (it won't be deleted permanently)</p>
+                              <p>
+                                {t(
+                                  'dashboard.myAds.archiveTooltip',
+                                  "Archive this ad (it won't be deleted permanently)"
+                                )}
+                              </p>
                             </TooltipContent>
                           </Tooltip>
                         </div>
