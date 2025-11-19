@@ -86,7 +86,7 @@ export function JobCard({ job, variant = 'default', showCompany = true }: JobCar
                 )}
               </div>
               
-              <Link href={isExternal && (job as any).application_url ? (job as any).application_url : `/jobs/${job.id}`} className="block" target={isExternal ? '_blank' : undefined} rel={isExternal ? 'noopener noreferrer' : undefined}>
+              <Link href={isExternal && (job as any).application_url ? (job as any).application_url : `/jobs/${job.id}`} className="block">
                 <h3 className="font-semibold text-lg hover:text-primary truncate">
                   {job.title}
                 </h3>
@@ -164,7 +164,7 @@ export function JobCard({ job, variant = 'default', showCompany = true }: JobCar
                 )}
               </div>
               
-              <Link href={isExternal && (job as any).application_url ? (job as any).application_url : `/jobs/${job.id}`} target={isExternal ? '_blank' : undefined} rel={isExternal ? 'noopener noreferrer' : undefined}>
+              <Link href={isExternal && (job as any).application_url ? (job as any).application_url : `/jobs/${job.id}`}>
                 <h3 className="font-semibold text-xl hover:text-primary transition-colors">
                   {job.title}
                 </h3>
@@ -272,7 +272,7 @@ export function JobCard({ job, variant = 'default', showCompany = true }: JobCar
           
           <div className="flex gap-2">
             <Button variant="outline" size="sm" asChild>
-              <Link href={isExternal && (job as any).application_url ? (job as any).application_url : `/jobs/${job.id}`} target={isExternal ? '_blank' : undefined} rel={isExternal ? 'noopener noreferrer' : undefined}>
+              <Link href={isExternal && (job as any).application_url ? (job as any).application_url : `/jobs/${job.id}`}>
                 {isExternal ? t('jobs.buttons.viewJob') : t('jobs.buttons.viewDetails')}
               </Link>
             </Button>

@@ -388,7 +388,7 @@ export default function DealsPage() {
                         </div>
 
                         <Button className="w-full mt-4" asChild>
-                          <Link href={(deal as any).url ? (deal as any).url : `/deals/${deal.id}`} target={(deal as any).url ? '_blank' : undefined} rel={(deal as any).url ? 'noopener noreferrer' : undefined}>
+                          <Link href={(deal as any).url ? (deal as any).url : `/deals/${deal.id}`}>
                             <ShoppingBag className="h-4 w-4 mr-2" />
                             {(deal as any).url ? t('deals.viewDeal') : t('deals.comparePrices')}
                           </Link>
@@ -443,7 +443,7 @@ export default function DealsPage() {
                             <div className="flex items-center space-x-4">
                               <span className="text-sm text-muted-foreground">{tr('deals.storesCount', { count: deal.stores.length })}</span>
                               <Button asChild>
-                                <Link href={(deal as any).url ? (deal as any).url : `/deals/${deal.id}`} target={(deal as any).url ? '_blank' : undefined} rel={(deal as any).url ? 'noopener noreferrer' : undefined}>
+                                <Link href={(deal as any).url ? (deal as any).url : `/deals/${deal.id}`}>
                                   <ShoppingBag className="h-4 w-4 mr-2" />
                                   {(deal as any).url ? t('deals.viewDeal') : t('deals.comparePrices')}
                                 </Link>

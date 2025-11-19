@@ -474,7 +474,7 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
               <CardContent className="space-y-4">
                 {job.applicationUrl && (
                   <Button asChild className="w-full" size="lg">
-                    <a href={job.applicationUrl} target="_blank" rel="noopener noreferrer">
+                    <a href={job.applicationUrl}>
                       <ExternalLink className="h-4 w-4 mr-2" />
                       {t('jobs.apply')}
                     </a>

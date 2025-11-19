@@ -418,8 +418,6 @@ export default function DealDetailPage() {
                         <h1 className="text-xl sm:text-2xl md:text-3xl font-bold leading-tight">
                           <a
                             href={sourceUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
                             className="hover:underline"
                           >
                             {deal.title}
@@ -435,7 +433,7 @@ export default function DealDetailPage() {
                       </div>
                       <div className="flex flex-wrap items-center gap-2">
                         <Button variant="default" size="sm" className="flex-1 sm:flex-none" asChild>
-                          <Link href={sourceUrl} target="_blank">
+                          <Link href={sourceUrl}>
                             <ExternalLink className="h-4 w-4 mr-1" />
                             <span className="hidden sm:inline">{t('deals.detail.visitSource')}</span>
                             <span className="sm:hidden">{t('deals.detail.visit')}</span>

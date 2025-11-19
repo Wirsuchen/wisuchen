@@ -191,12 +191,12 @@ export function useTrackAffiliateClick() {
         body: JSON.stringify({ offerId, url: affiliateUrl })
       })
 
-      // Open affiliate link in new tab
-      window.open(affiliateUrl, '_blank', 'noopener,noreferrer')
+      // Navigate to affiliate link in current tab
+      window.location.href = affiliateUrl
     } catch (error) {
       console.error('Failed to track affiliate click:', error)
       // Still open the link even if tracking fails
-      window.open(affiliateUrl, '_blank', 'noopener,noreferrer')
+      window.location.href = affiliateUrl
     }
   }, [])
 

@@ -7,10 +7,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Code, Copy, CheckCircle, ExternalLink, BookOpen, Zap, Shield, Globe } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
+import { useTranslation } from "@/contexts/i18n-context"
 
 const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://wirsuchen-six.vercel.app'
 
 export default function ApiDocsPage() {
+  const { t } = useTranslation()
   const [copied, setCopied] = useState<string | null>(null)
 
   const copyToClipboard = (text: string, id: string) => {
@@ -26,10 +28,13 @@ export default function ApiDocsPage() {
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">
             <BookOpen className="h-8 w-8 text-primary" />
-            <h1 className="text-4xl font-bold">API Documentation</h1>
+            <h1 className="text-4xl font-bold">{t('apiDocs.title', 'API Documentation')}</h1>
           </div>
           <p className="text-lg text-muted-foreground">
-            Complete API reference for WIRsuchen platform. All endpoints are RESTful and return JSON responses.
+            {t(
+              'apiDocs.description',
+              'Complete API reference for WIRsuchen platform. All endpoints are RESTful and return JSON responses.'
+            )}
           </p>
         </div>
 
@@ -63,11 +68,11 @@ export default function ApiDocsPage() {
         {/* API Endpoints */}
         <Tabs defaultValue="jobs" className="w-full">
           <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-1">
-            <TabsTrigger value="jobs">Jobs</TabsTrigger>
-            <TabsTrigger value="deals">Deals</TabsTrigger>
-            <TabsTrigger value="user">User</TabsTrigger>
-            <TabsTrigger value="admin">Admin</TabsTrigger>
-            <TabsTrigger value="payment">Payment</TabsTrigger>
+            <TabsTrigger value="jobs">{t('apiDocs.tabs.jobs', 'Jobs')}</TabsTrigger>
+            <TabsTrigger value="deals">{t('apiDocs.tabs.deals', 'Deals')}</TabsTrigger>
+            <TabsTrigger value="user">{t('apiDocs.tabs.user', 'User')}</TabsTrigger>
+            <TabsTrigger value="admin">{t('apiDocs.tabs.admin', 'Admin')}</TabsTrigger>
+            <TabsTrigger value="payment">{t('apiDocs.tabs.payment', 'Payment')}</TabsTrigger>
           </TabsList>
 
           {/* Jobs API */}
@@ -76,8 +81,10 @@ export default function ApiDocsPage() {
               <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div>
-                    <CardTitle>Search Jobs (V1)</CardTitle>
-                    <CardDescription>Aggregated job search from multiple sources</CardDescription>
+                    <CardTitle>{t('apiDocs.jobs.searchV1Title', 'Search Jobs (V1)')}</CardTitle>
+                    <CardDescription>
+                      {t('apiDocs.jobs.searchV1Description', 'Aggregated job search from multiple sources')}
+                    </CardDescription>
                   </div>
                   <Badge variant="outline" className="w-fit">GET</Badge>
                 </div>
@@ -95,7 +102,9 @@ export default function ApiDocsPage() {
                   </Button>
                 </div>
                 <div>
-                  <h4 className="font-semibold mb-2">Query Parameters:</h4>
+                  <h4 className="font-semibold mb-2">
+                    {t('apiDocs.sections.queryParams', 'Query Parameters:')}
+                  </h4>
                   <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
                     <li><code>query</code> (string, optional) - Search keywords</li>
                     <li><code>location</code> (string, optional) - Job location</li>
@@ -110,7 +119,9 @@ export default function ApiDocsPage() {
                   </ul>
                 </div>
                 <div>
-                  <h4 className="font-semibold mb-2">Example Request:</h4>
+                  <h4 className="font-semibold mb-2">
+                    {t('apiDocs.sections.exampleRequest', 'Example Request:')}
+                  </h4>
                   <div className="bg-muted p-4 rounded-lg relative">
                     <code className="text-xs sm:text-sm break-all block overflow-x-auto">
                       {baseUrl}/api/v1/jobs/search?query=developer&location=Berlin&limit=20&countries=de,at,ch
@@ -126,7 +137,9 @@ export default function ApiDocsPage() {
                   </div>
                 </div>
                 <div>
-                  <h4 className="font-semibold mb-2">Response:</h4>
+                  <h4 className="font-semibold mb-2">
+                    {t('apiDocs.sections.response', 'Response:')}
+                  </h4>
                   <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-xs sm:text-sm">
 {`{
   "success": true,
@@ -157,8 +170,10 @@ export default function ApiDocsPage() {
               <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div>
-                    <CardTitle>Get Jobs (Legacy)</CardTitle>
-                    <CardDescription>Database-first job search</CardDescription>
+                    <CardTitle>{t('apiDocs.jobs.legacyTitle', 'Get Jobs (Legacy)')}</CardTitle>
+                    <CardDescription>
+                      {t('apiDocs.jobs.legacyDescription', 'Database-first job search')}
+                    </CardDescription>
                   </div>
                   <Badge variant="outline" className="w-fit">GET</Badge>
                 </div>
@@ -168,7 +183,9 @@ export default function ApiDocsPage() {
                   <code className="text-sm bg-muted px-2 py-1 rounded break-all">/api/jobs</code>
                 </div>
                 <div>
-                  <h4 className="font-semibold mb-2">Query Parameters:</h4>
+                  <h4 className="font-semibold mb-2">
+                    {t('apiDocs.sections.queryParams', 'Query Parameters:')}
+                  </h4>
                   <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
                     <li><code>page</code> (number, default: 1)</li>
                     <li><code>limit</code> (number, default: 20)</li>
@@ -187,8 +204,13 @@ export default function ApiDocsPage() {
               <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div>
-                    <CardTitle>Create Job</CardTitle>
-                    <CardDescription>Create a new job posting (Auth required)</CardDescription>
+                    <CardTitle>{t('apiDocs.jobs.createJobTitle', 'Create Job')}</CardTitle>
+                    <CardDescription>
+                      {t(
+                        'apiDocs.jobs.createJobDescription',
+                        'Create a new job posting (Auth required)'
+                      )}
+                    </CardDescription>
                   </div>
                   <Badge variant="outline" className="w-fit">POST</Badge>
                 </div>
@@ -198,7 +220,9 @@ export default function ApiDocsPage() {
                   <code className="text-sm bg-muted px-2 py-1 rounded break-all">/api/jobs</code>
                 </div>
                 <div>
-                  <h4 className="font-semibold mb-2">Request Body:</h4>
+                  <h4 className="font-semibold mb-2">
+                    {t('apiDocs.sections.requestBody', 'Request Body:')}
+                  </h4>
                   <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-xs sm:text-sm">
 {`{
   "title": "Software Developer",
@@ -219,8 +243,13 @@ export default function ApiDocsPage() {
               <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div>
-                    <CardTitle>Get Categories</CardTitle>
-                    <CardDescription>Get job/affiliate/blog categories</CardDescription>
+                    <CardTitle>{t('apiDocs.jobs.categoriesTitle', 'Get Categories')}</CardTitle>
+                    <CardDescription>
+                      {t(
+                        'apiDocs.jobs.categoriesDescription',
+                        'Get job/affiliate/blog categories'
+                      )}
+                    </CardDescription>
                   </div>
                   <Badge variant="outline" className="w-fit">GET</Badge>
                 </div>
@@ -230,7 +259,9 @@ export default function ApiDocsPage() {
                   <code className="text-sm bg-muted px-2 py-1 rounded break-all">/api/categories</code>
                 </div>
                 <div>
-                  <h4 className="font-semibold mb-2">Query Parameters:</h4>
+                  <h4 className="font-semibold mb-2">
+                    {t('apiDocs.sections.queryParams', 'Query Parameters:')}
+                  </h4>
                   <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
                     <li><code>type</code> (string, optional) - job, affiliate, blog</li>
                   </ul>
@@ -245,8 +276,10 @@ export default function ApiDocsPage() {
               <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div>
-                    <CardTitle>Get Deals</CardTitle>
-                    <CardDescription>Get affiliate deals and offers</CardDescription>
+                    <CardTitle>{t('apiDocs.deals.getDealsTitle', 'Get Deals')}</CardTitle>
+                    <CardDescription>
+                      {t('apiDocs.deals.getDealsDescription', 'Get affiliate deals and offers')}
+                    </CardDescription>
                   </div>
                   <Badge variant="outline" className="w-fit">GET</Badge>
                 </div>
@@ -256,7 +289,9 @@ export default function ApiDocsPage() {
                   <code className="text-sm bg-muted px-2 py-1 rounded break-all">/api/deals</code>
                 </div>
                 <div>
-                  <h4 className="font-semibold mb-2">Query Parameters:</h4>
+                  <h4 className="font-semibold mb-2">
+                    {t('apiDocs.sections.queryParams', 'Query Parameters:')}
+                  </h4>
                   <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
                     <li><code>page</code> (number, default: 1)</li>
                     <li><code>limit</code> (number, default: 20)</li>
@@ -273,8 +308,13 @@ export default function ApiDocsPage() {
               <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div>
-                    <CardTitle>Search Offers (V1)</CardTitle>
-                    <CardDescription>Search affiliate offers from multiple sources</CardDescription>
+                    <CardTitle>{t('apiDocs.deals.searchOffersTitle', 'Search Offers (V1)')}</CardTitle>
+                    <CardDescription>
+                      {t(
+                        'apiDocs.deals.searchOffersDescription',
+                        'Search affiliate offers from multiple sources'
+                      )}
+                    </CardDescription>
                   </div>
                   <Badge variant="outline" className="w-fit">GET</Badge>
                 </div>
@@ -284,7 +324,9 @@ export default function ApiDocsPage() {
                   <code className="text-sm bg-muted px-2 py-1 rounded break-all">/api/v1/offers/search</code>
                 </div>
                 <div>
-                  <h4 className="font-semibold mb-2">Query Parameters:</h4>
+                  <h4 className="font-semibold mb-2">
+                    {t('apiDocs.sections.queryParams', 'Query Parameters:')}
+                  </h4>
                   <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
                     <li><code>query</code> (string, optional) - Search keywords</li>
                     <li><code>category</code> (string, optional)</li>
@@ -305,8 +347,13 @@ export default function ApiDocsPage() {
               <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div>
-                    <CardTitle>Get Current User</CardTitle>
-                    <CardDescription>Get authenticated user profile (Auth required)</CardDescription>
+                    <CardTitle>{t('apiDocs.user.currentUserTitle', 'Get Current User')}</CardTitle>
+                    <CardDescription>
+                      {t(
+                        'apiDocs.user.currentUserDescription',
+                        'Get authenticated user profile (Auth required)'
+                      )}
+                    </CardDescription>
                   </div>
                   <Badge variant="outline" className="w-fit">GET</Badge>
                 </div>
@@ -322,8 +369,13 @@ export default function ApiDocsPage() {
               <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div>
-                    <CardTitle>Get Saved Jobs</CardTitle>
-                    <CardDescription>Get user's saved jobs (Auth required)</CardDescription>
+                    <CardTitle>{t('apiDocs.user.savedJobsTitle', "Get Saved Jobs")}</CardTitle>
+                    <CardDescription>
+                      {t(
+                        'apiDocs.user.savedJobsDescription',
+                        "Get user's saved jobs (Auth required)"
+                      )}
+                    </CardDescription>
                   </div>
                   <Badge variant="outline" className="w-fit">GET</Badge>
                 </div>
@@ -339,8 +391,13 @@ export default function ApiDocsPage() {
               <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div>
-                    <CardTitle>Save Job</CardTitle>
-                    <CardDescription>Save a job to user's favorites (Auth required)</CardDescription>
+                    <CardTitle>{t('apiDocs.user.saveJobTitle', 'Save Job')}</CardTitle>
+                    <CardDescription>
+                      {t(
+                        'apiDocs.user.saveJobDescription',
+                        "Save a job to user's favorites (Auth required)"
+                      )}
+                    </CardDescription>
                   </div>
                   <Badge variant="outline" className="w-fit">POST</Badge>
                 </div>
@@ -350,7 +407,9 @@ export default function ApiDocsPage() {
                   <code className="text-sm bg-muted px-2 py-1 rounded break-all">/api/saved/jobs</code>
                 </div>
                 <div>
-                  <h4 className="font-semibold mb-2">Request Body:</h4>
+                  <h4 className="font-semibold mb-2">
+                    {t('apiDocs.sections.requestBody', 'Request Body:')}
+                  </h4>
                   <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-xs sm:text-sm">
 {`{
   "id": "job-id",
@@ -367,8 +426,13 @@ export default function ApiDocsPage() {
               <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div>
-                    <CardTitle>Get Saved Deals</CardTitle>
-                    <CardDescription>Get user's saved deals (Auth required)</CardDescription>
+                    <CardTitle>{t('apiDocs.user.savedDealsTitle', 'Get Saved Deals')}</CardTitle>
+                    <CardDescription>
+                      {t(
+                        'apiDocs.user.savedDealsDescription',
+                        "Get user's saved deals (Auth required)"
+                      )}
+                    </CardDescription>
                   </div>
                   <Badge variant="outline" className="w-fit">GET</Badge>
                 </div>
@@ -384,8 +448,13 @@ export default function ApiDocsPage() {
               <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div>
-                    <CardTitle>Submit Application</CardTitle>
-                    <CardDescription>Submit job application (Auth required)</CardDescription>
+                    <CardTitle>{t('apiDocs.user.submitApplicationTitle', 'Submit Application')}</CardTitle>
+                    <CardDescription>
+                      {t(
+                        'apiDocs.user.submitApplicationDescription',
+                        'Submit job application (Auth required)'
+                      )}
+                    </CardDescription>
                   </div>
                   <Badge variant="outline" className="w-fit">POST</Badge>
                 </div>
@@ -413,8 +482,13 @@ export default function ApiDocsPage() {
               <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div>
-                    <CardTitle>Import Jobs</CardTitle>
-                    <CardDescription>Import jobs from external APIs (Admin only)</CardDescription>
+                    <CardTitle>{t('apiDocs.admin.importJobsTitle', 'Import Jobs')}</CardTitle>
+                    <CardDescription>
+                      {t(
+                        'apiDocs.admin.importJobsDescription',
+                        'Import jobs from external APIs (Admin only)'
+                      )}
+                    </CardDescription>
                   </div>
                   <Badge variant="outline" className="w-fit">POST</Badge>
                 </div>
@@ -424,7 +498,9 @@ export default function ApiDocsPage() {
                   <code className="text-sm bg-muted px-2 py-1 rounded break-all">/api/import/jobs</code>
                 </div>
                 <div>
-                  <h4 className="font-semibold mb-2">Request Body:</h4>
+                  <h4 className="font-semibold mb-2">
+                    {t('apiDocs.sections.requestBody', 'Request Body:')}
+                  </h4>
                   <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-xs sm:text-sm">
 {`{
   "source": "adzuna",
@@ -437,7 +513,9 @@ export default function ApiDocsPage() {
                   </pre>
                 </div>
                 <div>
-                  <h4 className="font-semibold mb-2">Available Sources:</h4>
+                  <h4 className="font-semibold mb-2">
+                    {t('apiDocs.sections.availableSources', 'Available Sources:')}
+                  </h4>
                   <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
                     <li>adzuna</li>
                     <li>rapidapi-employment-agency</li>
@@ -452,8 +530,13 @@ export default function ApiDocsPage() {
               <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div>
-                    <CardTitle>Import Affiliates</CardTitle>
-                    <CardDescription>Import affiliate deals (Admin only)</CardDescription>
+                    <CardTitle>{t('apiDocs.admin.importAffiliatesTitle', 'Import Affiliates')}</CardTitle>
+                    <CardDescription>
+                      {t(
+                        'apiDocs.admin.importAffiliatesDescription',
+                        'Import affiliate deals (Admin only)'
+                      )}
+                    </CardDescription>
                   </div>
                   <Badge variant="outline" className="w-fit">POST</Badge>
                 </div>
@@ -463,7 +546,9 @@ export default function ApiDocsPage() {
                   <code className="text-sm bg-muted px-2 py-1 rounded break-all">/api/import/affiliates</code>
                 </div>
                 <div>
-                  <h4 className="font-semibold mb-2">Request Body:</h4>
+                  <h4 className="font-semibold mb-2">
+                    {t('apiDocs.sections.requestBody', 'Request Body:')}
+                  </h4>
                   <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-xs sm:text-sm">
 {`{
   "source": "awin",
@@ -475,7 +560,9 @@ export default function ApiDocsPage() {
                   </pre>
                 </div>
                 <div>
-                  <h4 className="font-semibold mb-2">Available Sources:</h4>
+                  <h4 className="font-semibold mb-2">
+                    {t('apiDocs.sections.availableSources', 'Available Sources:')}
+                  </h4>
                   <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
                     <li>awin</li>
                     <li>adcell</li>
@@ -488,8 +575,13 @@ export default function ApiDocsPage() {
               <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div>
-                    <CardTitle>Get Admin Stats</CardTitle>
-                    <CardDescription>Get platform statistics (Admin only)</CardDescription>
+                    <CardTitle>{t('apiDocs.admin.adminStatsTitle', 'Get Admin Stats')}</CardTitle>
+                    <CardDescription>
+                      {t(
+                        'apiDocs.admin.adminStatsDescription',
+                        'Get platform statistics (Admin only)'
+                      )}
+                    </CardDescription>
                   </div>
                   <Badge variant="outline" className="w-fit">GET</Badge>
                 </div>
@@ -508,8 +600,13 @@ export default function ApiDocsPage() {
               <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div>
-                    <CardTitle>Create PayPal Order</CardTitle>
-                    <CardDescription>Create a PayPal payment order (Auth required)</CardDescription>
+                    <CardTitle>{t('apiDocs.payment.createOrderTitle', 'Create PayPal Order')}</CardTitle>
+                    <CardDescription>
+                      {t(
+                        'apiDocs.payment.createOrderDescription',
+                        'Create a PayPal payment order (Auth required)'
+                      )}
+                    </CardDescription>
                   </div>
                   <Badge variant="outline" className="w-fit">POST</Badge>
                 </div>
@@ -519,7 +616,9 @@ export default function ApiDocsPage() {
                   <code className="text-sm bg-muted px-2 py-1 rounded break-all">/api/payment/paypal</code>
                 </div>
                 <div>
-                  <h4 className="font-semibold mb-2">Request Body:</h4>
+                  <h4 className="font-semibold mb-2">
+                    {t('apiDocs.sections.requestBody', 'Request Body:')}
+                  </h4>
                   <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-xs sm:text-sm">
 {`{
   "amount": "29.99",
@@ -542,8 +641,10 @@ export default function ApiDocsPage() {
               <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div>
-                    <CardTitle>Get Payment Status</CardTitle>
-                    <CardDescription>Get PayPal order status</CardDescription>
+                    <CardTitle>{t('apiDocs.payment.paymentStatusTitle', 'Get Payment Status')}</CardTitle>
+                    <CardDescription>
+                      {t('apiDocs.payment.paymentStatusDescription', 'Get PayPal order status')}
+                    </CardDescription>
                   </div>
                   <Badge variant="outline" className="w-fit">GET</Badge>
                 </div>
@@ -560,11 +661,14 @@ export default function ApiDocsPage() {
         {/* Additional Info */}
         <Card className="mt-8">
           <CardHeader>
-            <CardTitle>Response Format</CardTitle>
+            <CardTitle>{t('apiDocs.sections.responseFormatTitle', 'Response Format')}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">
-              All API responses follow a consistent format:
+              {t(
+                'apiDocs.sections.responseFormatDescription',
+                'All API responses follow a consistent format:'
+              )}
             </p>
             <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-xs sm:text-sm">
 {`{
@@ -578,16 +682,37 @@ export default function ApiDocsPage() {
 
         <Card className="mt-4">
           <CardHeader>
-            <CardTitle>Error Codes</CardTitle>
+            <CardTitle>{t('apiDocs.sections.errorCodesTitle', 'Error Codes')}</CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="space-y-2 text-sm">
-              <li><code className="bg-muted px-2 py-1 rounded">400</code> - Bad Request (invalid parameters)</li>
-              <li><code className="bg-muted px-2 py-1 rounded">401</code> - Unauthorized (authentication required)</li>
-              <li><code className="bg-muted px-2 py-1 rounded">403</code> - Forbidden (insufficient permissions)</li>
-              <li><code className="bg-muted px-2 py-1 rounded">404</code> - Not Found</li>
-              <li><code className="bg-muted px-2 py-1 rounded">429</code> - Too Many Requests (rate limit exceeded)</li>
-              <li><code className="bg-muted px-2 py-1 rounded">500</code> - Internal Server Error</li>
+              <li>
+                <code className="bg-muted px-2 py-1 rounded">400</code> -
+                {` ${t('apiDocs.errors.400', 'Bad Request (invalid parameters)')}`}
+              </li>
+              <li>
+                <code className="bg-muted px-2 py-1 rounded">401</code> -
+                {` ${t('apiDocs.errors.401', 'Unauthorized (authentication required)')}`}
+              </li>
+              <li>
+                <code className="bg-muted px-2 py-1 rounded">403</code> -
+                {` ${t('apiDocs.errors.403', 'Forbidden (insufficient permissions)')}`}
+              </li>
+              <li>
+                <code className="bg-muted px-2 py-1 rounded">404</code> -
+                {` ${t('apiDocs.errors.404', 'Not Found')}`}
+              </li>
+              <li>
+                <code className="bg-muted px-2 py-1 rounded">429</code> -
+                {` ${t(
+                  'apiDocs.errors.429',
+                  'Too Many Requests (rate limit exceeded)'
+                )}`}
+              </li>
+              <li>
+                <code className="bg-muted px-2 py-1 rounded">500</code> -
+                {` ${t('apiDocs.errors.500', 'Internal Server Error')}`}
+              </li>
             </ul>
           </CardContent>
         </Card>
