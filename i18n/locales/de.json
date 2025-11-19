@@ -1747,5 +1747,102 @@
         }
       }
     }
+  },
+  "apiDocs": {
+    "title": "API-Dokumentation",
+    "description": "Vollständige API-Referenz für die WIRsuchen-Plattform. Alle Endpunkte sind RESTful und geben JSON-Antworten zurück.",
+    "authentication": {
+      "title": "Authentifizierung",
+      "description": "Die meisten Endpunkte erfordern eine Authentifizierung über Supabase-Sitzungscookies"
+    },
+    "rateLimits": {
+      "title": "Ratenbegrenzung",
+      "description": "100 Anfragen pro Minute pro IP-Adresse"
+    },
+    "params": {
+      "searchKeywords": "Suchbegriffe",
+      "jobLocation": "Arbeitsort",
+      "employmentType": "Beschäftigungsart",
+      "experienceLevel": "Erfahrungsstufe",
+      "minSalary": "Mindestgehalt",
+      "maxSalary": "Maximalgehalt",
+      "pageNumber": "Seitennummer",
+      "resultsPerPage": "Ergebnisse pro Seite",
+      "countryCodes": "Kommagetrennte Ländercodes",
+      "useCache": "Cache-Ergebnisse verwenden",
+      "category": "Kategorie",
+      "remote": "Remote",
+      "featured": "Hervorgehoben",
+      "minPrice": "Mindestpreis",
+      "maxPrice": "Maximalpreis",
+      "onSale": "Nur im Angebot"
+    },
+    "tabs": {
+      "jobs": "Jobs",
+      "deals": "Angebote",
+      "user": "Benutzer",
+      "admin": "Admin",
+      "payment": "Zahlung"
+    },
+    "sections": {
+      "queryParams": "Abfrageparameter:",
+      "exampleRequest": "Beispielanfrage:",
+      "response": "Antwort:",
+      "requestBody": "Anfragekörper:",
+      "availableSources": "Verfügbare Quellen:",
+      "responseFormatTitle": "Antwortformat",
+      "responseFormatDescription": "Alle API-Antworten folgen einem einheitlichen Format:",
+      "errorCodesTitle": "Fehlercodes"
+    },
+    "jobs": {
+      "searchV1Title": "Jobs suchen (V1)",
+      "searchV1Description": "Aggregierte Jobsuche aus mehreren Quellen",
+      "legacyTitle": "Jobs abrufen (Legacy)",
+      "legacyDescription": "Datenbankbasierte Jobsuche",
+      "createJobTitle": "Job erstellen",
+      "createJobDescription": "Neue Stellenanzeige erstellen (Authentifizierung erforderlich)",
+      "categoriesTitle": "Kategorien abrufen",
+      "categoriesDescription": "Job-/Affiliate-/Blog-Kategorien abrufen"
+    },
+    "deals": {
+      "getDealsTitle": "Angebote abrufen",
+      "getDealsDescription": "Affiliate-Angebote und Deals abrufen",
+      "searchOffersTitle": "Angebote suchen (V1)",
+      "searchOffersDescription": "Affiliate-Angebote aus mehreren Quellen suchen"
+    },
+    "user": {
+      "currentUserTitle": "Aktuellen Benutzer abrufen",
+      "currentUserDescription": "Authentifiziertes Benutzerprofil abrufen (Authentifizierung erforderlich)",
+      "savedJobsTitle": "Gespeicherte Jobs abrufen",
+      "savedJobsDescription": "Gespeicherte Jobs des Benutzers abrufen (Authentifizierung erforderlich)",
+      "saveJobTitle": "Job speichern",
+      "saveJobDescription": "Job zu Favoriten hinzufügen (Authentifizierung erforderlich)",
+      "savedDealsTitle": "Gespeicherte Angebote abrufen",
+      "savedDealsDescription": "Gespeicherte Angebote des Benutzers abrufen (Authentifizierung erforderlich)",
+      "submitApplicationTitle": "Bewerbung absenden",
+      "submitApplicationDescription": "Jobbewerbung absenden (Authentifizierung erforderlich)"
+    },
+    "admin": {
+      "importJobsTitle": "Jobs importieren",
+      "importJobsDescription": "Jobs von externen APIs importieren (Nur Admin)",
+      "importAffiliatesTitle": "Affiliates importieren",
+      "importAffiliatesDescription": "Affiliate-Angebote importieren (Nur Admin)",
+      "adminStatsTitle": "Admin-Statistiken abrufen",
+      "adminStatsDescription": "Plattformstatistiken abrufen (Nur Admin)"
+    },
+    "payment": {
+      "createOrderTitle": "PayPal-Bestellung erstellen",
+      "createOrderDescription": "PayPal-Zahlungsauftrag erstellen (Authentifizierung erforderlich)",
+      "paymentStatusTitle": "Zahlungsstatus abrufen",
+      "paymentStatusDescription": "PayPal-Bestellstatus abrufen"
+    },
+    "errors": {
+      "400": "Ungültige Anfrage (ungültige Parameter)",
+      "401": "Nicht autorisiert (Authentifizierung erforderlich)",
+      "403": "Verboten (unzureichende Berechtigungen)",
+      "404": "Nicht gefunden",
+      "429": "Zu viele Anfragen (Ratenbegrenzung überschritten)",
+      "500": "Interner Serverfehler"
+    }
   }
 }

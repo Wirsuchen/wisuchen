@@ -1093,5 +1093,102 @@
       "openDescription": "Apri la pagina test API integrata per provare endpoint come lavori, categorie, importazioni e pagamenti.",
       "openAPITesting": "Apri Test API"
     }
+  },
+  "apiDocs": {
+    "title": "Documentazione API",
+    "description": "Riferimento API completo per la piattaforma WIRsuchen. Tutti gli endpoint sono RESTful e restituiscono risposte JSON.",
+    "authentication": {
+      "title": "Autenticazione",
+      "description": "La maggior parte degli endpoint richiede l'autenticazione tramite cookie di sessione Supabase"
+    },
+    "rateLimits": {
+      "title": "Limiti di velocità",
+      "description": "100 richieste al minuto per indirizzo IP"
+    },
+    "params": {
+      "searchKeywords": "Parole chiave di ricerca",
+      "jobLocation": "Luogo di lavoro",
+      "employmentType": "Tipo di impiego",
+      "experienceLevel": "Livello di esperienza",
+      "minSalary": "Stipendio minimo",
+      "maxSalary": "Stipendio massimo",
+      "pageNumber": "Numero di pagina",
+      "resultsPerPage": "Risultati per pagina",
+      "countryCodes": "Codici paese separati da virgola",
+      "useCache": "Usa risultati nella cache",
+      "category": "Categoria",
+      "remote": "Remoto",
+      "featured": "In evidenza",
+      "minPrice": "Prezzo minimo",
+      "maxPrice": "Prezzo massimo",
+      "onSale": "Solo in saldo"
+    },
+    "tabs": {
+      "jobs": "Lavori",
+      "deals": "Offerte",
+      "user": "Utente",
+      "admin": "Amministratore",
+      "payment": "Pagamento"
+    },
+    "sections": {
+      "queryParams": "Parametri di query:",
+      "exampleRequest": "Esempio di richiesta:",
+      "response": "Risposta:",
+      "requestBody": "Corpo della richiesta:",
+      "availableSources": "Fonti disponibili:",
+      "responseFormatTitle": "Formato della risposta",
+      "responseFormatDescription": "Tutte le risposte API seguono un formato coerente:",
+      "errorCodesTitle": "Codici di errore"
+    },
+    "jobs": {
+      "searchV1Title": "Cerca lavori (V1)",
+      "searchV1Description": "Ricerca di lavoro aggregata da più fonti",
+      "legacyTitle": "Ottieni lavori (Legacy)",
+      "legacyDescription": "Ricerca di lavoro basata su database",
+      "createJobTitle": "Crea lavoro",
+      "createJobDescription": "Crea un nuovo annuncio di lavoro (Autenticazione richiesta)",
+      "categoriesTitle": "Ottieni categorie",
+      "categoriesDescription": "Ottieni categorie di lavoro/affiliazione/blog"
+    },
+    "deals": {
+      "getDealsTitle": "Ottieni offerte",
+      "getDealsDescription": "Ottieni offerte e promozioni di affiliazione",
+      "searchOffersTitle": "Cerca offerte (V1)",
+      "searchOffersDescription": "Cerca offerte di affiliazione da più fonti"
+    },
+    "user": {
+      "currentUserTitle": "Ottieni utente corrente",
+      "currentUserDescription": "Ottieni il profilo dell'utente autenticato (Autenticazione richiesta)",
+      "savedJobsTitle": "Ottieni lavori salvati",
+      "savedJobsDescription": "Ottieni i lavori salvati dall'utente (Autenticazione richiesta)",
+      "saveJobTitle": "Salva lavoro",
+      "saveJobDescription": "Salva un lavoro nei preferiti dell'utente (Autenticazione richiesta)",
+      "savedDealsTitle": "Ottieni offerte salvate",
+      "savedDealsDescription": "Ottieni le offerte salvate dall'utente (Autenticazione richiesta)",
+      "submitApplicationTitle": "Invia candidatura",
+      "submitApplicationDescription": "Invia candidatura di lavoro (Autenticazione richiesta)"
+    },
+    "admin": {
+      "importJobsTitle": "Importa lavori",
+      "importJobsDescription": "Importa lavori da API esterne (Solo amministratore)",
+      "importAffiliatesTitle": "Importa affiliati",
+      "importAffiliatesDescription": "Importa offerte di affiliazione (Solo amministratore)",
+      "adminStatsTitle": "Ottieni statistiche amministratore",
+      "adminStatsDescription": "Ottieni statistiche della piattaforma (Solo amministratore)"
+    },
+    "payment": {
+      "createOrderTitle": "Crea ordine PayPal",
+      "createOrderDescription": "Crea un ordine di pagamento PayPal (Autenticazione richiesta)",
+      "paymentStatusTitle": "Ottieni stato pagamento",
+      "paymentStatusDescription": "Ottieni lo stato dell'ordine PayPal"
+    },
+    "errors": {
+      "400": "Richiesta errata (parametri non validi)",
+      "401": "Non autorizzato (autenticazione richiesta)",
+      "403": "Proibito (permessi insufficienti)",
+      "404": "Non trovato",
+      "429": "Troppe richieste (limite di velocità superato)",
+      "500": "Errore interno del server"
+    }
   }
 }

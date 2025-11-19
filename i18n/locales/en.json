@@ -8,7 +8,7 @@
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",
-    "edit": "Edit",
+    "edit": "Edit", 
     "create": "Create",
     "update": "Update",
     "search": "Search",
@@ -1747,6 +1747,103 @@
           "generationFailed": "Generation failed"
         }
       }
+    }
+  },
+  "apiDocs": {
+    "title": "API Documentation",
+    "description": "Complete API reference for WIRsuchen platform. All endpoints are RESTful and return JSON responses.",
+    "authentication": {
+      "title": "Authentication",
+      "description": "Most endpoints require authentication via Supabase session cookies"
+    },
+    "rateLimits": {
+      "title": "Rate Limits",
+      "description": "100 requests per minute per IP address"
+    },
+    "params": {
+      "searchKeywords": "Search keywords",
+      "jobLocation": "Job location",
+      "employmentType": "Employment type",
+      "experienceLevel": "Experience level",
+      "minSalary": "Minimum salary",
+      "maxSalary": "Maximum salary",
+      "pageNumber": "Page number",
+      "resultsPerPage": "Results per page",
+      "countryCodes": "Comma-separated country codes",
+      "useCache": "Use cached results",
+      "category": "Category",
+      "remote": "Remote",
+      "featured": "Featured",
+      "minPrice": "Minimum price",
+      "maxPrice": "Maximum price",
+      "onSale": "On sale only"
+    },
+    "tabs": {
+      "jobs": "Jobs",
+      "deals": "Deals",
+      "user": "User",
+      "admin": "Admin",
+      "payment": "Payment"
+    },
+    "sections": {
+      "queryParams": "Query Parameters:",
+      "exampleRequest": "Example Request:",
+      "response": "Response:",
+      "requestBody": "Request Body:",
+      "availableSources": "Available Sources:",
+      "responseFormatTitle": "Response Format",
+      "responseFormatDescription": "All API responses follow a consistent format:",
+      "errorCodesTitle": "Error Codes"
+    },
+    "jobs": {
+      "searchV1Title": "Search Jobs (V1)",
+      "searchV1Description": "Aggregated job search from multiple sources",
+      "legacyTitle": "Get Jobs (Legacy)",
+      "legacyDescription": "Database-first job search",
+      "createJobTitle": "Create Job",
+      "createJobDescription": "Create a new job posting (Auth required)",
+      "categoriesTitle": "Get Categories",
+      "categoriesDescription": "Get job/affiliate/blog categories"
+    },
+    "deals": {
+      "getDealsTitle": "Get Deals",
+      "getDealsDescription": "Get affiliate deals and offers",
+      "searchOffersTitle": "Search Offers (V1)",
+      "searchOffersDescription": "Search affiliate offers from multiple sources"
+    },
+    "user": {
+      "currentUserTitle": "Get Current User",
+      "currentUserDescription": "Get authenticated user profile (Auth required)",
+      "savedJobsTitle": "Get Saved Jobs",
+      "savedJobsDescription": "Get user's saved jobs (Auth required)",
+      "saveJobTitle": "Save Job",
+      "saveJobDescription": "Save a job to user's favorites (Auth required)",
+      "savedDealsTitle": "Get Saved Deals",
+      "savedDealsDescription": "Get user's saved deals (Auth required)",
+      "submitApplicationTitle": "Submit Application",
+      "submitApplicationDescription": "Submit job application (Auth required)"
+    },
+    "admin": {
+      "importJobsTitle": "Import Jobs",
+      "importJobsDescription": "Import jobs from external APIs (Admin only)",
+      "importAffiliatesTitle": "Import Affiliates",
+      "importAffiliatesDescription": "Import affiliate deals (Admin only)",
+      "adminStatsTitle": "Get Admin Stats",
+      "adminStatsDescription": "Get platform statistics (Admin only)"
+    },
+    "payment": {
+      "createOrderTitle": "Create PayPal Order",
+      "createOrderDescription": "Create a PayPal payment order (Auth required)",
+      "paymentStatusTitle": "Get Payment Status",
+      "paymentStatusDescription": "Get PayPal order status"
+    },
+    "errors": {
+      "400": "Bad Request (invalid parameters)",
+      "401": "Unauthorized (authentication required)",
+      "403": "Forbidden (insufficient permissions)",
+      "404": "Not Found",
+      "429": "Too Many Requests (rate limit exceeded)",
+      "500": "Internal Server Error"
     }
   }
 }

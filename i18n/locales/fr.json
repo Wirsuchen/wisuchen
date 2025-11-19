@@ -1105,5 +1105,102 @@
       "openDescription": "Ouvrez la page de test API intégrée pour essayer des points de terminaison comme les emplois, catégories, importations et paiements.",
       "openAPITesting": "Ouvrir les tests API"
     }
+  },
+  "apiDocs": {
+    "title": "Documentation API",
+    "description": "Référence API complète pour la plateforme WIRsuchen. Tous les points de terminaison sont RESTful et renvoient des réponses JSON.",
+    "authentication": {
+      "title": "Authentification",
+      "description": "La plupart des points de terminaison nécessitent une authentification via les cookies de session Supabase"
+    },
+    "rateLimits": {
+      "title": "Limites de débit",
+      "description": "100 requêtes par minute par adresse IP"
+    },
+    "params": {
+      "searchKeywords": "Mots-clés de recherche",
+      "jobLocation": "Lieu de travail",
+      "employmentType": "Type d'emploi",
+      "experienceLevel": "Niveau d'expérience",
+      "minSalary": "Salaire minimum",
+      "maxSalary": "Salaire maximum",
+      "pageNumber": "Numéro de page",
+      "resultsPerPage": "Résultats par page",
+      "countryCodes": "Codes pays séparés par des virgules",
+      "useCache": "Utiliser les résultats en cache",
+      "category": "Catégorie",
+      "remote": "À distance",
+      "featured": "En vedette",
+      "minPrice": "Prix minimum",
+      "maxPrice": "Prix maximum",
+      "onSale": "En solde uniquement"
+    },
+    "tabs": {
+      "jobs": "Emplois",
+      "deals": "Offres",
+      "user": "Utilisateur",
+      "admin": "Admin",
+      "payment": "Paiement"
+    },
+    "sections": {
+      "queryParams": "Paramètres de requête :",
+      "exampleRequest": "Exemple de requête :",
+      "response": "Réponse :",
+      "requestBody": "Corps de la requête :",
+      "availableSources": "Sources disponibles :",
+      "responseFormatTitle": "Format de réponse",
+      "responseFormatDescription": "Toutes les réponses API suivent un format cohérent :",
+      "errorCodesTitle": "Codes d'erreur"
+    },
+    "jobs": {
+      "searchV1Title": "Rechercher des emplois (V1)",
+      "searchV1Description": "Recherche d'emploi agrégée à partir de plusieurs sources",
+      "legacyTitle": "Obtenir des emplois (Legacy)",
+      "legacyDescription": "Recherche d'emploi basée sur la base de données",
+      "createJobTitle": "Créer un emploi",
+      "createJobDescription": "Créer une nouvelle offre d'emploi (Authentification requise)",
+      "categoriesTitle": "Obtenir les catégories",
+      "categoriesDescription": "Obtenir les catégories d'emploi/affiliation/blog"
+    },
+    "deals": {
+      "getDealsTitle": "Obtenir des offres",
+      "getDealsDescription": "Obtenir des offres et des promotions d'affiliation",
+      "searchOffersTitle": "Rechercher des offres (V1)",
+      "searchOffersDescription": "Rechercher des offres d'affiliation à partir de plusieurs sources"
+    },
+    "user": {
+      "currentUserTitle": "Obtenir l'utilisateur actuel",
+      "currentUserDescription": "Obtenir le profil de l'utilisateur authentifié (Authentification requise)",
+      "savedJobsTitle": "Obtenir les emplois enregistrés",
+      "savedJobsDescription": "Obtenir les emplois enregistrés de l'utilisateur (Authentification requise)",
+      "saveJobTitle": "Enregistrer l'emploi",
+      "saveJobDescription": "Enregistrer un emploi dans les favoris de l'utilisateur (Authentification requise)",
+      "savedDealsTitle": "Obtenir les offres enregistrées",
+      "savedDealsDescription": "Obtenir les offres enregistrées de l'utilisateur (Authentification requise)",
+      "submitApplicationTitle": "Soumettre une candidature",
+      "submitApplicationDescription": "Soumettre une candidature à un emploi (Authentification requise)"
+    },
+    "admin": {
+      "importJobsTitle": "Importer des emplois",
+      "importJobsDescription": "Importer des emplois depuis des API externes (Admin uniquement)",
+      "importAffiliatesTitle": "Importer des affiliés",
+      "importAffiliatesDescription": "Importer des offres d'affiliation (Admin uniquement)",
+      "adminStatsTitle": "Obtenir les statistiques d'administration",
+      "adminStatsDescription": "Obtenir les statistiques de la plateforme (Admin uniquement)"
+    },
+    "payment": {
+      "createOrderTitle": "Créer une commande PayPal",
+      "createOrderDescription": "Créer un ordre de paiement PayPal (Authentification requise)",
+      "paymentStatusTitle": "Obtenir le statut du paiement",
+      "paymentStatusDescription": "Obtenir le statut de la commande PayPal"
+    },
+    "errors": {
+      "400": "Mauvaise requête (paramètres invalides)",
+      "401": "Non autorisé (authentification requise)",
+      "403": "Interdit (permissions insuffisantes)",
+      "404": "Non trouvé",
+      "429": "Trop de requêtes (limite de débit dépassée)",
+      "500": "Erreur interne du serveur"
+    }
   }
 }

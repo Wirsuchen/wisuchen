@@ -40,27 +40,27 @@ export default function ApiDocsPage() {
 
         {/* Quick Info Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-         
+
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Shield className="h-5 w-5" />
-                Authentication
+                {t('apiDocs.authentication.title', 'Authentication')}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm">Most endpoints require authentication via Supabase session cookies</p>
+              <p className="text-sm">{t('apiDocs.authentication.description', 'Most endpoints require authentication via Supabase session cookies')}</p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Zap className="h-5 w-5" />
-                Rate Limits
+                {t('apiDocs.rateLimits.title', 'Rate Limits')}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm">100 requests per minute per IP address</p>
+              <p className="text-sm">{t('apiDocs.rateLimits.description', '100 requests per minute per IP address')}</p>
             </CardContent>
           </Card>
         </div>
@@ -106,16 +106,16 @@ export default function ApiDocsPage() {
                     {t('apiDocs.sections.queryParams', 'Query Parameters:')}
                   </h4>
                   <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                    <li><code>query</code> (string, optional) - Search keywords</li>
-                    <li><code>location</code> (string, optional) - Job location</li>
+                    <li><code>query</code> (string, optional) - {t('apiDocs.params.searchKeywords', 'Search keywords')}</li>
+                    <li><code>location</code> (string, optional) - {t('apiDocs.params.jobLocation', 'Job location')}</li>
                     <li><code>employmentType</code> (string, optional) - full_time, part_time, contract, freelance, internship, temporary</li>
                     <li><code>experienceLevel</code> (string, optional) - junior, mid, senior, lead, executive</li>
-                    <li><code>salaryMin</code> (number, optional) - Minimum salary</li>
-                    <li><code>salaryMax</code> (number, optional) - Maximum salary</li>
-                    <li><code>page</code> (number, default: 1) - Page number</li>
-                    <li><code>limit</code> (number, default: 100, max: 500) - Results per page</li>
-                    <li><code>countries</code> (string, optional) - Comma-separated country codes (de,at,ch)</li>
-                    <li><code>useCache</code> (boolean, default: true) - Use cached results</li>
+                    <li><code>salaryMin</code> (number, optional) - {t('apiDocs.params.minSalary', 'Minimum salary')}</li>
+                    <li><code>salaryMax</code> (number, optional) - {t('apiDocs.params.maxSalary', 'Maximum salary')}</li>
+                    <li><code>page</code> (number, default: 1) - {t('apiDocs.params.pageNumber', 'Page number')}</li>
+                    <li><code>limit</code> (number, default: 100, max: 500) - {t('apiDocs.params.resultsPerPage', 'Results per page')}</li>
+                    <li><code>countries</code> (string, optional) - {t('apiDocs.params.countryCodes', 'Comma-separated country codes')} (de,at,ch)</li>
+                    <li><code>useCache</code> (boolean, default: true) - {t('apiDocs.params.useCache', 'Use cached results')}</li>
                   </ul>
                 </div>
                 <div>
@@ -141,7 +141,7 @@ export default function ApiDocsPage() {
                     {t('apiDocs.sections.response', 'Response:')}
                   </h4>
                   <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-xs sm:text-sm">
-{`{
+                    {`{
   "success": true,
   "data": {
     "jobs": [...],
@@ -191,9 +191,9 @@ export default function ApiDocsPage() {
                     <li><code>limit</code> (number, default: 20)</li>
                     <li><code>category</code> (string, optional)</li>
                     <li><code>location</code> (string, optional)</li>
-                    <li><code>type</code> (string, optional) - Employment type</li>
+                    <li><code>type</code> (string, optional) - {t('apiDocs.params.employmentType', 'Employment type')}</li>
                     <li><code>remote</code> (boolean, optional)</li>
-                    <li><code>search</code> (string, optional) - Search query</li>
+                    <li><code>search</code> (string, optional) - {t('apiDocs.params.searchKeywords', 'Search query')}</li>
                     <li><code>featured</code> (boolean, optional)</li>
                   </ul>
                 </div>
@@ -224,7 +224,7 @@ export default function ApiDocsPage() {
                     {t('apiDocs.sections.requestBody', 'Request Body:')}
                   </h4>
                   <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-xs sm:text-sm">
-{`{
+                    {`{
   "title": "Software Developer",
   "description": "Job description...",
   "category_id": "uuid",
@@ -328,7 +328,7 @@ export default function ApiDocsPage() {
                     {t('apiDocs.sections.queryParams', 'Query Parameters:')}
                   </h4>
                   <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                    <li><code>query</code> (string, optional) - Search keywords</li>
+                    <li><code>query</code> (string, optional) - {t('apiDocs.params.searchKeywords', 'Search keywords')}</li>
                     <li><code>category</code> (string, optional)</li>
                     <li><code>minPrice</code> (number, optional)</li>
                     <li><code>maxPrice</code> (number, optional)</li>
@@ -411,7 +411,7 @@ export default function ApiDocsPage() {
                     {t('apiDocs.sections.requestBody', 'Request Body:')}
                   </h4>
                   <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-xs sm:text-sm">
-{`{
+                    {`{
   "id": "job-id",
   "title": "Job Title",
   "company": "Company Name",
@@ -464,9 +464,9 @@ export default function ApiDocsPage() {
                   <code className="text-sm bg-muted px-2 py-1 rounded break-all">/api/applications</code>
                 </div>
                 <div>
-                  <h4 className="font-semibold mb-2">Request Body:</h4>
+                  <h4 className="font-semibold mb-2">{t('apiDocs.sections.requestBody', 'Request Body:')}</h4>
                   <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-xs sm:text-sm">
-{`{
+                    {`{
   "offer_id": "job-uuid",
   "notes": "Application notes"
 }`}
@@ -502,7 +502,7 @@ export default function ApiDocsPage() {
                     {t('apiDocs.sections.requestBody', 'Request Body:')}
                   </h4>
                   <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-xs sm:text-sm">
-{`{
+                    {`{
   "source": "adzuna",
   "params": {
     "what": "developer",
@@ -550,7 +550,7 @@ export default function ApiDocsPage() {
                     {t('apiDocs.sections.requestBody', 'Request Body:')}
                   </h4>
                   <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-xs sm:text-sm">
-{`{
+                    {`{
   "source": "awin",
   "params": {
     "keywords": "technology"
@@ -620,7 +620,7 @@ export default function ApiDocsPage() {
                     {t('apiDocs.sections.requestBody', 'Request Body:')}
                   </h4>
                   <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-xs sm:text-sm">
-{`{
+                    {`{
   "amount": "29.99",
   "currency": "EUR",
   "description": "Premium Job Posting",
@@ -671,7 +671,7 @@ export default function ApiDocsPage() {
               )}
             </p>
             <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-xs sm:text-sm">
-{`{
+              {`{
   "success": true | false,
   "data": { ... },
   "error": "Error message (if success is false)"
