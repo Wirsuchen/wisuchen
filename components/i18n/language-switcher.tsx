@@ -24,13 +24,13 @@ export function LanguageSwitcher({ variant = 'default', className = '' }: Langua
   const handleLocaleChange = (newLocale: Locale) => {
     setLocale(newLocale)
     setIsOpen(false)
-    
+
     if (typeof window !== 'undefined') {
       localStorage.setItem('preferredLocale', newLocale)
       document.cookie = `NEXT_LOCALE=${newLocale}; path=/; max-age=31536000`
     }
-    
-    window.location.reload()
+
+    // window.location.reload()
   }
 
   if (variant === 'icon-only') {

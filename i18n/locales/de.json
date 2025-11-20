@@ -1,6 +1,7 @@
 {
   "common": {
     "appName": "TalentPlus",
+    "brandName": "WIRsuchen",
     "tagline": "Finden Sie Ihren Traumjob oder stellen Sie Top-Talente ein",
     "loading": "Lädt...",
     "error": "Fehler",
@@ -275,6 +276,13 @@
       "yesterday": "Gestern",
       "daysAgo": "vor {days} Tagen"
     },
+    "salaryFrom": "Ab",
+    "statusValues": {
+      "active": "Aktiv",
+      "pending": "Ausstehend",
+      "expired": "Abgelaufen",
+      "archived": "Archiviert"
+    },
     "detail": {
       "loadingTitle": "Job wird geladen...",
       "loadingDescription": "Bitte warten Sie, während wir die Jobdetails laden.",
@@ -309,6 +317,7 @@
     "title": "Beste Angebote & Preisvergleich",
     "searchDeals": "Angebote suchen",
     "searchPlaceholder": "Produkte, Marken oder Kategorien suchen",
+    "percentOff": "-{percent}%",
     "discount": "Rabatt",
     "originalPrice": "Originalpreis",
     "salePrice": "Angebotspreis",
@@ -420,6 +429,7 @@
     "subscribeNewsletter": "Newsletter abonnieren",
     "enterEmail": "E-Mail eingeben",
     "subscribe": "Abonnieren",
+    "copyrightBrand": "© 2024 WIRsuchen.",
     "allRightsReserved": "Alle Rechte vorbehalten",
     "madeWith": "Erstellt mit",
     "in": "in",
@@ -509,6 +519,10 @@
     "blogPost1Category": "Karrieretipps",
     "blogPost1ReadTime": "5 Min. Lesezeit",
     "blogPost2Title": "Remote-Work-Trends in Deutschland",
+    "germany": "Deutschland",
+    "austria": "Österreich",
+    "switzerland": "Schweiz",
+    "happyUsersCount": "2k+",
     "blogPost2Excerpt": "Wie sich der Arbeitsmarkt an Remote-Arbeit anpasst...",
     "blogPost2Category": "Markteinblicke",
     "blogPost2ReadTime": "8 Min. Lesezeit",
@@ -1749,6 +1763,13 @@
     }
   },
   "apiDocs": {
+    "types": {
+      "string": "Zeichenkette",
+      "number": "Nummer",
+      "boolean": "Boolesch",
+      "optional": "optional",
+      "default": "Standard"
+    },
     "title": "API-Dokumentation",
     "description": "Vollständige API-Referenz für die WIRsuchen-Plattform. Alle Endpunkte sind RESTful und geben JSON-Antworten zurück.",
     "authentication": {

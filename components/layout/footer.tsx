@@ -14,10 +14,10 @@ export function Footer() {
   const { toast } = useToast()
   const [email, setEmail] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
-  
+
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!email || !email.includes('@')) {
       toast({
         title: t('footer.newsletterInvalidEmailTitle'),
@@ -28,7 +28,7 @@ export function Footer() {
     }
 
     setIsSubmitting(true)
-    
+
     try {
       const response = await fetch('/api/newsletter/subscribe', {
         method: 'POST',
@@ -64,7 +64,7 @@ export function Footer() {
       setIsSubmitting(false)
     }
   }
-  
+
   const footerLinks = {
     explore: [
       { name: t('nav.jobs'), href: "/jobs" },
@@ -97,7 +97,7 @@ export function Footer() {
                   src="/logo.png"
                   width={68}
                   height={68}
-                  alt="Logo"
+                  alt={t('common.brandName')}
                 />
               </div>
             </Link>
@@ -190,10 +190,10 @@ export function Footer() {
               <p className="text-sm text-muted-foreground">{t('footer.newsletter')}</p>
             </div>
             <form onSubmit={handleSubscribe} className="flex space-x-2 w-full md:w-auto">
-              <Input 
-                type="email" 
-                placeholder={t('footer.enterEmail')} 
-                className="md:w-64" 
+              <Input
+                type="email"
+                placeholder={t('footer.enterEmail')}
+                className="md:w-64"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -209,7 +209,7 @@ export function Footer() {
 
         {/* Copyright */}
         <div className="border-t mt-8 pt-8 text-center">
-          <p className="text-sm text-muted-foreground">© 2024 WIRsuchen. {t('footer.allRightsReserved')}</p>
+          <p className="text-sm text-muted-foreground">{t('footer.copyrightBrand')} {t('footer.allRightsReserved')}</p>
         </div>
       </div>
     </footer>

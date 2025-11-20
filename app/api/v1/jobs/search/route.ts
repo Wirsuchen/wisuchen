@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { apiAggregator } from '@/lib/services/aggregator'
 import { jobSyncService } from '@/lib/services/job-sync'
+import { translationService } from '@/lib/services/translation-service'
 import { logger } from '@/lib/utils/logger'
 import { withRateLimit } from '@/lib/utils/rate-limiter'
 
@@ -33,6 +34,7 @@ const searchJobsSchema = z.object({
   distance: z.coerce.number().positive().optional(),
   includeRemote: z.enum(['true','false']).optional().transform(v => v === 'true'),
   isTest: z.enum(['true','false']).optional().transform(v => v === 'true'),
+  locale: z.enum(['en', 'de', 'fr', 'it']).optional().default('en'),
 })
 
 async function handler(req: NextRequest) {
@@ -70,30 +72,36 @@ async function handler(req: NextRequest) {
           sourcesCounts[source] = (sourcesCounts[source] || 0) + 1
         })
 
+        let mappedJobs = dbResult.jobs.map((job: any) => ({
+          id: job.id,
+          externalId: job.external_id,
+          title: job.title,
+          description: job.description,
+          // Prefer real company name when available; otherwise omit
+          company: (job as any).company?.name || '',
+          location: job.location,
+          salary: {
+            min: job.salary_min,
+            max: job.salary_max,
+            currency: job.salary_currency,
+            text: job.salary_min && job.salary_max ? `€${job.salary_min}-€${job.salary_max}` : undefined
+          },
+          employmentType: job.employment_type,
+          experienceLevel: job.experience_level,
+          skills: job.skills || [],
+          applicationUrl: job.application_url,
+          source: job.source,
+          publishedAt: job.published_at
+        }))
+
+        if (validatedParams.locale && validatedParams.locale !== 'en') {
+          mappedJobs = await translationService.translateJobs(mappedJobs, validatedParams.locale)
+        }
+
         const res = NextResponse.json({
           success: true,
           data: {
-            jobs: dbResult.jobs.map((job: any) => ({
-              id: job.id,
-              externalId: job.external_id,
-              title: job.title,
-              description: job.description,
-              // Prefer real company name when available; otherwise omit
-              company: (job as any).company?.name || '',
-              location: job.location,
-              salary: {
-                min: job.salary_min,
-                max: job.salary_max,
-                currency: job.salary_currency,
-                text: job.salary_min && job.salary_max ? `€${job.salary_min}-€${job.salary_max}` : undefined
-              },
-              employmentType: job.employment_type,
-              experienceLevel: job.experience_level,
-              skills: job.skills || [],
-              applicationUrl: job.application_url,
-              source: job.source,
-              publishedAt: job.published_at
-            })),
+            jobs: mappedJobs,
             pagination: {
               page: dbResult.page,
               limit: dbResult.limit,
@@ -139,10 +147,15 @@ async function handler(req: NextRequest) {
 
     logger.apiResponse('aggregator', 'searchJobs', 0, 200)
 
+    let jobs = result.jobs
+    if (validatedParams.locale && validatedParams.locale !== 'en') {
+      jobs = await translationService.translateJobs(jobs, validatedParams.locale)
+    }
+
     const res = NextResponse.json({
       success: true,
       data: {
-        jobs: result.jobs,
+        jobs: jobs,
         pagination: {
           page: validatedParams.page,
           limit: validatedParams.limit,

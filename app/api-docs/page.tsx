@@ -106,16 +106,16 @@ export default function ApiDocsPage() {
                     {t('apiDocs.sections.queryParams', 'Query Parameters:')}
                   </h4>
                   <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                    <li><code>query</code> (string, optional) - {t('apiDocs.params.searchKeywords', 'Search keywords')}</li>
-                    <li><code>location</code> (string, optional) - {t('apiDocs.params.jobLocation', 'Job location')}</li>
-                    <li><code>employmentType</code> (string, optional) - full_time, part_time, contract, freelance, internship, temporary</li>
-                    <li><code>experienceLevel</code> (string, optional) - junior, mid, senior, lead, executive</li>
-                    <li><code>salaryMin</code> (number, optional) - {t('apiDocs.params.minSalary', 'Minimum salary')}</li>
-                    <li><code>salaryMax</code> (number, optional) - {t('apiDocs.params.maxSalary', 'Maximum salary')}</li>
-                    <li><code>page</code> (number, default: 1) - {t('apiDocs.params.pageNumber', 'Page number')}</li>
-                    <li><code>limit</code> (number, default: 100, max: 500) - {t('apiDocs.params.resultsPerPage', 'Results per page')}</li>
-                    <li><code>countries</code> (string, optional) - {t('apiDocs.params.countryCodes', 'Comma-separated country codes')} (de,at,ch)</li>
-                    <li><code>useCache</code> (boolean, default: true) - {t('apiDocs.params.useCache', 'Use cached results')}</li>
+                    <li><code>query</code> ({t('apiDocs.types.string')}, {t('apiDocs.types.optional')}) - {t('apiDocs.params.searchKeywords', 'Search keywords')}</li>
+                    <li><code>location</code> ({t('apiDocs.types.string')}, {t('apiDocs.types.optional')}) - {t('apiDocs.params.jobLocation', 'Job location')}</li>
+                    <li><code>employmentType</code> ({t('apiDocs.types.string')}, {t('apiDocs.types.optional')}) - full_time, part_time, contract, freelance, internship, temporary</li>
+                    <li><code>experienceLevel</code> ({t('apiDocs.types.string')}, {t('apiDocs.types.optional')}) - junior, mid, senior, lead, executive</li>
+                    <li><code>salaryMin</code> ({t('apiDocs.types.number')}, {t('apiDocs.types.optional')}) - {t('apiDocs.params.minSalary', 'Minimum salary')}</li>
+                    <li><code>salaryMax</code> ({t('apiDocs.types.number')}, {t('apiDocs.types.optional')}) - {t('apiDocs.params.maxSalary', 'Maximum salary')}</li>
+                    <li><code>page</code> ({t('apiDocs.types.number')}, {t('apiDocs.types.default')}: 1) - {t('apiDocs.params.pageNumber', 'Page number')}</li>
+                    <li><code>limit</code> ({t('apiDocs.types.number')}, {t('apiDocs.types.default')}: 100, max: 500) - {t('apiDocs.params.resultsPerPage', 'Results per page')}</li>
+                    <li><code>countries</code> ({t('apiDocs.types.string')}, {t('apiDocs.types.optional')}) - {t('apiDocs.params.countryCodes', 'Comma-separated country codes')} (de,at,ch)</li>
+                    <li><code>useCache</code> ({t('apiDocs.types.boolean')}, {t('apiDocs.types.default')}: true) - {t('apiDocs.params.useCache', 'Use cached results')}</li>
                   </ul>
                 </div>
                 <div>
@@ -187,14 +187,14 @@ export default function ApiDocsPage() {
                     {t('apiDocs.sections.queryParams', 'Query Parameters:')}
                   </h4>
                   <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                    <li><code>page</code> (number, default: 1)</li>
-                    <li><code>limit</code> (number, default: 20)</li>
-                    <li><code>category</code> (string, optional)</li>
-                    <li><code>location</code> (string, optional)</li>
-                    <li><code>type</code> (string, optional) - {t('apiDocs.params.employmentType', 'Employment type')}</li>
-                    <li><code>remote</code> (boolean, optional)</li>
-                    <li><code>search</code> (string, optional) - {t('apiDocs.params.searchKeywords', 'Search query')}</li>
-                    <li><code>featured</code> (boolean, optional)</li>
+                    <li><code>page</code> ({t('apiDocs.types.number')}, {t('apiDocs.types.default')}: 1)</li>
+                    <li><code>limit</code> ({t('apiDocs.types.number')}, {t('apiDocs.types.default')}: 20)</li>
+                    <li><code>category</code> ({t('apiDocs.types.string')}, {t('apiDocs.types.optional')})</li>
+                    <li><code>location</code> ({t('apiDocs.types.string')}, {t('apiDocs.types.optional')})</li>
+                    <li><code>type</code> ({t('apiDocs.types.string')}, {t('apiDocs.types.optional')}) - {t('apiDocs.params.employmentType', 'Employment type')}</li>
+                    <li><code>remote</code> ({t('apiDocs.types.boolean')}, {t('apiDocs.types.optional')})</li>
+                    <li><code>search</code> ({t('apiDocs.types.string')}, {t('apiDocs.types.optional')}) - {t('apiDocs.params.searchKeywords', 'Search query')}</li>
+                    <li><code>featured</code> ({t('apiDocs.types.boolean')}, {t('apiDocs.types.optional')})</li>
                   </ul>
                 </div>
               </CardContent>
@@ -263,7 +263,7 @@ export default function ApiDocsPage() {
                     {t('apiDocs.sections.queryParams', 'Query Parameters:')}
                   </h4>
                   <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                    <li><code>type</code> (string, optional) - job, affiliate, blog</li>
+                    <li><code>type</code> ({t('apiDocs.types.string')}, {t('apiDocs.types.optional')}) - job, affiliate, blog</li>
                   </ul>
                 </div>
               </CardContent>
@@ -293,12 +293,12 @@ export default function ApiDocsPage() {
                     {t('apiDocs.sections.queryParams', 'Query Parameters:')}
                   </h4>
                   <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                    <li><code>page</code> (number, default: 1)</li>
-                    <li><code>limit</code> (number, default: 20)</li>
-                    <li><code>category</code> (string, optional)</li>
-                    <li><code>minPrice</code> (number, optional)</li>
-                    <li><code>maxPrice</code> (number, optional)</li>
-                    <li><code>onSale</code> (boolean, optional)</li>
+                    <li><code>page</code> ({t('apiDocs.types.number')}, {t('apiDocs.types.default')}: 1)</li>
+                    <li><code>limit</code> ({t('apiDocs.types.number')}, {t('apiDocs.types.default')}: 20)</li>
+                    <li><code>category</code> ({t('apiDocs.types.string')}, {t('apiDocs.types.optional')})</li>
+                    <li><code>minPrice</code> ({t('apiDocs.types.number')}, {t('apiDocs.types.optional')})</li>
+                    <li><code>maxPrice</code> ({t('apiDocs.types.number')}, {t('apiDocs.types.optional')})</li>
+                    <li><code>onSale</code> ({t('apiDocs.types.boolean')}, {t('apiDocs.types.optional')})</li>
                   </ul>
                 </div>
               </CardContent>
@@ -328,13 +328,13 @@ export default function ApiDocsPage() {
                     {t('apiDocs.sections.queryParams', 'Query Parameters:')}
                   </h4>
                   <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                    <li><code>query</code> (string, optional) - {t('apiDocs.params.searchKeywords', 'Search keywords')}</li>
-                    <li><code>category</code> (string, optional)</li>
-                    <li><code>minPrice</code> (number, optional)</li>
-                    <li><code>maxPrice</code> (number, optional)</li>
-                    <li><code>onSale</code> (boolean, optional)</li>
-                    <li><code>page</code> (number, default: 1)</li>
-                    <li><code>limit</code> (number, default: 20)</li>
+                    <li><code>query</code> ({t('apiDocs.types.string')}, {t('apiDocs.types.optional')}) - {t('apiDocs.params.searchKeywords', 'Search keywords')}</li>
+                    <li><code>category</code> ({t('apiDocs.types.string')}, {t('apiDocs.types.optional')})</li>
+                    <li><code>minPrice</code> ({t('apiDocs.types.number')}, {t('apiDocs.types.optional')})</li>
+                    <li><code>maxPrice</code> ({t('apiDocs.types.number')}, {t('apiDocs.types.optional')})</li>
+                    <li><code>onSale</code> ({t('apiDocs.types.boolean')}, {t('apiDocs.types.optional')})</li>
+                    <li><code>page</code> ({t('apiDocs.types.number')}, {t('apiDocs.types.default')}: 1)</li>
+                    <li><code>limit</code> ({t('apiDocs.types.number')}, {t('apiDocs.types.default')}: 20)</li>
                   </ul>
                 </div>
               </CardContent>

@@ -18,7 +18,13 @@ const DEFAULT_TTL = 60 * 60 * 1000 // 1 hour in milliseconds
  */
 function getCacheKey(url: string, params?: Record<string, any>): string {
   const paramsStr = params ? JSON.stringify(params) : ''
-  return `${CACHE_PREFIX}${url}:${paramsStr}`
+  // Include locale in cache key to prevent cross-language caching
+  let locale = 'en'
+  if (typeof document !== 'undefined') {
+    const match = document.cookie.match(/NEXT_LOCALE=([^;]+)/)
+    if (match) locale = match[1]
+  }
+  return `${CACHE_PREFIX}${url}:${paramsStr}:${locale}`
 }
 
 /**
@@ -208,7 +214,18 @@ export async function fetchWithCache<T>(
   console.log('🌐 [Client Cache] Cache MISS, fetching:', { url, params })
   
   try {
-    const response = await fetch(url, {
+    // Automatically append locale to URL if not present
+    let fetchUrl = url
+    if (typeof document !== 'undefined') {
+      const match = document.cookie.match(/NEXT_LOCALE=([^;]+)/)
+      const locale = match ? match[1] : 'en'
+      if (locale && locale !== 'en' && !fetchUrl.includes('locale=')) {
+        const separator = fetchUrl.includes('?') ? '&' : '?'
+        fetchUrl = `${fetchUrl}${separator}locale=${locale}`
+      }
+    }
+
+    const response = await fetch(fetchUrl, {
       ...options,
       signal: options?.signal || (typeof AbortController !== 'undefined' ? new AbortController().signal : undefined),
     })

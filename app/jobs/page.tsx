@@ -109,7 +109,7 @@ export default function JobsPage() {
   const { t } = useTranslation()
 
   const { jobs, loading, error, search, refresh, pagination, meta } = useJobs()
-  
+
   // Deduplicate jobs to remove duplicates from different sources
   const uniqueJobs = useMemo(() => {
     const deduped = dedupeJobs(jobs)
@@ -143,7 +143,7 @@ export default function JobsPage() {
         throw new Error('Failed to load your jobs')
       }
       const data = await res.json()
-      
+
       // Fetch full job details for each job
       const jobsWithDetails = await Promise.all(
         (data.ads || []).map(async (ad: any) => {
@@ -159,7 +159,7 @@ export default function JobsPage() {
           }
         })
       )
-      
+
       setUserJobs(jobsWithDetails.filter(Boolean))
     } catch (error) {
       console.error('Error loading user jobs:', error)
@@ -219,7 +219,7 @@ export default function JobsPage() {
           <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-2xl mx-auto px-4">
             {t('jobs.heroSubtitle')}
           </p>
-          
+
           {/* Stats */}
           {meta && !loading && (
             <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-sm px-4">
@@ -457,12 +457,12 @@ export default function JobsPage() {
  */
 function JobCard({ job }: { job: Job }) {
   const { t, tr } = useTranslation()
-  
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     const now = new Date()
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
-    
+
     if (diffInHours < 1) return t('jobs.time.justNow')
     if (diffInHours < 24) return tr('jobs.time.hoursAgo', { hours: diffInHours })
     if (diffInHours < 48) return t('jobs.time.yesterday')
@@ -470,13 +470,13 @@ function JobCard({ job }: { job: Job }) {
     return date.toLocaleDateString()
   }
 
-  
+
 
   const onOpenDetails = () => {
     try {
       const key = `job:${job.source}:${job.externalId || job.id}`
       sessionStorage.setItem(key, JSON.stringify(job))
-    } catch {}
+    } catch { }
   }
 
   return (
@@ -511,7 +511,7 @@ function JobCard({ job }: { job: Job }) {
             )}
           </div>
         </div>
-        
+
         <div className="flex sm:flex-col items-center sm:items-end gap-2 w-full sm:w-auto">
           <span className="text-xs text-gray-500 ml-auto sm:ml-0">
             {formatDate(job.publishedAt)}
@@ -594,13 +594,13 @@ function JobCard({ job }: { job: Job }) {
  */
 function UserJobCard({ job }: { job: UserPostedJob }) {
   const { t, tr } = useTranslation()
-  
+
   const formatDate = (dateString: string | null) => {
     if (!dateString) return t('jobs.notPublished')
     const date = new Date(dateString)
     const now = new Date()
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
-    
+
     if (diffInHours < 1) return t('jobs.time.justNow')
     if (diffInHours < 24) return tr('jobs.time.hoursAgo', { hours: diffInHours })
     if (diffInHours < 48) return t('jobs.time.yesterday')
@@ -617,7 +617,7 @@ function UserJobCard({ job }: { job: UserPostedJob }) {
     }
     return (
       <Badge variant={variants[status] || 'secondary'} className="text-xs">
-        {status.charAt(0).toUpperCase() + status.slice(1)}
+        {t(`jobs.statusValues.${status}`, status.charAt(0).toUpperCase() + status.slice(1))}
       </Badge>
     )
   }
@@ -625,8 +625,8 @@ function UserJobCard({ job }: { job: UserPostedJob }) {
   const salaryText = job.salary_min && job.salary_max
     ? `${job.salary_currency || 'EUR'} ${job.salary_min.toLocaleString()} - ${job.salary_max.toLocaleString()}`
     : job.salary_min
-    ? `From ${job.salary_currency || 'EUR'} ${job.salary_min.toLocaleString()}`
-    : null
+      ? `${t('jobs.salaryFrom')} ${job.salary_currency || 'EUR'} ${job.salary_min.toLocaleString()}`
+      : null
 
   return (
     <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-4 border border-blue-100">
@@ -661,7 +661,7 @@ function UserJobCard({ job }: { job: UserPostedJob }) {
             )}
           </div>
         </div>
-        
+
         <div className="flex sm:flex-col items-center sm:items-end gap-2 w-full sm:w-auto">
           {getStatusBadge(job.status)}
           <span className="text-xs text-gray-500 ml-auto sm:ml-0">
@@ -678,11 +678,19 @@ function UserJobCard({ job }: { job: UserPostedJob }) {
 
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="flex flex-wrap gap-2">
-          {job.employment_type && (
-            <Badge variant="secondary" className="text-xs">
-              {job.employment_type.replace('_', ' ')}
-            </Badge>
-          )}
+          {job.employment_type && (() => {
+            const key = job.employment_type.toLowerCase().replace(/[\s-]+/g, '_').trim()
+            const tKey = `jobs.${key}`
+            const translated = t(tKey)
+            const label = translated && translated !== tKey
+              ? translated
+              : key.replace(/_/g, ' ')
+            return (
+              <Badge variant="secondary" className="text-xs">
+                {label}
+              </Badge>
+            )
+          })()}
           {job.category?.name && (
             <Badge variant="outline" className="text-xs">
               {job.category.name}

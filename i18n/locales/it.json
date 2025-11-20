@@ -1,6 +1,7 @@
 {
   "common": {
     "appName": "TalentPlus",
+    "brandName": "WIRsuchen",
     "tagline": "Trova il lavoro dei tuoi sogni o assumi i migliori talenti",
     "loading": "Caricamento...",
     "error": "Errore",
@@ -220,7 +221,7 @@
     "experienceLevel": "Livello di esperienza",
     "salary": "Stipendio",
     "postedDate": "Pubblicato",
-    "apply": "Candidati",
+
     "save": "Salva",
     "share": "Condividi",
     "views": "visualizzazioni",
@@ -279,6 +280,13 @@
       "yesterday": "Ieri",
       "daysAgo": "{days} giorni fa"
     },
+    "salaryFrom": "Da",
+    "statusValues": {
+      "active": "Attivo",
+      "pending": "In attesa",
+      "expired": "Scaduto",
+      "archived": "Archiviato"
+    },
     "detail": {
       "loadingTitle": "Caricamento annuncio...",
       "loadingDescription": "Attendere mentre carichiamo i dettagli dell'annuncio.",
@@ -313,6 +321,7 @@
     "title": "Migliori offerte & confronta prezzi",
     "searchDeals": "Cerca offerte",
     "searchPlaceholder": "Cerca prodotti, marche o categorie",
+    "percentOff": "-{percent}%",
     "discount": "Sconto",
     "originalPrice": "Prezzo originale",
     "salePrice": "Prezzo di vendita",
@@ -424,7 +433,8 @@
     "newsletter": "Newsletter",
     "subscribeNewsletter": "Iscriviti alla newsletter",
     "enterEmail": "Inserisci email",
-    "subscribe": "Iscriviti"
+    "subscribe": "Iscriviti",
+    "copyrightBrand": "© 2024 WIRsuchen."
   },
   "about": {
     "stats": {
@@ -679,6 +689,10 @@
     "blogPost1Category": "Consigli di carriera",
     "blogPost1ReadTime": "Lettura di 5 min",
     "blogPost2Title": "Tendenze del lavoro da remoto in Germania",
+    "germany": "Germania",
+    "austria": "Austria",
+    "switzerland": "Svizzera",
+    "happyUsersCount": "2k+",
     "blogPost2Excerpt": "Come il mercato del lavoro si sta adattando alle opportunità di lavoro da remoto...",
     "blogPost2Category": "Analisi di mercato",
     "blogPost2ReadTime": "Lettura di 8 min",
@@ -1095,6 +1109,13 @@
     }
   },
   "apiDocs": {
+    "types": {
+      "string": "stringa",
+      "number": "numero",
+      "boolean": "booleano",
+      "optional": "opzionale",
+      "default": "predefinito"
+    },
     "title": "Documentazione API",
     "description": "Riferimento API completo per la piattaforma WIRsuchen. Tutti gli endpoint sono RESTful e restituiscono risposte JSON.",
     "authentication": {

@@ -1,6 +1,7 @@
 {
   "common": {
     "appName": "TalentPlus",
+    "brandName": "WIRsuchen",
     "tagline": "Trouvez l'emploi de vos rêves ou recrutez les meilleurs talents",
     "loading": "Chargement...",
     "error": "Erreur",
@@ -277,6 +278,13 @@
       "yesterday": "Hier",
       "daysAgo": "il y a {days} jours"
     },
+    "salaryFrom": "À partir de",
+    "statusValues": {
+      "active": "Actif",
+      "pending": "En attente",
+      "expired": "Expiré",
+      "archived": "Archivé"
+    },
     "detail": {
       "loadingTitle": "Chargement de l'offre...",
       "loadingDescription": "Veuillez patienter pendant que nous chargeons les détails de l'offre.",
@@ -311,6 +319,7 @@
     "title": "Meilleures offres & comparateur de prix",
     "searchDeals": "Rechercher des offres",
     "searchPlaceholder": "Rechercher des produits, des marques ou des catégories",
+    "percentOff": "-{percent}%",
     "discount": "Réduction",
     "originalPrice": "Prix d'origine",
     "salePrice": "Prix de vente",
@@ -423,6 +432,7 @@
     "subscribeNewsletter": "S'abonner à la newsletter",
     "enterEmail": "Entrez votre e-mail",
     "subscribe": "S'abonner",
+    "copyrightBrand": "© 2024 WIRsuchen.",
     "allRightsReserved": "Tous droits réservés",
     "madeWith": "Fait avec",
     "in": "à",
@@ -512,6 +522,10 @@
     "blogPost1Category": "Conseils de carrière",
     "blogPost1ReadTime": "Lecture de 5 min",
     "blogPost2Title": "Tendances du travail à distance en Allemagne",
+    "germany": "Allemagne",
+    "austria": "Autriche",
+    "switzerland": "Suisse",
+    "happyUsersCount": "2k+",
     "blogPost2Excerpt": "Comment le marché de l'emploi s'adapte aux opportunités de travail à distance...",
     "blogPost2Category": "Analyses du marché",
     "blogPost2ReadTime": "Lecture de 8 min",
@@ -1107,6 +1121,13 @@
     }
   },
   "apiDocs": {
+    "types": {
+      "string": "chaîne",
+      "number": "nombre",
+      "boolean": "booléen",
+      "optional": "optionnel",
+      "default": "défaut"
+    },
     "title": "Documentation API",
     "description": "Référence API complète pour la plateforme WIRsuchen. Tous les points de terminaison sont RESTful et renvoient des réponses JSON.",
     "authentication": {

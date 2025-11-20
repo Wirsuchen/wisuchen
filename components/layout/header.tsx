@@ -75,19 +75,19 @@ export function Header() {
           <div className="flex h-16 sm:h-20 md:h-24 items-center justify-between px-4 sm:px-6">
             {/* Logo - Mobile First */}
             <Link href="/" className="flex items-center space-x-2 flex-shrink-0 relative z-10">
-  <div className="w-30 h-30 sm:w-30 sm:h-30 md:w-30 md:h-30 flex items-center justify-center overflow-hidden">
-    <Image
-      src="/logo.png"
-      alt="WIRsuchen"
-      width={292}
-      height={292}
-      className="object-contain"
-    />
-  </div>
-  <span className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tighter hidden xs:block text-foreground">
-    WIRsuchen
-  </span>
-</Link>
+              <div className="w-30 h-30 sm:w-30 sm:h-30 md:w-30 md:h-30 flex items-center justify-center overflow-hidden">
+                <Image
+                  src="/logo.png"
+                  alt={t('common.brandName')}
+                  width={292}
+                  height={292}
+                  className="object-contain"
+                />
+              </div>
+              <span className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tighter hidden xs:block text-foreground">
+                {t('common.brandName')}
+              </span>
+            </Link>
 
 
             {/* Mobile Search Toggle */}

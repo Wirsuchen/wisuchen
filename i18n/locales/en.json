@@ -1,6 +1,7 @@
 {
   "common": {
     "appName": "TalentPlus",
+    "brandName": "WIRsuchen",
     "tagline": "Find your dream job or hire top talent",
     "loading": "Loading...",
     "error": "Error",
@@ -290,6 +291,13 @@
       "yesterday": "Yesterday",
       "daysAgo": "{days} days ago"
     },
+    "salaryFrom": "From",
+    "statusValues": {
+      "active": "Active",
+      "pending": "Pending",
+      "expired": "Expired",
+      "archived": "Archived"
+    },
     "detail": {
       "loadingTitle": "Loading job...",
       "loadingDescription": "Please wait while we load the job details.",
@@ -324,6 +332,7 @@
     "title": "Best Deals & Price Comparison",
     "searchDeals": "Search Deals",
     "searchPlaceholder": "Search products, brands, or categories",
+    "percentOff": "-{percent}%",
     "discount": "Discount",
     "originalPrice": "Original Price",
     "salePrice": "Sale Price",
@@ -435,7 +444,8 @@
     "newsletter": "Newsletter",
     "subscribeNewsletter": "Subscribe to Newsletter",
     "enterEmail": "Enter email",
-    "subscribe": "Subscribe"
+    "subscribe": "Subscribe",
+    "copyrightBrand": "© 2024 WIRsuchen."
   },
   "about": {
     "stats": {
@@ -689,6 +699,10 @@
     "blogPost1Category": "Career Tips",
     "blogPost1ReadTime": "5 min read",
     "blogPost2Title": "Remote Work Trends in Germany",
+    "germany": "Germany",
+    "austria": "Austria",
+    "switzerland": "Switzerland",
+    "happyUsersCount": "2k+",
     "blogPost2Excerpt": "How the job market is adapting to remote work opportunities...",
     "blogPost2Category": "Market Insights",
     "blogPost2ReadTime": "8 min read",
@@ -1750,6 +1764,13 @@
     }
   },
   "apiDocs": {
+    "types": {
+      "string": "string",
+      "number": "number",
+      "boolean": "boolean",
+      "optional": "optional",
+      "default": "default"
+    },
     "title": "API Documentation",
     "description": "Complete API reference for WIRsuchen platform. All endpoints are RESTful and return JSON responses.",
     "authentication": {

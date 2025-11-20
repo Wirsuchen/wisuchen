@@ -85,12 +85,12 @@ function dedupeJobs(jobs: Job[]): Job[] {
 }
 
 export default function HomePage() {
-  const { t } = useTranslation()
+  const { t, tr } = useTranslation()
   const [topDeals, setTopDeals] = useState<Deal[]>([])
   const [dealsLoading, setDealsLoading] = useState(true)
   const [topJobs, setTopJobs] = useState<Job[]>([])
   const [jobsLoading, setJobsLoading] = useState(true)
-  
+
   // Real counts from APIs
   const [stats, setStats] = useState({
     activeJobs: 1000,
@@ -152,13 +152,13 @@ export default function HomePage() {
       // Request with limit=500 to get maximum jobs and use the total count
       const jobsResponse = await fetch('/api/v1/jobs/search?limit=500&useCache=true')
       const jobsData = await jobsResponse.json()
-      
+
       // Get the actual total count from all aggregated sources
       const totalJobs = jobsData?.data?.pagination?.total || jobsData?.data?.total || 0
-      console.log('📊 Jobs API response:', { 
-        total: totalJobs, 
+      console.log('📊 Jobs API response:', {
+        total: totalJobs,
         sources: jobsData?.data?.meta?.sources,
-        cached: jobsData?.data?.meta?.cached 
+        cached: jobsData?.data?.meta?.cached
       })
 
       // Fetch deals count - get larger sample since API might not return total count
@@ -180,7 +180,7 @@ export default function HomePage() {
     }
   }
 
-  
+
 
 
   const blogPosts = [
@@ -254,21 +254,21 @@ export default function HomePage() {
                   className="inline-flex items-center rounded-full border px-3 py-1 bg-background hover:bg-accent/50 transition-colors"
                 >
                   <MapPin className="h-4 w-4 mr-1 text-red-500" />
-                  {t('home.jobsIn')} Germany
+                  {t('home.jobsIn')} {t('home.germany', 'Germany')}
                 </Link>
                 <Link
                   href="/jobs?location=Austria"
                   className="inline-flex items-center rounded-full border px-3 py-1 bg-background hover:bg-accent/50 transition-colors"
                 >
                   <MapPin className="h-4 w-4 mr-1 text-red-500" />
-                  {t('home.jobsIn')} Austria
+                  {t('home.jobsIn')} {t('home.austria', 'Austria')}
                 </Link>
                 <Link
                   href="/jobs?location=Switzerland"
                   className="inline-flex items-center rounded-full border px-3 py-1 bg-background hover:bg-accent/50 transition-colors"
                 >
                   <MapPin className="h-4 w-4 mr-1 text-red-500" />
-                  {t('home.jobsIn')} Switzerland
+                  {t('home.jobsIn')} {t('home.switzerland', 'Switzerland')}
                 </Link>
               </div>
             </div>
@@ -289,7 +289,7 @@ export default function HomePage() {
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-accent">
-                  2k+
+                  {t('home.happyUsersCount', '2k+')}
                 </div>
                 <div className="text-sm text-muted-foreground">{t('home.happyUsers')}</div>
               </div>
@@ -330,10 +330,10 @@ export default function HomePage() {
                     : undefined
                   const jobTypeLabel = typeKey
                     ? (() => {
-                        const tKey = `jobs.${typeKey}`
-                        const translated = t(tKey)
-                        return translated !== tKey ? translated : typeKey.replace(/_/g, ' ')
-                      })()
+                      const tKey = `jobs.${typeKey}`
+                      const translated = t(tKey)
+                      return translated !== tKey ? translated : typeKey.replace(/_/g, ' ')
+                    })()
                     : undefined
                   const key = `${job.source}-${job.externalId || job.id}`
 
@@ -341,7 +341,7 @@ export default function HomePage() {
                     try {
                       const storageKey = `job:${job.source}:${job.externalId || job.id}`
                       sessionStorage.setItem(storageKey, JSON.stringify(job))
-                    } catch {}
+                    } catch { }
                   }
 
                   return (
@@ -416,7 +416,7 @@ export default function HomePage() {
                     <CardHeader>
                       <div className="flex items-start justify-between">
                         <CardTitle className="text-lg line-clamp-2">{deal.title}</CardTitle>
-                        <Badge className="bg-accent text-accent-foreground shrink-0">-{deal.discount}%</Badge>
+                        <Badge className="bg-accent text-accent-foreground shrink-0">{tr('deals.percentOff', { percent: deal.discount })}</Badge>
                       </div>
                     </CardHeader>
                     <CardContent>

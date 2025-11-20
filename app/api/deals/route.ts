@@ -3,6 +3,7 @@ import { withRateLimit } from '@/lib/utils/rate-limiter'
 import { API_CONFIG, CACHE_CONFIG } from '@/lib/config/api-keys'
 import { cacheWrap } from '@/lib/api/cache'
 import { dealSyncService } from '@/lib/services/deal-sync'
+import { translationService } from '@/lib/services/translation-service'
 
 /**
  * Deals API - Fetches from Supabase database first, falls back to RapidAPI
@@ -18,6 +19,7 @@ async function handler(request: NextRequest) {
     const productId = searchParams.get('productId') // For price comparison
     const asin = searchParams.get('asin') // For Amazon product lookup
     const country = searchParams.get('country') || 'us'
+    const locale = searchParams.get('locale') || 'en'
 
     console.log('🔍 [DEALS API] Starting request with params:', { page, limit, query, useDatabase, productId, asin, country })
 
@@ -31,10 +33,15 @@ async function handler(request: NextRequest) {
         })
 
         console.log(`✅ [DEALS API] Found ${dbResult.deals.length} deals in database`)
+        
+        let dbDeals = dbResult.deals
+        if (locale && locale !== 'en') {
+          dbDeals = await translationService.translateDeals(dbDeals, locale)
+        }
 
         if (dbResult.deals.length > 0) {
           return NextResponse.json({
-            deals: dbResult.deals,
+            deals: dbDeals,
             pagination: {
               page: dbResult.page,
               limit: dbResult.limit,
@@ -114,8 +121,13 @@ async function handler(request: NextRequest) {
 
         console.log(`✅ [DEALS API] Found Amazon product`)
 
+        let deals = [deal]
+        if (locale && locale !== 'en') {
+          deals = await translationService.translateDeals(deals, locale)
+        }
+
         return NextResponse.json({
-          deals: [deal],
+          deals: deals,
           pagination: {
             page: 1,
             limit: 1,
@@ -162,8 +174,13 @@ async function handler(request: NextRequest) {
           if (amazonDeals.length > 0) {
             console.log(`✅ [DEALS API] Found ${amazonDeals.length} Amazon deals`)
 
+            let deals = amazonDeals
+            if (locale && locale !== 'en') {
+              deals = await translationService.translateDeals(deals, locale)
+            }
+
             return NextResponse.json({
-              deals: amazonDeals,
+              deals: deals,
               pagination: {
                 page: 1,
                 limit: amazonDeals.length,
@@ -213,8 +230,13 @@ async function handler(request: NextRequest) {
 
       console.log(`✅ [DEALS API] Found ${deals.length} price comparison offers`)
 
+      let finalDeals = deals
+      if (locale && locale !== 'en') {
+        finalDeals = await translationService.translateDeals(finalDeals, locale)
+      }
+
       return NextResponse.json({
-        deals,
+        deals: finalDeals,
         pagination: {
           page: 1,
           limit: deals.length,
@@ -324,8 +346,13 @@ async function handler(request: NextRequest) {
 
     console.log(`✅ [DEALS API] Successfully processed ${deals.length} deals`)
 
+    let finalDeals = deals
+    if (locale && locale !== 'en') {
+      finalDeals = await translationService.translateDeals(finalDeals, locale)
+    }
+
     return NextResponse.json({
-      deals,
+      deals: finalDeals,
       pagination: {
         page,
         limit,
