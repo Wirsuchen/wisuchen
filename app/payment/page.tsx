@@ -27,7 +27,9 @@ const PLANS = {
   }
 }
 
-export default function PaymentPage() {
+import { Suspense } from 'react'
+
+function PaymentContent() {
   const searchParams = useSearchParams()
   const { t } = useTranslation()
   const [isAuth, setIsAuth] = useState(false)
@@ -59,11 +61,11 @@ export default function PaymentPage() {
         }
       } finally {
         if (!cancelled) {
-        setIsLoading(false)
+          setIsLoading(false)
         }
       }
     }
-    
+
     checkAuth()
     return () => {
       cancelled = true
@@ -115,5 +117,19 @@ export default function PaymentPage() {
     <PageLayout showBackButton={true} containerClassName="max-w-4xl">
       <PayPalCheckout selectedPlan={selectedPlan} />
     </PageLayout>
+  )
+}
+
+export default function PaymentPage() {
+  return (
+    <Suspense fallback={
+      <PageLayout showBackButton={true} containerClassName="max-w-4xl">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Loader2 className="w-8 h-8 animate-spin" />
+        </div>
+      </PageLayout>
+    }>
+      <PaymentContent />
+    </Suspense>
   )
 }

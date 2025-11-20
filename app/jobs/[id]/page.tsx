@@ -42,14 +42,16 @@ const sanitizeJobDescription = (text: string) => {
     .trim()
 }
 
-export default function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
+import { Suspense } from "react"
+
+function JobDetailContent({ params }: { params: Promise<{ id: string }> }) {
   const { id: routeId } = use(params)
   const [isImproving, setIsImproving] = useState(false)
   const [improvedDescription, setImprovedDescription] = useState("")
   const searchParams = useSearchParams()
   const { user } = useAuth()
   const { t } = useTranslation()
-  const canUseAI = !!(user && (user.isSubscribed || ['pro','premium'].includes(user.plan || '')))
+  const canUseAI = !!(user && (user.isSubscribed || ['pro', 'premium'].includes(user.plan || '')))
 
   type ExtJob = Job & {
     logo?: string
@@ -124,14 +126,14 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
           location: dbJob.location || "",
           salary: dbJob.salary_min || dbJob.salary_max
             ? {
-                min: dbJob.salary_min || undefined,
-                max: dbJob.salary_max || undefined,
-                currency: dbJob.salary_currency || undefined,
-                text:
-                  dbJob.salary_min && dbJob.salary_max
-                    ? `€${dbJob.salary_min}-€${dbJob.salary_max}`
-                    : undefined,
-              }
+              min: dbJob.salary_min || undefined,
+              max: dbJob.salary_max || undefined,
+              currency: dbJob.salary_currency || undefined,
+              text:
+                dbJob.salary_min && dbJob.salary_max
+                  ? `€${dbJob.salary_min}-€${dbJob.salary_max}`
+                  : undefined,
+            }
             : undefined,
           employmentType: dbJob.employment_type || undefined,
           experienceLevel: dbJob.experience_level || undefined,
@@ -163,24 +165,24 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
   // Fetch similar jobs when job is loaded
   useEffect(() => {
     if (!job) return
-    
+
     const fetchSimilarJobs = async () => {
       setLoadingRelated(true)
       try {
         // Extract location city (first part before comma)
         const locationParts = job.location?.split(',') || []
         const city = locationParts[0]?.trim()
-        
+
         // Build query params for similar jobs
         const params = new URLSearchParams()
         if (city) params.append('location', city)
         if (job.employmentType) params.append('employmentType', job.employmentType)
         params.append('limit', '6')
         params.append('page', '1')
-        
+
         const url = `/api/v1/jobs/search?${params.toString()}`
         const data = await fetchWithCache<any>(url, undefined, { city, type: job.employmentType }, 60 * 60 * 1000)
-        
+
         if (data.success && data.data.jobs) {
           // Filter out the current job and limit to 3
           const filtered = data.data.jobs
@@ -194,7 +196,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
         setLoadingRelated(false)
       }
     }
-    
+
     fetchSimilarJobs()
   }, [job])
 
@@ -332,8 +334,8 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       size="sm"
                       onClick={async () => {
                         if (!job) return
@@ -361,23 +363,23 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
                           })
                           const data = await response.json()
                           if (data.success) {
-                            toast({ 
-                              title: t('jobs.detail.savedTitle'), 
-                              description: t('jobs.detail.savedDescription') 
+                            toast({
+                              title: t('jobs.detail.savedTitle'),
+                              description: t('jobs.detail.savedDescription')
                             })
                           } else {
-                            toast({ 
-                              title: t('jobs.detail.saveErrorTitle'), 
-                              description: data.error || t('jobs.detail.saveErrorDescription'), 
-                              variant: 'destructive' 
+                            toast({
+                              title: t('jobs.detail.saveErrorTitle'),
+                              description: data.error || t('jobs.detail.saveErrorDescription'),
+                              variant: 'destructive'
                             })
                           }
                         } catch (error) {
                           console.error('Error saving job:', error)
-                          toast({ 
-                            title: t('notifications.error'), 
-                            description: t('jobs.detail.saveErrorDescription'), 
-                            variant: 'destructive' 
+                          toast({
+                            title: t('notifications.error'),
+                            description: t('jobs.detail.saveErrorDescription'),
+                            variant: 'destructive'
                           })
                         }
                       }}
@@ -480,8 +482,8 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
                     </a>
                   </Button>
                 )}
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="w-full bg-transparent"
                   onClick={async () => {
                     if (!job) return
@@ -509,23 +511,23 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
                       })
                       const data = await response.json()
                       if (data.success) {
-                        toast({ 
-                          title: t('jobs.detail.savedTitle'), 
-                          description: t('jobs.detail.savedDescription') 
+                        toast({
+                          title: t('jobs.detail.savedTitle'),
+                          description: t('jobs.detail.savedDescription')
                         })
                       } else {
-                        toast({ 
-                          title: t('jobs.detail.saveErrorTitle'), 
-                          description: data.error || t('jobs.detail.saveErrorDescription'), 
-                          variant: 'destructive' 
+                        toast({
+                          title: t('jobs.detail.saveErrorTitle'),
+                          description: data.error || t('jobs.detail.saveErrorDescription'),
+                          variant: 'destructive'
                         })
                       }
                     } catch (error) {
                       console.error('Error saving job:', error)
-                      toast({ 
-                        title: t('notifications.error'), 
-                        description: t('jobs.detail.saveErrorDescription'), 
-                        variant: 'destructive' 
+                      toast({
+                        title: t('notifications.error'),
+                        description: t('jobs.detail.saveErrorDescription'),
+                        variant: 'destructive'
                       })
                     }
                   }}
@@ -600,7 +602,7 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
                           try {
                             const key = `job:${relatedJob.source}:${relatedJob.externalId || relatedJob.id}`
                             sessionStorage.setItem(key, JSON.stringify(relatedJob))
-                          } catch {}
+                          } catch { }
                         }}
                       >
                         <h4 className="font-medium hover:text-accent transition-colors line-clamp-2">{relatedJob.title}</h4>
@@ -623,5 +625,17 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
 
       <Footer />
     </div>
+  )
+}
+
+export default function JobDetailPage(props: { params: Promise<{ id: string }> }) {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    }>
+      <JobDetailContent {...props} />
+    </Suspense>
   )
 }
