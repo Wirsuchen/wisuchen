@@ -34,7 +34,7 @@ export function DashboardSidebar() {
   const pathname = usePathname()
   const { user, logout } = useAuth()
   const role = (user as any)?.role
-  const isAdmin = !!(user && ((['admin','supervisor','moderator'] as any).includes(role) || user.email === 'admin@wirsuchen.com'))
+  const isAdmin = !!(user && ((['admin', 'supervisor', 'moderator'] as any).includes(role) || user.email === 'admin@wirsuchen.com'))
   const { t } = useTranslation()
 
 
@@ -108,7 +108,7 @@ export function DashboardSidebar() {
                     {!collapsed && (
                       <>
                         <span className="ml-3">{item.name}</span>
-                        
+
                       </>
                     )}
                   </Link>
@@ -145,20 +145,34 @@ export function DashboardSidebar() {
                     {!collapsed && <span className="ml-3">{t("dashboard.nav.createBlog")}</span>}
                   </Link>
                 </li>
-              <li>
-                <Link
-                  href="/admin"
-                  className={cn(
-                    "flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                    pathname === "/admin"
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-                  )}
-                >
-                  <Shield className="h-4 w-4 shrink-0" />
-                  {!collapsed && <span className="ml-3">{t("dashboard.nav.admin")}</span>}
-                </Link>
-              </li>
+                <li>
+                  <Link
+                    href="/admin"
+                    className={cn(
+                      "flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                      pathname === "/admin"
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                    )}
+                  >
+                    <Shield className="h-4 w-4 shrink-0" />
+                    {!collapsed && <span className="ml-3">{t("dashboard.nav.admin")}</span>}
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/invoices/create"
+                    className={cn(
+                      "flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                      pathname === "/admin/invoices/create"
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                    )}
+                  >
+                    <FileText className="h-4 w-4 shrink-0" />
+                    {!collapsed && <span className="ml-3">{t("dashboard.createInvoice")}</span>}
+                  </Link>
+                </li>
               </>
             )}
             {role === 'supervisor' && (

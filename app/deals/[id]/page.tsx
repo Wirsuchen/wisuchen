@@ -3,7 +3,7 @@
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { useState, useEffect } from "react"
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { fetchWithCache } from "@/lib/utils/client-cache"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -31,6 +31,7 @@ import Link from "next/link"
 import { formatEuro, formatEuroText } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { useTranslation } from "@/contexts/i18n-context"
+import { useAuth } from "@/contexts/auth-context"
 
 interface DealDetail {
   id: string
@@ -91,8 +92,10 @@ export default function DealDetailPage() {
   const [selectedColor, setSelectedColor] = useState<string | null>(null)
   const [dealId, setDealId] = useState<string | null>(null)
   const routeParams = useParams<{ id: string }>()
+  const router = useRouter()
   const { toast } = useToast()
   const { t, tr } = useTranslation()
+  const { user } = useAuth()
 
   useEffect(() => {
     if (!routeParams) return
@@ -102,14 +105,14 @@ export default function DealDetailPage() {
 
   useEffect(() => {
     if (!dealId) return
-    
+
     let cancelled = false
-    
+
     const fetchDealDetails = async () => {
       try {
         setLoading(true)
         setError(null)
-        
+
         // Use cache with 1 hour TTL
         const data = await fetchWithCache<any>(
           `/api/deals?page=1&limit=50`,
@@ -117,15 +120,15 @@ export default function DealDetailPage() {
           { page: 1, limit: 50 },
           60 * 60 * 1000
         )
-        
+
         // Check if component was unmounted
         if (cancelled) return
-        
+
         // Validate data structure
         if (!data || typeof data !== 'object') {
           throw new Error('Invalid response data')
         }
-        
+
         // Find the deal by ID (normalize by decoding both sides)
         const safeDecode = (v: string) => {
           try { return decodeURIComponent(v) } catch { return v }
@@ -133,16 +136,16 @@ export default function DealDetailPage() {
         const routeRaw = dealId || ''
         const routeDec = safeDecode(routeRaw)
         const deals = Array.isArray(data.deals) ? data.deals : []
-        
+
         let foundDeal = deals.find((d: any) => {
           if (!d || typeof d !== 'object') return false
           const did = String(d.id || '')
           const didDec = safeDecode(did)
           return did === routeRaw || did === routeDec || didDec === routeDec
         })
-        
+
         if (cancelled) return
-        
+
         if (foundDeal) {
           setDeal(foundDeal)
         } else {
@@ -158,9 +161,9 @@ export default function DealDetailPage() {
         }
       }
     }
-    
+
     fetchDealDetails()
-    
+
     // Cleanup function to prevent state updates after unmount
     return () => {
       cancelled = true
@@ -280,6 +283,12 @@ export default function DealDetailPage() {
 
   const handleSaveDeal = async () => {
     if (!deal) return
+
+    if (!user) {
+      router.push('/login')
+      return
+    }
+
     try {
       const response = await fetch('/api/saved/deals', {
         method: 'POST',
@@ -357,7 +366,7 @@ export default function DealDetailPage() {
                         </div>
                       )}
                     </div>
-                    
+
                     {/* Image & Video Tabs */}
                     <Tabs defaultValue="photos" className="w-full">
                       <TabsList className="grid w-full grid-cols-2">
@@ -386,8 +395,8 @@ export default function DealDetailPage() {
                       <TabsContent value="videos" className="mt-4">
                         <div className="grid grid-cols-2 gap-2">
                           {videos.slice(0, 6).map((video, index) => (
-                            <a 
-                              key={index} 
+                            <a
+                              key={index}
                               href={video.url}
                               target="_blank"
                               rel="noopener noreferrer"
@@ -439,12 +448,18 @@ export default function DealDetailPage() {
                             <span className="sm:hidden">{t('deals.detail.visit')}</span>
                           </Link>
                         </Button>
-                        <Button 
-                          variant="outline" 
+                        <Button
+                          variant="outline"
                           size="sm"
                           className="flex-shrink-0"
                           onClick={async () => {
                             if (!deal) return
+
+                            if (!user) {
+                              router.push('/login')
+                              return
+                            }
+
                             try {
                               const response = await fetch('/api/saved/deals', {
                                 method: 'POST',
@@ -463,32 +478,32 @@ export default function DealDetailPage() {
                               })
                               const data = await response.json()
                               if (data.success) {
-                                toast({ 
-                                  title: t('deals.detail.savedTitle'), 
-                                  description: t('deals.detail.savedDescription') 
+                                toast({
+                                  title: t('deals.detail.savedTitle'),
+                                  description: t('deals.detail.savedDescription')
                                 })
                               } else {
-                                toast({ 
-                                  title: t('deals.detail.saveErrorTitle'), 
-                                  description: data.error || t('deals.detail.saveErrorDescription'), 
-                                  variant: 'destructive' 
+                                toast({
+                                  title: t('deals.detail.saveErrorTitle'),
+                                  description: data.error || t('deals.detail.saveErrorDescription'),
+                                  variant: 'destructive'
                                 })
                               }
                             } catch (error) {
                               console.error('Error saving deal:', error)
-                              toast({ 
-                                title: t('notifications.error'), 
-                                description: t('deals.detail.saveErrorDescription'), 
-                                variant: 'destructive' 
+                              toast({
+                                title: t('notifications.error'),
+                                description: t('deals.detail.saveErrorDescription'),
+                                variant: 'destructive'
                               })
                             }
                           }}
                         >
                           <Heart className="h-4 w-4" />
                         </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
+                        <Button
+                          variant="outline"
+                          size="sm"
                           className="flex-shrink-0"
                           onClick={handleShareDeal}
                         >
@@ -604,7 +619,7 @@ export default function DealDetailPage() {
                   {Object.keys(attributes).length > 0 && (
                     <>
                       <Separator />
-                      
+
                       {/* Product Attributes */}
                       <div>
                         <h2 className="text-lg sm:text-xl font-semibold mb-3">{t('deals.detail.productAttributes')}</h2>
@@ -697,16 +712,16 @@ export default function DealDetailPage() {
                     </Button>
                   )
                 )}
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="w-full bg-transparent"
                   onClick={handleSaveDeal}
                 >
                   <Heart className="h-4 w-4 mr-2" />
                   {t('deals.detail.saveDealButton')}
                 </Button>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="w-full bg-transparent"
                   onClick={handleShareDeal}
                 >

@@ -4,12 +4,12 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { 
-  MapPin, 
-  Clock, 
-  DollarSign, 
-  Building, 
-  Star, 
+import {
+  MapPin,
+  Clock,
+  DollarSign,
+  Building,
+  Star,
   Zap,
   ExternalLink,
   Eye,
@@ -27,12 +27,17 @@ interface JobCardProps {
   showCompany?: boolean
 }
 
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/contexts/auth-context'
+
 export function JobCard({ job, variant = 'default', showCompany = true }: JobCardProps) {
   const { t } = useTranslation()
+  const { user } = useAuth()
+  const router = useRouter()
   const isExternal = Boolean((job as any).is_external || ((job as any).source && (job as any).source !== 'manual'))
   const formatSalary = (min?: number | null, max?: number | null, currency = 'EUR', period = 'yearly') => {
     if (!min && !max) return null
-    
+
     const formatAmount = (amount: number) => {
       return new Intl.NumberFormat('de-DE', {
         style: 'currency',
@@ -44,7 +49,7 @@ export function JobCard({ job, variant = 'default', showCompany = true }: JobCar
     if (min && max) {
       return `${formatAmount(min)} - ${formatAmount(max)} ${period === 'yearly' ? '/Jahr' : period === 'monthly' ? '/Monat' : '/Stunde'}`
     }
-    
+
     return `Ab ${formatAmount(min || max!)} ${period === 'yearly' ? '/Jahr' : period === 'monthly' ? '/Monat' : '/Stunde'}`
   }
 
@@ -85,20 +90,20 @@ export function JobCard({ job, variant = 'default', showCompany = true }: JobCar
                   </Badge>
                 )}
               </div>
-              
+
               <Link href={isExternal && (job as any).application_url ? (job as any).application_url : `/jobs/${job.id}`} className="block">
                 <h3 className="font-semibold text-lg hover:text-primary truncate">
                   {job.title}
                 </h3>
               </Link>
-              
+
               {showCompany && job.company && (
                 <div className="flex items-center gap-2 mt-1 text-muted-foreground">
                   <Building className="w-4 h-4" />
                   <span className="text-sm">{job.company.name}</span>
                 </div>
               )}
-              
+
               <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
                 {job.location && (
                   <div className="flex items-center gap-1">
@@ -118,7 +123,7 @@ export function JobCard({ job, variant = 'default', showCompany = true }: JobCar
                 )}
               </div>
             </div>
-            
+
             <div className="text-right ml-4">
               {formatSalary(job.salary_min, job.salary_max, job.salary_currency || 'EUR', job.salary_period || 'yearly') && (
                 <div className="font-semibold text-primary">
@@ -163,13 +168,13 @@ export function JobCard({ job, variant = 'default', showCompany = true }: JobCar
                   </Badge>
                 )}
               </div>
-              
+
               <Link href={isExternal && (job as any).application_url ? (job as any).application_url : `/jobs/${job.id}`}>
                 <h3 className="font-semibold text-xl hover:text-primary transition-colors">
                   {job.title}
                 </h3>
               </Link>
-              
+
               {showCompany && job.company && (
                 <div className="flex items-center gap-2 mt-1 text-muted-foreground">
                   <Building className="w-4 h-4" />
@@ -183,7 +188,7 @@ export function JobCard({ job, variant = 'default', showCompany = true }: JobCar
               )}
             </div>
           </div>
-          
+
           <div className="text-right">
             {formatSalary(job.salary_min, job.salary_max, job.salary_currency || 'EUR', job.salary_period || 'yearly') && (
               <div className="font-bold text-lg text-primary">
@@ -211,27 +216,27 @@ export function JobCard({ job, variant = 'default', showCompany = true }: JobCar
               {job.location}
             </Badge>
           )}
-          
+
           {job.employment_type && (
             <Badge variant="outline" className="flex items-center gap-1">
               <Clock className="w-3 h-3" />
               {getEmploymentTypeLabel(job.employment_type)}
             </Badge>
           )}
-          
+
           {job.experience_level && (
             <Badge variant="outline" className="flex items-center gap-1">
               <Users className="w-3 h-3" />
               {getExperienceLevelLabel(job.experience_level)}
             </Badge>
           )}
-          
+
           {job.is_remote && (
             <Badge variant="outline" className="bg-green-50 text-green-700">
               {t('jobs.badges.remote')}
             </Badge>
           )}
-          
+
           {job.is_hybrid && (
             <Badge variant="outline" className="bg-blue-50 text-blue-700">
               {t('jobs.badges.hybrid')}
@@ -269,7 +274,7 @@ export function JobCard({ job, variant = 'default', showCompany = true }: JobCar
               </div>
             )}
           </div>
-          
+
           <div className="flex gap-2">
             <Button variant="outline" size="sm" asChild>
               <Link href={isExternal && (job as any).application_url ? (job as any).application_url : `/jobs/${job.id}`}>
@@ -282,6 +287,12 @@ export function JobCard({ job, variant = 'default', showCompany = true }: JobCar
               onClick={async (e) => {
                 e.preventDefault()
                 e.stopPropagation()
+
+                if (!user) {
+                  router.push('/login')
+                  return
+                }
+
                 try {
                   const response = await fetch(isExternal ? '/api/saved/jobs' : '/api/saved', {
                     method: 'POST',
@@ -308,30 +319,30 @@ export function JobCard({ job, variant = 'default', showCompany = true }: JobCar
                   })
                   const data = await response.json()
                   if (data.success) {
-                    toast({ 
-                      title: t('jobs.toasts.saved.title'), 
-                      description: t('jobs.toasts.saved.description') 
+                    toast({
+                      title: t('jobs.toasts.saved.title'),
+                      description: t('jobs.toasts.saved.description')
                     })
                   } else {
-                    toast({ 
-                      title: t('jobs.toasts.saveFailed.title'), 
-                      description: data.error || t('jobs.toasts.saveFailed.description'), 
-                      variant: 'destructive' 
+                    toast({
+                      title: t('jobs.toasts.saveFailed.title'),
+                      description: data.error || t('jobs.toasts.saveFailed.description'),
+                      variant: 'destructive'
                     })
                   }
                 } catch (error) {
                   console.error('Error saving job:', error)
-                  toast({ 
-                    title: t('jobs.toasts.error.title'), 
-                    description: t('jobs.toasts.error.description'), 
-                    variant: 'destructive' 
+                  toast({
+                    title: t('jobs.toasts.error.title'),
+                    description: t('jobs.toasts.error.description'),
+                    variant: 'destructive'
                   })
                 }
               }}
             >
               {t('jobs.buttons.save')}
             </Button>
-            
+
             {job.application_url && (
               <Button size="sm" asChild>
                 <Link href={job.application_url} target="_blank" rel="noopener noreferrer">

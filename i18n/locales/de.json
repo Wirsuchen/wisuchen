@@ -18,6 +18,7 @@
     "close": "Schließen",
     "back": "Zurück",
     "backToHome": "Zurück zur Startseite",
+    "remove": "Entfernen",
     "next": "Weiter",
     "previous": "Zurück",
     "submit": "Absenden",
@@ -120,11 +121,29 @@
       "profileNotFound": "Benutzerprofil nicht gefunden. Bitte wenden Sie sich an den Support.",
       "accessDenied": "Zugriff verweigert. Administratorrechte erforderlich.",
       "unexpectedError": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut."
+    },
+    "print": {
+      "professionalServices": "Professionelle Dienstleistungen",
+      "invoice": "RECHNUNG",
+      "invoiceNo": "Rechnung NR.",
+      "invoiceDate": "Rechnungsdatum",
+      "from": "Von",
+      "to": "An",
+      "paymentMethod": "Zahlungsart",
+      "description": "Beschreibung",
+      "quantity": "Menge",
+      "price": "Preis",
+      "total": "Gesamt",
+      "subtotal": "Zwischensumme",
+      "vat": "Mehrwertsteuer",
+      "paymentInfo": "Zahlungsinformationen",
+      "paymentReference": "Bitte geben Sie als Verwendungszweck die Rechnungsnummer an."
     }
   },
   "dashboard": {
     "title": "Dashboard",
     "overview": "Willkommen zurück! Hier ist, was mit Ihrem Konto passiert.",
+    "profile": "Profil",
     "myAds": "Meine Anzeigen",
     "myAdsDescription": "Verwalten Sie Ihre Stellenanzeigen und verfolgen Sie deren Leistung",
     "savedDeals": "Gespeicherte Angebote",
@@ -595,7 +614,16 @@
     "unsubscribeFailed": "Abmeldung fehlgeschlagen",
     "unsubscribed": "Abgemeldet",
     "unsubscribedDesc": "Ihr Plan wurde auf Kostenlos geändert.",
-    "unsubscribeError": "Abmeldung nicht möglich"
+    "unsubscribeError": "Abmeldung nicht möglich",
+    "security": "Sicherheit",
+    "changePassword": "Passwort ändern",
+    "newPassword": "Neues Passwort",
+    "confirmNewPassword": "Neues Passwort bestätigen",
+    "updatePassword": "Passwort aktualisieren",
+    "passwordUpdated": "Passwort aktualisiert",
+    "passwordUpdatedDesc": "Ihr Passwort wurde erfolgreich aktualisiert.",
+    "passwordUpdateFailed": "Passwortaktualisierung fehlgeschlagen",
+    "passwordsDoNotMatch": "Passwörter stimmen nicht überein"
   },
   "invoices": {
     "subtitle": "Erstellen und verwalten Sie Ihre Rechnungen",
@@ -1002,6 +1030,7 @@
       "analytics": "Analytik",
       "blog": "Blog",
       "billing": "Abrechnung",
+      "content": "Inhalt",
       "apiTesting": "API-Tests"
     },
     "quickActions": {
@@ -1672,10 +1701,7 @@
       "title": "Befehlspalette",
       "description": "Nach einem auszuführenden Befehl suchen..."
     },
-    "footer": {
-      "facebook": "Facebook",
-      "instagram": "Instagram"
-    },
+
     "jobList": {
       "sortBy": "Sortieren nach:",
       "sortOptions": {
@@ -1803,6 +1829,7 @@
       "deals": "Angebote",
       "user": "Benutzer",
       "admin": "Admin",
+      "content": "Inhalt",
       "payment": "Zahlung"
     },
     "sections": {
@@ -1865,5 +1892,411 @@
       "429": "Zu viele Anfragen (Ratenbegrenzung überschritten)",
       "500": "Interner Serverfehler"
     }
+  },
+  "invoices": {
+    "subtitle": "Erstellen und verwalten Sie Ihre Rechnungen",
+    "createInvoiceButton": "Rechnung erstellen",
+    "adminOnlyNotice": "Rechnungserstellung nur für Administratoren verfügbar",
+    "stats": {
+      "totalInvoices": "Rechnungen gesamt",
+      "totalRevenue": "Gesamtumsatz",
+      "pending": "Ausstehend",
+      "overdue": "Überfällig"
+    },
+    "status": {
+      "paid": "Bezahlt",
+      "pending": "Ausstehend",
+      "sent": "Gesendet",
+      "overdue": "Überfällig",
+      "draft": "Entwurf"
+    },
+    "table": {
+      "title": "Rechnungsverlauf",
+      "description": "Alle Ihre Rechnungen anzeigen und verwalten",
+      "headers": {
+        "invoiceId": "Rechnungs-ID",
+        "client": "Kunde",
+        "amount": "Betrag",
+        "vat": "MwSt",
+        "status": "Status",
+        "created": "Erstellt",
+        "dueDate": "Fälligkeitsdatum",
+        "actions": "Aktionen"
+      },
+      "empty": "Keine Rechnungen gefunden"
+    },
+    "preview": {
+      "title": "Rechnungsvorschau {{id}}",
+      "description": "Überprüfen Sie die Rechnungsdetails vor dem Senden.",
+      "downloadPdf": "PDF herunterladen",
+      "downloadHtml": "HTML herunterladen"
+    },
+    "downloadSuccess": "PDF erfolgreich heruntergeladen",
+    "downloadError": "Fehler beim Herunterladen des PDF",
+    "editor": {
+      "titleCreate": "Rechnung erstellen",
+      "titleEdit": "Rechnung bearbeiten {number}",
+      "printPdf": "Drucken / PDF",
+      "save": "Rechnung speichern",
+      "sender": {
+        "title": "Absender (Von)",
+        "name": "Name",
+        "address": "Adresse",
+        "email": "E-Mail",
+        "vatId": "USt-ID"
+      },
+      "recipient": {
+        "title": "Empfänger (An)",
+        "selectUser": "Benutzer auswählen",
+        "selectUserPlaceholder": "Benutzer auswählen...",
+        "searchUserPlaceholder": "Benutzer suchen...",
+        "noUserFound": "Kein Benutzer gefunden.",
+        "name": "Name",
+        "address": "Adresse",
+        "email": "E-Mail"
+      },
+      "items": {
+        "title": "Positionen",
+        "description": "Beschreibung",
+        "qty": "Menge",
+        "price": "Preis (€)",
+        "add": "Position hinzufügen"
+      },
+      "payment": {
+        "title": "Zahlungsdetails",
+        "bankName": "Bankname",
+        "iban": "IBAN",
+        "bic": "BIC",
+        "paypal": "PayPal"
+      },
+      "summary": {
+        "title": "Zusammenfassung",
+        "subtotal": "Zwischensumme",
+        "taxRate": "MwSt-Satz",
+        "taxAmount": "MwSt-Betrag",
+        "total": "Gesamt",
+        "status": "Status",
+        "selectStatus": "Status wählen"
+      },
+      "messages": {
+        "created": "Rechnung erfolgreich erstellt",
+        "updated": "Rechnung erfolgreich aktualisiert",
+        "error": "Etwas ist schief gelaufen",
+        "saveError": "Fehler beim Speichern der Rechnung"
+      }
+    },
+    "download": {
+      "generating": "PDF wird auf dem Server generiert...",
+      "htmlSuccess": "HTML erfolgreich heruntergeladen",
+      "htmlError": "Fehler beim Herunterladen von HTML",
+      "downloadHtml": "HTML herunterladen"
+    },
+    "form": {
+      "clientNameLabel": "Kundenname *",
+      "clientNamePlaceholder": "Firmenname",
+      "clientEmailLabel": "Kunden-E-Mail",
+      "clientEmailPlaceholder": "kunde@firma.de",
+      "clientAddressLabel": "Kundenadresse",
+      "clientAddressPlaceholder": "Straße, Stadt, PLZ, Land",
+      "descriptionLabel": "Beschreibung",
+      "descriptionPlaceholder": "Leistungsbeschreibung",
+      "amountLabel": "Betrag (€) *",
+      "amountPlaceholder": "0.00",
+      "vatRateLabel": "MwSt-Satz (%)",
+      "includeWatermark": "Wasserzeichen einfügen",
+      "cancel": "Abbrechen",
+      "create": "Rechnung erstellen"
+    },
+    "createDialog": {
+      "title": "Rechnung erstellen",
+      "description": "Erstellen Sie eine neue Rechnung für Ihren Kunden.",
+      "cancel": "Abbrechen",
+      "create": "Rechnung erstellen"
+    },
+    "errors": {
+      "databaseConnection": "Datenbankverbindung fehlgeschlagen",
+      "authentication": "Authentifizierung fehlgeschlagen",
+      "userProfile": "Benutzerprofil nicht gefunden",
+      "loadInvoices": "Fehler beim Laden der Rechnungen",
+      "unexpected": "Ein unerwarteter Fehler ist aufgetreten"
+    },
+    "messages": {
+      "generatingPdf": "PDF wird auf dem Server generiert...",
+      "htmlDownloadSuccess": "HTML erfolgreich heruntergeladen",
+      "htmlDownloadError": "Fehler beim Herunterladen von HTML"
+    }
+  },
+  "footer": {
+    "facebook": "Facebook",
+    "instagram": "Instagram",
+    "company": "Projekt",
+    "aboutUs": "Über uns",
+    "legal": "Impressum",
+    "terms": "AGB",
+    "privacy": "Datenschutz",
+    "support": "Support",
+    "apiDocs": "API Doku",
+    "explore": "Entdecken",
+    "account": "Konto",
+    "newsletterInvalidEmailTitle": "Ungültige E-Mail",
+    "newsletterInvalidEmailDescription": "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
+    "newsletterSubscribedTitle": "Abonniert!",
+    "newsletterSubscribedDescription": "Sie haben sich erfolgreich für unseren Newsletter angemeldet.",
+    "newsletterErrorTryAgain": "Etwas ist schief gelaufen. Bitte versuchen Sie es erneut.",
+    "newsletterErrorTryAgainLater": "Bitte versuchen Sie es später erneut.",
+    "subscribeNewsletter": "Newsletter abonnieren",
+    "newsletter": "Bleiben Sie auf dem Laufenden mit unseren neuesten Nachrichten und Angeboten.",
+    "enterEmail": "Geben Sie Ihre E-Mail ein",
+    "subscribing": "Abonnieren...",
+    "subscribe": "Abonnieren",
+    "copyrightBrand": "WIRsuchen.",
+    "allRightsReserved": "Alle Rechte vorbehalten."
+  },
+  "supervisor": {
+    "panel": {
+      "title": "Supervisor-Panel",
+      "description": "Verwalten Sie Benutzer, Systemkonfiguration und Sicherheit."
+    },
+    "tabs": {
+      "overview": "Übersicht",
+      "users": "Benutzer",
+      "config": "Konfiguration",
+      "logs": "Logs & Sicherheit",
+      "escalation": "Eskalation"
+    },
+    "overview": {
+      "title": "Systemübersicht",
+      "description": "Systemstatistiken und Gesundheitsstatus auf hoher Ebene."
+    },
+    "users": {
+      "title": "Benutzerverwaltung",
+      "description": "Verwalten Sie Benutzerrollen, Berechtigungen und Kontostatus.",
+      "searchPlaceholder": "Benutzer suchen...",
+      "name": "Name",
+      "email": "E-Mail",
+      "role": "Rolle",
+      "status": "Status",
+      "joined": "Beigetreten",
+      "updateSuccess": "Benutzerrolle erfolgreich aktualisiert",
+      "updateFailed": "Fehler beim Aktualisieren der Benutzerrolle",
+      "noUsersFound": "Keine Benutzer gefunden"
+    },
+    "config": {
+      "title": "Systemkonfiguration",
+      "description": "Verwalten Sie Domains, API-Schlüssel und globale Einstellungen.",
+      "generalTitle": "Allgemeine Einstellungen",
+      "generalDesc": "Konfigurieren Sie grundlegende Systeminformationen.",
+      "domain": "Domain",
+      "supportEmail": "Support-E-Mail",
+      "apiKeysTitle": "API-Schlüssel",
+      "apiKeysDesc": "Verwalten Sie externe Service-Integrationen.",
+      "saveSuccess": "Konfiguration erfolgreich gespeichert"
+    },
+    "stats": {
+      "totalUsers": "Benutzer gesamt",
+      "companies": "Unternehmen",
+      "activeJobs": "Aktive Jobs",
+      "totalJobs": "Jobs gesamt",
+      "revenue": "Umsatz",
+      "thisMonth": "diesen Monat",
+      "impressions": "Impressionen",
+      "clicks": "Klicks"
+    },
+    "logs": {
+      "title": "Systemprotokolle",
+      "description": "Systemaktivitätsprotokolle und Sicherheitsereignisse anzeigen.",
+      "action": "Aktion",
+      "user": "Benutzer",
+      "timestamp": "Zeitstempel",
+      "status": "Status"
+    },
+    "escalation": {
+      "title": "Konflikteskalation",
+      "description": "Genehmigungen überschreiben und gemeldete Inhalte lösen.",
+      "type": "Typ",
+      "titleLabel": "Titel",
+      "reason": "Grund",
+      "status": "Status",
+      "actions": "Aktionen",
+      "approve": "Genehmigen",
+      "reject": "Ablehnen"
+    },
+    "moderator": {
+      "panel": {
+        "title": "Moderator-Panel",
+        "description": "Inhaltsfreigaben und Benutzerberichte verwalten."
+      },
+      "tabs": {
+        "approval": "Inhaltsfreigabe",
+        "reports": "Berichte",
+        "overview": "Übersicht"
+      },
+      "approval": {
+        "title": "Ausstehende Inhalte",
+        "description": "Ausstehende Jobs und Blogbeiträge überprüfen und genehmigen.",
+        "jobs": "Jobs",
+        "posts": "Blogbeiträge",
+        "itemTitle": "Titel",
+        "author": "Autor",
+        "date": "Datum",
+        "status": "Status",
+        "actions": "Aktionen",
+        "noItems": "Keine ausstehenden Elemente gefunden."
+      },
+      "reports": {
+        "title": "Benutzerberichte",
+        "description": "Benutzerberichte überprüfen und lösen.",
+        "target": "Ziel",
+        "reason": "Grund",
+        "reporter": "Melder",
+        "status": "Status",
+        "actions": "Aktionen",
+        "noReports": "Keine aktiven Berichte.",
+        "resolve": "Lösen",
+        "resolved": "Bericht gelöst."
+      },
+      "approved": "Element genehmigt.",
+      "rejected": "Element abgelehnt."
+    },
+    "lister": {
+      "panel": {
+        "title": "Lister-Panel",
+        "description": "Verwalten Sie Ihre Anzeigen und Kampagnen."
+      },
+      "tabs": {
+        "ads": "Meine Anzeigen",
+        "campaigns": "Kampagnen"
+      },
+      "campaigns": {
+        "title": "Werbekampagnen",
+        "description": "Verwalten Sie Ihre Werbekampagnen und Ihr Budget.",
+        "create": "Kampagne erstellen",
+        "name": "Kampagnenname",
+        "status": "Status",
+        "budget": "Budget",
+        "spent": "Ausgegeben",
+        "performance": "Leistung",
+        "dates": "Daten",
+        "noCampaigns": "Keine Kampagnen gefunden."
+      }
+    },
+    "publisher": {
+      "panel": {
+        "title": "Publisher-Panel",
+        "description": "Anzeigen schnell schalten und Ihre Einträge verwalten."
+      },
+      "tabs": {
+        "quickPost": "Schnellanzeige",
+        "myListings": "Meine Einträge"
+      },
+      "wizard": {
+        "title": "Neue Anzeige erstellen",
+        "step": "Schritt",
+        "jobTitle": "Stellentitel",
+        "jobTitlePlaceholder": "z.B. Senior React Entwickler",
+        "category": "Kategorie",
+        "categoryPlaceholder": "z.B. Technik",
+        "description": "Beschreibung",
+        "descriptionPlaceholder": "Beschreiben Sie die Rolle...",
+        "success": "Anzeige erfolgreich eingereicht!"
+      }
+    },
+    "blogger": {
+      "panel": {
+        "title": "Blogger-Panel",
+        "description": "Verwalten Sie Ihre Artikel und Inhalte."
+      },
+      "tabs": {
+        "articles": "Meine Artikel",
+        "write": "Artikel schreiben",
+        "media": "Medienbibliothek"
+      },
+      "articles": {
+        "title": "Meine Artikel",
+        "description": "Anzeigen und Verwalten Ihrer Blogbeiträge."
+      },
+      "write": {
+        "title": "Neuen Artikel schreiben"
+      },
+      "media": {
+        "title": "Medienbibliothek",
+        "description": "Laden Sie Ihre Bilder und Dateien hoch und verwalten Sie sie."
+      }
+    },
+    "editor": {
+      "panel": {
+        "title": "Editor-Panel",
+        "description": "Inhalte überprüfen und verwalten."
+      },
+      "tabs": {
+        "review": "Überprüfungswarteschlange",
+        "calendar": "Kalender",
+        "allPosts": "Alle Beiträge"
+      },
+      "review": {
+        "title": "Überprüfungswarteschlange",
+        "description": "Ausstehende Artikel genehmigen oder ablehnen.",
+        "approved": "Artikel genehmigt.",
+        "rejected": "Artikel abgelehnt.",
+        "actionSuccess": "Aktion {action} erfolgreich.",
+        "noPending": "Keine ausstehenden Artikel."
+      },
+      "calendar": {
+        "title": "Inhaltskalender",
+        "description": "Kommende Beiträge planen und anzeigen.",
+        "comingSoon": "Kalenderansicht kommt bald."
+      }
+    },
+    "analyst": {
+      "panel": {
+        "title": "Analysten-Panel",
+        "description": "Statistiken und Berichte anzeigen."
+      },
+      "tabs": {
+        "overview": "Übersicht",
+        "reports": "Berichte"
+      },
+      "reports": {
+        "title": "Datenberichte",
+        "description": "Systemberichte und Analysen herunterladen.",
+        "name": "Berichtsname",
+        "date": "Datum",
+        "type": "Typ",
+        "size": "Größe",
+        "actions": "Aktionen",
+        "downloadStarted": "Download gestartet",
+        "downloading": "{name} wird heruntergeladen..."
+      }
+    }
+  },
+  "blogPost": {
+    "newsletter": {
+      "title": "Abonnieren Sie unseren Newsletter",
+      "description": "Erhalten Sie die neuesten Einblicke und Trends direkt in Ihren Posteingang.",
+      "placeholder": "Geben Sie Ihre E-Mail ein",
+      "subscribe": "Abonnieren",
+      "subscribing": "Abonnieren..."
+    },
+    "tags": "Tags",
+    "navigation": {
+      "previous": "Vorheriger Artikel",
+      "next": "Nächster Artikel"
+    },
+    "shareText": "Schauen Sie sich diesen Artikel an:",
+    "shareSharedTitle": "Geteilt",
+    "shareSharedDescription": "Danke fürs Teilen dieses Artikels.",
+    "linkCopiedTitle": "Link kopiert",
+    "linkCopiedDescription": "Teilen Sie ihn mit Ihren Freunden.",
+    "linkCopiedClipboard": "URL in die Zwischenablage kopiert.",
+    "shareErrorTitle": "Teilen fehlgeschlagen",
+    "shareErrorDescription": "Teilen ist derzeit nicht möglich.",
+    "backToBlog": "Zurück zum Blog",
+    "viewsLabel": "Aufrufe",
+    "authorRole": "Autor",
+    "share": "Teilen",
+    "shareSectionTitle": "Diesen Artikel teilen",
+    "authorBio": "Content Writer spezialisiert auf Karriereberatung und Markteinblicke.",
+    "viewProfile": "Profil ansehen",
+    "relatedArticles": "Ähnliche Artikel"
   }
 }

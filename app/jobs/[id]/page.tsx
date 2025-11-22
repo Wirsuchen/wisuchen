@@ -23,7 +23,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { formatEuroText } from "@/lib/utils"
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useRouter } from "next/navigation"
 import type { Job } from "@/hooks/use-jobs"
 import { fetchWithCache } from "@/lib/utils/client-cache"
 import { useAuth } from "@/contexts/auth-context"
@@ -49,6 +49,7 @@ function JobDetailContent({ params }: { params: Promise<{ id: string }> }) {
   const [isImproving, setIsImproving] = useState(false)
   const [improvedDescription, setImprovedDescription] = useState("")
   const searchParams = useSearchParams()
+  const router = useRouter()
   const { user } = useAuth()
   const { t } = useTranslation()
   const canUseAI = !!(user && (user.isSubscribed || ['pro', 'premium'].includes(user.plan || '')))
@@ -339,6 +340,12 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
                       size="sm"
                       onClick={async () => {
                         if (!job) return
+
+                        if (!user) {
+                          router.push('/login')
+                          return
+                        }
+
                         try {
                           const response = await fetch('/api/saved/jobs', {
                             method: 'POST',
@@ -467,6 +474,7 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
           </div>
 
           {/* Sidebar */}
+
           <div className="space-y-6">
             {/* Apply Card */}
             <Card>
@@ -487,6 +495,12 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
                   className="w-full bg-transparent"
                   onClick={async () => {
                     if (!job) return
+
+                    if (!user) {
+                      router.push('/login')
+                      return
+                    }
+
                     try {
                       const response = await fetch('/api/saved/jobs', {
                         method: 'POST',
@@ -572,59 +586,61 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
 
             {/* Related Jobs moved to full-width section below */}
           </div>
-        </div>
+        </div >
         {/* Recommended Jobs - full width, 3 in a row */}
-        <section className="mt-8">
+        < section className="mt-8" >
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold">{t('jobs.detail.recommendedTitle')}</h2>
             <Button variant="outline" className="bg-transparent" asChild>
               <Link href="/jobs">{t('common.viewAll')}</Link>
             </Button>
           </div>
-          {loadingRelated ? (
-            <p className="text-sm text-muted-foreground text-center py-6">{t('jobs.detail.loadingRecommended')}</p>
-          ) : relatedJobs.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-6">{t('jobs.detail.noRecommendations')}</p>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {relatedJobs.map((relatedJob) => {
-                const salaryText = relatedJob.salary?.text || (
-                  relatedJob.salary?.min || relatedJob.salary?.max
-                    ? `€${relatedJob.salary?.min?.toLocaleString() || ''} - €${relatedJob.salary?.max?.toLocaleString() || ''}`
-                    : null
-                )
-                return (
-                  <Card key={`${relatedJob.source}-${relatedJob.externalId || relatedJob.id}`} className="hover:bg-muted/50 transition-colors">
-                    <CardContent className="p-4">
-                      <Link
-                        href={`/jobs/${encodeURIComponent(relatedJob.externalId || relatedJob.id)}?source=${encodeURIComponent(relatedJob.source)}`}
-                        onClick={() => {
-                          try {
-                            const key = `job:${relatedJob.source}:${relatedJob.externalId || relatedJob.id}`
-                            sessionStorage.setItem(key, JSON.stringify(relatedJob))
-                          } catch { }
-                        }}
-                      >
-                        <h4 className="font-medium hover:text-accent transition-colors line-clamp-2">{relatedJob.title}</h4>
-                      </Link>
-                      <p className="text-sm text-muted-foreground mt-1">{relatedJob.company}</p>
-                      <div className="flex items-center justify-between mt-2">
-                        <span className="text-sm text-muted-foreground truncate mr-2">{relatedJob.location}</span>
-                        {salaryText && (
-                          <span className="text-sm font-medium text-accent">{salaryText}</span>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                )
-              })}
-            </div>
-          )}
-        </section>
-      </main>
+          {
+            loadingRelated ? (
+              <p className="text-sm text-muted-foreground text-center py-6">{t('jobs.detail.loadingRecommended')}</p>
+            ) : relatedJobs.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-6">{t('jobs.detail.noRecommendations')}</p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {relatedJobs.map((relatedJob) => {
+                  const salaryText = relatedJob.salary?.text || (
+                    relatedJob.salary?.min || relatedJob.salary?.max
+                      ? `€${relatedJob.salary?.min?.toLocaleString() || ''} - €${relatedJob.salary?.max?.toLocaleString() || ''}`
+                      : null
+                  )
+                  return (
+                    <Card key={`${relatedJob.source}-${relatedJob.externalId || relatedJob.id}`} className="hover:bg-muted/50 transition-colors">
+                      <CardContent className="p-4">
+                        <Link
+                          href={`/jobs/${encodeURIComponent(relatedJob.externalId || relatedJob.id)}?source=${encodeURIComponent(relatedJob.source)}`}
+                          onClick={() => {
+                            try {
+                              const key = `job:${relatedJob.source}:${relatedJob.externalId || relatedJob.id}`
+                              sessionStorage.setItem(key, JSON.stringify(relatedJob))
+                            } catch { }
+                          }}
+                        >
+                          <h4 className="font-medium hover:text-accent transition-colors line-clamp-2">{relatedJob.title}</h4>
+                        </Link>
+                        <p className="text-sm text-muted-foreground mt-1">{relatedJob.company}</p>
+                        <div className="flex items-center justify-between mt-2">
+                          <span className="text-sm text-muted-foreground truncate mr-2">{relatedJob.location}</span>
+                          {salaryText && (
+                            <span className="text-sm font-medium text-accent">{salaryText}</span>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )
+                })}
+              </div>
+            )
+          }
+        </section >
+      </main >
 
       <Footer />
-    </div>
+    </div >
   )
 }
 

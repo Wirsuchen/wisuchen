@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/server'
  * Generate blog article content using AI
  */
 export async function POST(request: NextRequest) {
+  console.log('Received blog generation request')
   try {
     const supabase = await createClient()
     const {
@@ -14,11 +15,19 @@ export async function POST(request: NextRequest) {
     } = await supabase.auth.getUser()
 
     if (!user) {
+      console.log('Unauthorized request')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    if (!process.env.GEMINI_API_KEY) {
+      console.error('GEMINI_API_KEY is missing')
+      return NextResponse.json({ error: 'Server configuration error: Missing API Key' }, { status: 500 })
     }
 
     const body = await request.json()
     const { topic, category, targetAudience, tone, keywords, language } = body
+
+    console.log('Generating blog for:', { topic, category, language })
 
     if (!topic || !category) {
       return NextResponse.json(
@@ -43,6 +52,9 @@ export async function POST(request: NextRequest) {
 
     const stream = await streamContentGeneration(prompt)
     const sse = iterableToSSE(stream)
+    
+    console.log('Stream started successfully')
+    
     return new Response(sse, {
       headers: {
         'Content-Type': 'text/event-stream; charset=utf-8',

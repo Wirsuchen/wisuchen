@@ -5,13 +5,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
   LineChart,
   Line,
@@ -20,10 +20,10 @@ import {
   Cell,
   ComposedChart
 } from 'recharts'
-import { 
-  Users, 
-  Briefcase, 
-  DollarSign, 
+import {
+  Users,
+  Briefcase,
+  DollarSign,
   TrendingUp,
   Download,
   Upload,
@@ -37,6 +37,7 @@ import { JobImportManager } from './job-import'
 import { AffiliateImportManager } from './affiliate-import'
 import { UserManagement } from './user-management'
 import { RolePermissions } from './role-permissions'
+import { ContentEditor } from './content-editor'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useTranslation } from '@/contexts/i18n-context'
 import Link from 'next/link'
@@ -122,28 +123,28 @@ export function AdminDashboard() {
 
   useEffect(() => {
     if (activeTab !== 'blog') return
-    ;(async () => {
-      setBlogLoading(true)
-      try {
-        const res = await fetch('/api/admin/blog/authors', { cache: 'no-store' })
-        if (res.ok) {
-          const data = await res.json()
-          setBlogAuthors(data.authors || [])
-        }
-      } catch {}
-      finally { setBlogLoading(false) }
-    })()
-    ;(async () => {
-      setBlogPostsLoading(true)
-      try {
-        const res = await fetch('/api/admin/blog/posts?limit=20', { cache: 'no-store' })
-        if (res.ok) {
-          const data = await res.json()
-          setBlogPosts(data.posts || [])
-        }
-      } catch {}
-      finally { setBlogPostsLoading(false) }
-    })()
+      ; (async () => {
+        setBlogLoading(true)
+        try {
+          const res = await fetch('/api/admin/blog/authors', { cache: 'no-store' })
+          if (res.ok) {
+            const data = await res.json()
+            setBlogAuthors(data.authors || [])
+          }
+        } catch { }
+        finally { setBlogLoading(false) }
+      })()
+      ; (async () => {
+        setBlogPostsLoading(true)
+        try {
+          const res = await fetch('/api/admin/blog/posts?limit=20', { cache: 'no-store' })
+          if (res.ok) {
+            const data = await res.json()
+            setBlogPosts(data.posts || [])
+          }
+        } catch { }
+        finally { setBlogPostsLoading(false) }
+      })()
   }, [activeTab])
 
   const fetchDashboardStats = async () => {
@@ -185,13 +186,13 @@ export function AdminDashboard() {
     }
   }
 
-  const StatCard = ({ 
-    title, 
-    value, 
-    description, 
-    icon: Icon, 
-    trend, 
-    color = 'text-blue-600' 
+  const StatCard = ({
+    title,
+    value,
+    description,
+    icon: Icon,
+    trend,
+    color = 'text-blue-600'
   }: {
     title: string
     value: string | number
@@ -242,6 +243,7 @@ export function AdminDashboard() {
             <TabsTrigger value="affiliates">{t('admin.tabs.affiliates')}</TabsTrigger>
             <TabsTrigger value="analytics">{t('admin.tabs.analytics')}</TabsTrigger>
             <TabsTrigger value="blog">{t('admin.tabs.blog')}</TabsTrigger>
+            <TabsTrigger value="content">{t('admin.tabs.content')}</TabsTrigger>
             <TabsTrigger value="billing">{t('admin.tabs.billing')}</TabsTrigger>
             <TabsTrigger value="testing">{t('admin.tabs.apiTesting')}</TabsTrigger>
           </TabsList>
@@ -407,9 +409,8 @@ export function AdminDashboard() {
                 ].map((activity, index) => (
                   <div key={index} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 border rounded-lg">
                     <div className="flex items-center gap-3">
-                      <div className={`w-2 h-2 rounded-full ${
-                        activity.status === 'success' ? 'bg-green-500' : 'bg-red-500'
-                      }`} />
+                      <div className={`w-2 h-2 rounded-full ${activity.status === 'success' ? 'bg-green-500' : 'bg-red-500'
+                        }`} />
                       <div>
                         <div className="font-medium">{activity.action}</div>
                         <div className="text-sm text-muted-foreground">
@@ -498,6 +499,10 @@ export function AdminDashboard() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="content" className="space-y-6">
+          <ContentEditor />
         </TabsContent>
 
         <TabsContent value="database" className="space-y-6">
@@ -756,9 +761,8 @@ export function AdminDashboard() {
                   ].map((api, index) => (
                     <div key={index} className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${
-                          api.status === t('admin.analytics.healthy') ? 'bg-green-500' : 'bg-yellow-500'
-                        }`} />
+                        <div className={`w-2 h-2 rounded-full ${api.status === t('admin.analytics.healthy') ? 'bg-green-500' : 'bg-yellow-500'
+                          }`} />
                         <span className="font-medium">{api.api}</span>
                       </div>
                       <div className="text-sm text-muted-foreground">

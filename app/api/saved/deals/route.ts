@@ -76,7 +76,6 @@ export async function POST(request: NextRequest) {
           featured_image_url: image || null,
           source: 'rapidapi',
           external_id: id,
-          created_by: profile.id, // Set the user as creator
           featured: false,
           urgent: false,
           views_count: 0,

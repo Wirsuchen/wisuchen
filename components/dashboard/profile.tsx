@@ -22,6 +22,8 @@ import {
 } from "@/components/ui/alert-dialog"
 import { useTranslation } from "@/contexts/i18n-context"
 
+import { createClient } from "@/lib/supabase/client"
+
 export function Profile() {
   const { t } = useTranslation()
   const [loading, setLoading] = useState(false)
@@ -42,9 +44,10 @@ export function Profile() {
   const [unsubscribing, setUnsubscribing] = useState(false)
   const [avatarUploading, setAvatarUploading] = useState(false)
   const [showUnsubscribeDialog, setShowUnsubscribeDialog] = useState(false)
+  const [passwords, setPasswords] = useState({ newPassword: "", confirmPassword: "" })
 
   useEffect(() => {
-    ;(async () => {
+    ; (async () => {
       try {
         const res = await fetch('/api/profile', { cache: 'no-store' })
         if (!res.ok) return
@@ -60,25 +63,25 @@ export function Profile() {
           github_url: profile.github_url || '',
           avatar_url: profile.avatar_url || '',
         })
-      } catch {}
+      } catch { }
     })()
   }, [])
 
   useEffect(() => {
-    ;(async () => {
+    ; (async () => {
       try {
         const res = await fetch('/api/me', { cache: 'no-store' })
         if (res.ok) {
           const me = await res.json()
           setSubscription({ isSubscribed: !!me.is_subscribed, plan: me.plan || 'free' })
         }
-      } catch {}
+      } catch { }
     })()
   }, [])
 
   // Load account settings from database
   useEffect(() => {
-    ;(async () => {
+    ; (async () => {
       try {
         const res = await fetch('/api/profile/settings', { cache: 'no-store' })
         if (res.ok) {
@@ -94,7 +97,7 @@ export function Profile() {
             })
           }
         }
-      } catch {}
+      } catch { }
     })()
   }, [])
 
@@ -106,7 +109,7 @@ export function Profile() {
     jobAlerts: true,
     dealAlerts: true,
   })
-  
+
 
   const handleProfileUpdate = async () => {
     setLoading(true)
@@ -117,23 +120,23 @@ export function Profile() {
         body: JSON.stringify(profileData),
       })
       if (res.ok) {
-        toast({ 
-          title: t('profile.saveSuccess'), 
-          description: t('profile.saveSuccessDesc') 
+        toast({
+          title: t('profile.saveSuccess'),
+          description: t('profile.saveSuccessDesc')
         })
       } else {
         const data = await res.json().catch(() => ({}))
-        toast({ 
-          title: t('common.error'), 
-          description: (data as any)?.error || t('profile.updateFailed'), 
-          variant: 'destructive' 
+        toast({
+          title: t('common.error'),
+          description: (data as any)?.error || t('profile.updateFailed'),
+          variant: 'destructive'
         })
       }
     } catch (error: any) {
-      toast({ 
-        title: t('common.error'), 
-        description: error?.message || t('common.unexpectedError'), 
-        variant: 'destructive' 
+      toast({
+        title: t('common.error'),
+        description: error?.message || t('common.unexpectedError'),
+        variant: 'destructive'
       })
     } finally {
       setLoading(false)
@@ -149,23 +152,23 @@ export function Profile() {
         body: JSON.stringify(accountSettings),
       })
       if (res.ok) {
-        toast({ 
-          title: t('profile.settingsSaved'), 
-          description: t('profile.settingsSavedDesc') 
+        toast({
+          title: t('profile.settingsSaved'),
+          description: t('profile.settingsSavedDesc')
         })
       } else {
         const data = await res.json().catch(() => ({}))
-        toast({ 
-          title: t('common.error'), 
-          description: (data as any)?.error || t('profile.settingsSaveFailed'), 
-          variant: 'destructive' 
+        toast({
+          title: t('common.error'),
+          description: (data as any)?.error || t('profile.settingsSaveFailed'),
+          variant: 'destructive'
         })
       }
     } catch (error: any) {
-      toast({ 
-        title: t('common.error'), 
-        description: error?.message || t('common.unexpectedError'), 
-        variant: 'destructive' 
+      toast({
+        title: t('common.error'),
+        description: error?.message || t('common.unexpectedError'),
+        variant: 'destructive'
       })
     } finally {
       setLoading(false)
@@ -191,6 +194,39 @@ export function Profile() {
     }
   }
 
+  const handlePasswordUpdate = async () => {
+    if (passwords.newPassword !== passwords.confirmPassword) {
+      toast({
+        title: t('common.error'),
+        description: t('profile.passwordsDoNotMatch'),
+        variant: 'destructive'
+      })
+      return
+    }
+
+    setLoading(true)
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.auth.updateUser({ password: passwords.newPassword })
+
+      if (error) throw error
+
+      toast({
+        title: t('profile.passwordUpdated'),
+        description: t('profile.passwordUpdatedDesc')
+      })
+      setPasswords({ newPassword: "", confirmPassword: "" })
+    } catch (error: any) {
+      toast({
+        title: t('common.error'),
+        description: error.message || t('profile.passwordUpdateFailed'),
+        variant: 'destructive'
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -212,7 +248,7 @@ export function Profile() {
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={profileData.avatar_url} alt={t('profile.avatar')} className="w-full h-full object-cover" />
                 ) : (
-                  (profileData.full_name || 'U').substring(0,2).toUpperCase()
+                  (profileData.full_name || 'U').substring(0, 2).toUpperCase()
                 )}
               </div>
               <Button size="sm" className="absolute bottom-0 right-0 rounded-full w-10 h-10 p-0" variant="secondary">
@@ -487,6 +523,40 @@ export function Profile() {
               {unsubscribing ? t('profile.unsubscribing') : t('profile.unsubscribe')}
             </Button>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Security Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('profile.security')}</CardTitle>
+          <CardDescription>{t('profile.changePassword')}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="newPassword">{t('profile.newPassword')}</Label>
+              <Input
+                id="newPassword"
+                type="password"
+                value={passwords.newPassword}
+                onChange={(e) => setPasswords({ ...passwords, newPassword: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="confirmPassword">{t('profile.confirmNewPassword')}</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                value={passwords.confirmPassword}
+                onChange={(e) => setPasswords({ ...passwords, confirmPassword: e.target.value })}
+              />
+            </div>
+          </div>
+          <Button onClick={handlePasswordUpdate} className="w-full" disabled={loading}>
+            <Save className="h-4 w-4 mr-2" />
+            {loading ? t('profile.saving') : t('profile.updatePassword')}
+          </Button>
         </CardContent>
       </Card>
 

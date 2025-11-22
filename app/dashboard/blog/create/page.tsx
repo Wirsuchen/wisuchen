@@ -17,10 +17,13 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useTranslation } from '@/contexts/i18n-context'
 
+import { renderToStaticMarkup } from 'react-dom/server'
+import ReactMarkdown from 'react-markdown'
+
 export default function CreateBlogPage() {
   const router = useRouter()
   const { toast } = useToast()
-  const { t } = useTranslation()
+  const { t, tr } = useTranslation()
   const [showAI, setShowAI] = useState(true)
   const [language, setLanguage] = useState<'de' | 'en' | 'fr' | 'it'>('en')
   const [formData, setFormData] = useState({
@@ -38,7 +41,14 @@ export default function CreateBlogPage() {
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   const handleAIGenerated = (content: string) => {
-    setFormData((prev) => ({ ...prev, content }))
+    try {
+      // Convert Markdown to HTML for the RichTextEditor
+      const htmlContent = renderToStaticMarkup(<ReactMarkdown>{content}</ReactMarkdown>)
+      setFormData((prev) => ({ ...prev, content: htmlContent }))
+    } catch (e) {
+      console.error('Error converting markdown:', e)
+      setFormData((prev) => ({ ...prev, content }))
+    }
     setShowAI(false)
     toast({
       title: t('blog.admin.ai.generated'),
@@ -84,7 +94,7 @@ export default function CreateBlogPage() {
         uploadedBy = profile?.id ?? null
       }
 
-      await supabase.from('media_files').insert({
+      await (supabase.from('media_files') as any).insert({
         filename: nameSanitized,
         original_filename: file.name,
         file_path: path,
@@ -110,7 +120,7 @@ export default function CreateBlogPage() {
     setFormData((prev) => ({ ...prev, content: translation }))
     setLanguage(targetLang)
     toast({
-      title: t('blog.admin.translate.translatedTo', { lang: targetLang.toUpperCase() }),
+      title: tr('blog.admin.translate.translatedTo', { lang: targetLang.toUpperCase() }),
       description: t('blog.admin.translate.translated'),
     })
   }
@@ -155,7 +165,7 @@ export default function CreateBlogPage() {
       const data = await res.json()
       toast({
         title: status === 'draft' ? t('blog.admin.draftSaved') : t('blog.admin.published'),
-        description: t('blog.admin.postStatus', { status, slug: data.slug }),
+        description: tr('blog.admin.postStatus', { status, slug: data.slug }),
       })
       setTimeout(() => {
         router.push('/dashboard/blog')
@@ -188,7 +198,7 @@ export default function CreateBlogPage() {
         <CardHeader>
           <CardTitle>{t('blog.admin.create.content')}</CardTitle>
           <CardDescription>
-            {t('blog.admin.create.writeOrEdit')} {formData.content && t('blog.admin.create.language', { lang: language.toUpperCase() })}
+            {t('blog.admin.create.writeOrEdit')} {formData.content && tr('blog.admin.create.language', { lang: language.toUpperCase() })}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -303,7 +313,7 @@ export default function CreateBlogPage() {
             />
             {formData.content && (
               <p className="text-sm text-muted-foreground">
-                {t('blog.admin.create.wordCount', { 
+                {tr('blog.admin.create.wordCount', {
                   words: formData.content.replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(Boolean).length,
                   characters: formData.content.replace(/<[^>]+>/g, '').length
                 })}

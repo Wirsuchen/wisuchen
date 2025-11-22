@@ -1,5 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
+
+function getSupabaseServiceClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL as string
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY as string
+  if (!url || !serviceKey) throw new Error('Missing Supabase service env')
+  return createSupabaseClient(url, serviceKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  })
+}
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient()
@@ -38,7 +51,10 @@ export async function PUT(request: NextRequest) {
   if (typeof plan === 'string' && plan.length > 0) update.plan = plan
   if (Object.keys(update).length === 0) return NextResponse.json({ error: 'No fields to update' }, { status: 400 })
 
-  const { error } = await supabase.from('profiles').update(update).eq('id', profile_id)
+  // Use service role client to bypass RLS for updates
+  const serviceClient = getSupabaseServiceClient()
+  const { error } = await serviceClient.from('profiles').update(update).eq('id', profile_id)
+  
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
   return NextResponse.json({ success: true })
 }

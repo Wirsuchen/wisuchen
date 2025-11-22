@@ -136,11 +136,29 @@
       "profileNotFound": "User profile not found. Please contact support.",
       "accessDenied": "Access denied. Admin privileges required.",
       "unexpectedError": "An unexpected error occurred. Please try again."
+    },
+    "print": {
+      "professionalServices": "Professional Services",
+      "invoice": "INVOICE",
+      "invoiceNo": "Invoice No.",
+      "invoiceDate": "Invoice Date",
+      "from": "From",
+      "to": "To",
+      "paymentMethod": "Payment Method",
+      "description": "Description",
+      "quantity": "Quantity",
+      "price": "Price",
+      "total": "Total",
+      "subtotal": "Subtotal",
+      "vat": "VAT",
+      "paymentInfo": "Payment Information",
+      "paymentReference": "Please use the invoice number as the payment reference."
     }
   },
   "dashboard": {
     "title": "Dashboard",
     "overview": "Welcome back! Here's what's happening with your account.",
+    "profile": "Profile",
     "myAds": "My Ads",
     "myAdsDescription": "Manage your job postings and track their performance",
     "savedDeals": "Saved Deals",
@@ -775,7 +793,16 @@
     "unsubscribeFailed": "Failed to unsubscribe",
     "unsubscribed": "Unsubscribed",
     "unsubscribedDesc": "Your plan was changed to Free.",
-    "unsubscribeError": "Could not unsubscribe"
+    "unsubscribeError": "Unable to unsubscribe",
+    "security": "Security",
+    "changePassword": "Change Password",
+    "newPassword": "New Password",
+    "confirmNewPassword": "Confirm New Password",
+    "updatePassword": "Update Password",
+    "passwordUpdated": "Password Updated",
+    "passwordUpdatedDesc": "Your password has been updated successfully.",
+    "passwordUpdateFailed": "Failed to update password",
+    "passwordsDoNotMatch": "Passwords do not match"
   },
   "invoices": {
     "subtitle": "Create and manage your invoices",
@@ -800,21 +827,91 @@
       "clientEmailLabel": "Client Email",
       "clientEmailPlaceholder": "client@company.com",
       "clientAddressLabel": "Client Address",
-      "clientAddressPlaceholder": "Street Address, City, Postal Code, Country",
-      "descriptionLabel": "Description *",
-      "descriptionPlaceholder": "Describe the services or products...",
+      "clientAddressPlaceholder": "Street, City, Zip, Country",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Service description",
       "amountLabel": "Amount (€) *",
-      "amountPlaceholder": "1000",
+      "amountPlaceholder": "0.00",
       "vatRateLabel": "VAT Rate (%)",
-      "vatRateOption0": "0% (No VAT)",
-      "vatRateOption7": "7% (Reduced Rate)",
-      "vatRateOption19": "19% (Standard Rate)",
-      "includeWatermark": "Include WIRsuchen watermark",
-      "createAndDownload": "Create & Download"
+      "includeWatermark": "Include Watermark",
+      "cancel": "Cancel",
+      "create": "Create Invoice"
+    },
+    "editor": {
+      "titleCreate": "Create Invoice",
+      "titleEdit": "Edit Invoice {number}",
+      "printPdf": "Print / PDF",
+      "save": "Save Invoice",
+      "sender": {
+        "title": "Sender (From)",
+        "name": "Name",
+        "address": "Address",
+        "email": "Email",
+        "vatId": "VAT ID"
+      },
+      "recipient": {
+        "title": "Recipient (To)",
+        "selectUser": "Select User",
+        "selectUserPlaceholder": "Select user...",
+        "searchUserPlaceholder": "Search user...",
+        "noUserFound": "No user found.",
+        "name": "Name",
+        "address": "Address",
+        "email": "Email"
+      },
+      "items": {
+        "title": "Items",
+        "description": "Description",
+        "qty": "Qty",
+        "price": "Price (€)",
+        "add": "Add Item"
+      },
+      "payment": {
+        "title": "Payment Details",
+        "bankName": "Bank Name",
+        "iban": "IBAN",
+        "bic": "BIC",
+        "paypal": "PayPal"
+      },
+      "summary": {
+        "title": "Summary",
+        "subtotal": "Subtotal",
+        "taxRate": "VAT Rate",
+        "taxAmount": "VAT Amount",
+        "total": "Total",
+        "status": "Status",
+        "selectStatus": "Select status"
+      },
+      "messages": {
+        "created": "Invoice created successfully",
+        "updated": "Invoice updated successfully",
+        "error": "Something went wrong",
+        "saveError": "Failed to save invoice"
+      }
+    },
+    "download": {
+      "generating": "Generating PDF on server...",
+      "htmlSuccess": "HTML downloaded successfully",
+      "htmlError": "Error downloading HTML",
+      "downloadHtml": "Download HTML"
     },
     "createDialog": {
-      "title": "Create New Invoice",
-      "description": "Fill in the details below to create a new invoice"
+      "title": "Create Invoice",
+      "description": "Create a new invoice for your client.",
+      "cancel": "Cancel",
+      "create": "Create Invoice"
+    },
+    "errors": {
+      "databaseConnection": "Database connection failed",
+      "authentication": "Authentication failed",
+      "userProfile": "User profile not found",
+      "loadInvoices": "Failed to load invoices",
+      "unexpected": "An unexpected error occurred"
+    },
+    "messages": {
+      "generatingPdf": "Generating PDF on server...",
+      "htmlDownloadSuccess": "HTML downloaded successfully",
+      "htmlDownloadError": "Error downloading HTML"
     },
     "table": {
       "title": "Invoice History",
@@ -832,8 +929,8 @@
       "empty": "No invoices yet."
     },
     "preview": {
-      "title": "Invoice Preview - {id}",
-      "description": "Preview your invoice before downloading",
+      "title": "Invoice Preview {{id}}",
+      "description": "Review the invoice details before sending.",
       "brandSubtitle": "Professional Services",
       "badge": "INVOICE",
       "from": "From:",
@@ -1003,6 +1100,7 @@
       "analytics": "Analytics",
       "blog": "Blog",
       "billing": "Billing",
+      "content": "Content",
       "apiTesting": "API Testing"
     },
     "quickActions": {
@@ -1673,10 +1771,7 @@
       "title": "Command Palette",
       "description": "Search for a command to run..."
     },
-    "footer": {
-      "facebook": "Facebook",
-      "instagram": "Instagram"
-    },
+
     "jobList": {
       "sortBy": "Sort by:",
       "sortOptions": {
@@ -1804,6 +1899,7 @@
       "deals": "Deals",
       "user": "User",
       "admin": "Admin",
+      "content": "Content",
       "payment": "Payment"
     },
     "sections": {
@@ -1866,5 +1962,278 @@
       "429": "Too Many Requests (rate limit exceeded)",
       "500": "Internal Server Error"
     }
+  },
+  "footer": {
+    "facebook": "Facebook",
+    "instagram": "Instagram",
+    "company": "Project",
+    "aboutUs": "About Us",
+    "legal": "Legal Notice",
+    "terms": "Terms & Conditions",
+    "privacy": "Privacy Policy",
+    "support": "Support",
+    "apiDocs": "API Docs",
+    "explore": "Explore",
+    "account": "Account",
+    "newsletterInvalidEmailTitle": "Invalid Email",
+    "newsletterInvalidEmailDescription": "Please enter a valid email address.",
+    "newsletterSubscribedTitle": "Subscribed!",
+    "newsletterSubscribedDescription": "You have successfully subscribed to our newsletter.",
+    "newsletterErrorTryAgain": "Something went wrong. Please try again.",
+    "newsletterErrorTryAgainLater": "Please try again later.",
+    "subscribeNewsletter": "Subscribe to our newsletter",
+    "newsletter": "Stay updated with our latest news and offers.",
+    "enterEmail": "Enter your email",
+    "subscribing": "Subscribing...",
+    "subscribe": "Subscribe",
+    "copyrightBrand": "WIRsuchen.",
+    "allRightsReserved": "All rights reserved."
+  },
+  "supervisor": {
+    "panel": {
+      "title": "Supervisor Panel",
+      "description": "Manage users, system configuration, and security."
+    },
+    "tabs": {
+      "overview": "Overview",
+      "users": "Users",
+      "config": "Configuration",
+      "logs": "Logs & Security",
+      "escalation": "Escalation"
+    },
+    "overview": {
+      "title": "System Overview",
+      "description": "High-level system statistics and health status."
+    },
+    "users": {
+      "title": "User Management",
+      "description": "Manage user roles, permissions, and account status.",
+      "searchPlaceholder": "Search users...",
+      "name": "Name",
+      "email": "Email",
+      "role": "Role",
+      "status": "Status",
+      "joined": "Joined",
+      "updateSuccess": "User role updated successfully",
+      "updateFailed": "Failed to update user role",
+      "noUsersFound": "No users found"
+    },
+    "config": {
+      "title": "System Configuration",
+      "description": "Manage domains, API keys, and global settings.",
+      "generalTitle": "General Settings",
+      "generalDesc": "Configure basic system information.",
+      "domain": "Domain",
+      "supportEmail": "Support Email",
+      "apiKeysTitle": "API Keys",
+      "apiKeysDesc": "Manage external service integrations.",
+      "saveSuccess": "Configuration saved successfully"
+    },
+    "stats": {
+      "totalUsers": "Total Users",
+      "companies": "Companies",
+      "activeJobs": "Active Jobs",
+      "totalJobs": "Total Jobs",
+      "revenue": "Revenue",
+      "thisMonth": "this month",
+      "impressions": "Impressions",
+      "clicks": "Clicks"
+    },
+    "logs": {
+      "title": "System Logs",
+      "description": "View system activity logs and security events.",
+      "action": "Action",
+      "user": "User",
+      "timestamp": "Timestamp",
+      "status": "Status"
+    },
+    "escalation": {
+      "title": "Conflict Escalation",
+      "description": "Override approvals and resolve reported content.",
+      "type": "Type",
+      "titleLabel": "Title",
+      "reason": "Reason",
+      "status": "Status",
+      "actions": "Actions",
+      "approve": "Approve",
+      "reject": "Reject"
+    },
+    "moderator": {
+      "panel": {
+        "title": "Moderator Panel",
+        "description": "Manage content approvals and user reports."
+      },
+      "tabs": {
+        "approval": "Content Approval",
+        "reports": "Reports",
+        "overview": "Overview"
+      },
+      "approval": {
+        "title": "Pending Content",
+        "description": "Review and approve pending jobs and blog posts.",
+        "jobs": "Jobs",
+        "posts": "Blog Posts",
+        "itemTitle": "Title",
+        "author": "Author",
+        "date": "Date",
+        "status": "Status",
+        "actions": "Actions",
+        "noItems": "No pending items found."
+      },
+      "reports": {
+        "title": "User Reports",
+        "description": "Review and resolve user reports.",
+        "target": "Target",
+        "reason": "Reason",
+        "reporter": "Reporter",
+        "status": "Status",
+        "actions": "Actions",
+        "noReports": "No active reports.",
+        "resolve": "Resolve",
+        "resolved": "Report resolved."
+      },
+      "approved": "Item approved.",
+      "rejected": "Item rejected."
+    },
+    "lister": {
+      "panel": {
+        "title": "Lister Panel",
+        "description": "Manage your ads and campaigns."
+      },
+      "tabs": {
+        "ads": "My Ads",
+        "campaigns": "Campaigns"
+      },
+      "campaigns": {
+        "title": "Ad Campaigns",
+        "description": "Manage your ad campaigns and budget.",
+        "create": "Create Campaign",
+        "name": "Campaign Name",
+        "status": "Status",
+        "budget": "Budget",
+        "spent": "Spent",
+        "performance": "Performance",
+        "dates": "Dates",
+        "noCampaigns": "No campaigns found."
+      }
+    },
+    "publisher": {
+      "panel": {
+        "title": "Publisher Panel",
+        "description": "Post ads quickly and manage your listings."
+      },
+      "tabs": {
+        "quickPost": "Quick Post",
+        "myListings": "My Listings"
+      },
+      "wizard": {
+        "title": "Create New Ad",
+        "step": "Step",
+        "jobTitle": "Job Title",
+        "jobTitlePlaceholder": "e.g. Senior React Developer",
+        "category": "Category",
+        "categoryPlaceholder": "e.g. Engineering",
+        "description": "Description",
+        "descriptionPlaceholder": "Describe the role...",
+        "success": "Ad submitted successfully!"
+      }
+    },
+    "blogger": {
+      "panel": {
+        "title": "Blogger Panel",
+        "description": "Manage your articles and content."
+      },
+      "tabs": {
+        "articles": "My Articles",
+        "write": "Write Article",
+        "media": "Media Library"
+      },
+      "articles": {
+        "title": "My Articles",
+        "description": "View and manage your blog posts."
+      },
+      "write": {
+        "title": "Write New Article"
+      },
+      "media": {
+        "title": "Media Library",
+        "description": "Upload and manage your images and files."
+      }
+    },
+    "editor": {
+      "panel": {
+        "title": "Editor Panel",
+        "description": "Review and manage content."
+      },
+      "tabs": {
+        "review": "Review Queue",
+        "calendar": "Calendar",
+        "allPosts": "All Posts"
+      },
+      "review": {
+        "title": "Review Queue",
+        "description": "Approve or reject pending articles.",
+        "approved": "Article approved.",
+        "rejected": "Article rejected.",
+        "actionSuccess": "Action {action} successful.",
+        "noPending": "No pending articles."
+      },
+      "calendar": {
+        "title": "Content Calendar",
+        "description": "Schedule and view upcoming posts.",
+        "comingSoon": "Calendar view coming soon."
+      }
+    },
+    "analyst": {
+      "panel": {
+        "title": "Analyst Panel",
+        "description": "View statistics and reports."
+      },
+      "tabs": {
+        "overview": "Overview",
+        "reports": "Reports"
+      },
+      "reports": {
+        "title": "Data Reports",
+        "description": "Download system reports and analytics.",
+        "name": "Report Name",
+        "date": "Date",
+        "type": "Type",
+        "size": "Size",
+        "actions": "Actions",
+        "downloadStarted": "Download started",
+        "downloading": "Downloading {name}..."
+      }
+    }
+  },
+  "blogPost": {
+    "newsletter": {
+      "title": "Subscribe to our Newsletter",
+      "description": "Get the latest insights and trends delivered to your inbox.",
+      "placeholder": "Enter your email",
+      "subscribe": "Subscribe",
+      "subscribing": "Subscribing..."
+    },
+    "tags": "Tags",
+    "navigation": {
+      "previous": "Previous Article",
+      "next": "Next Article"
+    },
+    "shareText": "Check out this article:",
+    "shareSharedTitle": "Shared",
+    "shareSharedDescription": "Thanks for sharing this article.",
+    "linkCopiedTitle": "Link copied",
+    "linkCopiedDescription": "Share it with your friends.",
+    "linkCopiedClipboard": "URL copied to clipboard.",
+    "shareErrorTitle": "Share failed",
+    "shareErrorDescription": "Unable to share right now.",
+    "backToBlog": "Back to Blog",
+    "viewsLabel": "views",
+    "authorRole": "Author",
+    "share": "Share",
+    "shareSectionTitle": "Share this article",
+    "authorBio": "Content Writer specializing in career advice and market insights.",
+    "viewProfile": "View Profile",
+    "relatedArticles": "Related Articles"
   }
 }

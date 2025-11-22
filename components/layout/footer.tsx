@@ -80,8 +80,9 @@ export function Footer() {
     ],
     company: [
       { name: t('footer.aboutUs'), href: "/about" },
-      { name: t('footer.support'), href: "/support" },
-      { name: t('footer.apiDocs'), href: "/api-docs" },
+      { name: t('footer.legal'), href: "/legal" },
+      { name: t('footer.terms'), href: "/terms" },
+      { name: t('footer.privacy'), href: "/privacy" },
     ],
   }
 

@@ -83,7 +83,7 @@ export default function CreateBlogPage() {
         uploadedBy = profile?.id ?? null
       }
 
-      await supabase.from('media_files').insert({
+      await (supabase as any).from('media_files').insert({
         filename: nameSanitized,
         original_filename: file.name,
         file_path: path,
@@ -271,7 +271,9 @@ export default function CreateBlogPage() {
                   <Button variant="outline" type="button" onClick={onPickImage} disabled={uploadingImage}>
                     {uploadingImage ? 'Uploading...' : 'Upload Featured Image'}
                   </Button>
-                  <p className="text-sm text-muted-foreground">PNG, JPG up to ~5MB</p>
+                  <p className="text-sm text-muted-foreground">
+                    <span className="font-medium text-green-600">Info: 1080 x 1080 px ?</span> PNG, JPG up to ~5MB
+                  </p>
                 </div>
               )}
               <input

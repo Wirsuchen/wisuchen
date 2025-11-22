@@ -125,6 +125,7 @@
   "dashboard": {
     "title": "Dashboard",
     "overview": "Bentornato! Ecco cosa sta succedendo con il tuo account.",
+    "profile": "Profilo",
     "myAds": "I miei annunci",
     "myAdsDescription": "Gestisci i tuoi annunci di lavoro e monitora le loro prestazioni",
     "savedDeals": "Offerte salvate",
@@ -765,7 +766,16 @@
     "unsubscribeFailed": "Disiscrizione fallita",
     "unsubscribed": "Disiscritto",
     "unsubscribedDesc": "Il tuo piano è stato cambiato a Gratuito.",
-    "unsubscribeError": "Impossibile disiscriversi"
+    "unsubscribeError": "Impossibile disiscriversi",
+    "security": "Sicurezza",
+    "changePassword": "Cambia password",
+    "newPassword": "Nuova password",
+    "confirmNewPassword": "Conferma nuova password",
+    "updatePassword": "Aggiorna password",
+    "passwordUpdated": "Password aggiornata",
+    "passwordUpdatedDesc": "La tua password è stata aggiornata con successo.",
+    "passwordUpdateFailed": "Impossibile aggiornare la password",
+    "passwordsDoNotMatch": "Le password non corrispondono"
   },
   "invoices": {
     "subtitle": "Crea e gestisci le tue fatture",
@@ -1211,5 +1221,252 @@
       "429": "Troppe richieste (limite di velocità superato)",
       "500": "Errore interno del server"
     }
+  },
+  "supervisor": {
+    "panel": {
+      "title": "Pannello supervisore",
+      "description": "Gestisci utenti, configurazione di sistema e sicurezza."
+    },
+    "tabs": {
+      "overview": "Panoramica",
+      "users": "Utenti",
+      "config": "Configurazione",
+      "logs": "Log e sicurezza",
+      "escalation": "Escalation"
+    },
+    "overview": {
+      "title": "Panoramica del sistema",
+      "description": "Statistiche di sistema di alto livello e stato di salute."
+    },
+    "users": {
+      "title": "Gestione utenti",
+      "description": "Gestisci ruoli utente, permessi e stato dell'account.",
+      "searchPlaceholder": "Cerca utenti...",
+      "name": "Nome",
+      "email": "E-mail",
+      "role": "Ruolo",
+      "status": "Stato",
+      "joined": "Iscritto",
+      "updateSuccess": "Ruolo utente aggiornato con successo",
+      "updateFailed": "Impossibile aggiornare il ruolo utente",
+      "noUsersFound": "Nessun utente trovato"
+    },
+    "config": {
+      "title": "Configurazione di sistema",
+      "description": "Gestisci domini, chiavi API e impostazioni globali.",
+      "generalTitle": "Impostazioni generali",
+      "generalDesc": "Configura le informazioni di base del sistema.",
+      "domain": "Dominio",
+      "supportEmail": "Email di supporto",
+      "apiKeysTitle": "Chiavi API",
+      "apiKeysDesc": "Gestisci integrazioni di servizi esterni.",
+      "saveSuccess": "Configurazione salvata con successo"
+    },
+    "stats": {
+      "totalUsers": "Totale utenti",
+      "companies": "Aziende",
+      "activeJobs": "Lavori attivi",
+      "totalJobs": "Totale lavori",
+      "revenue": "Entrate",
+      "thisMonth": "questo mese",
+      "impressions": "Impressioni",
+      "clicks": "Click"
+    },
+    "logs": {
+      "title": "Log di sistema",
+      "description": "Visualizza i log delle attività di sistema e gli eventi di sicurezza.",
+      "action": "Azione",
+      "user": "Utente",
+      "timestamp": "Timestamp",
+      "status": "Stato"
+    },
+    "escalation": {
+      "title": "Escalation dei conflitti",
+      "description": "Sovrascrivi approvazioni e risolvi contenuti segnalati.",
+      "type": "Tipo",
+      "titleLabel": "Titolo",
+      "reason": "Motivo",
+      "status": "Stato",
+      "actions": "Azioni",
+      "approve": "Approva",
+      "reject": "Rifiuta"
+    },
+    "moderator": {
+      "panel": {
+        "title": "Pannello Moderatore",
+        "description": "Gestisci approvazioni dei contenuti e segnalazioni degli utenti."
+      },
+      "tabs": {
+        "approval": "Approvazione contenuti",
+        "reports": "Segnalazioni",
+        "overview": "Panoramica"
+      },
+      "approval": {
+        "title": "Contenuti in sospeso",
+        "description": "Revisiona e approva offerte di lavoro e post del blog in sospeso.",
+        "jobs": "Lavori",
+        "posts": "Post del blog",
+        "itemTitle": "Titolo",
+        "author": "Autore",
+        "date": "Data",
+        "status": "Stato",
+        "actions": "Azioni",
+        "noItems": "Nessun elemento in sospeso trovato."
+      },
+      "reports": {
+        "title": "Segnalazioni utenti",
+        "description": "Revisiona e risolvi le segnalazioni degli utenti.",
+        "target": "Obiettivo",
+        "reason": "Motivo",
+        "reporter": "Segnalatore",
+        "status": "Stato",
+        "actions": "Azioni",
+        "noReports": "Nessuna segnalazione attiva.",
+        "resolve": "Risolvi",
+        "resolved": "Segnalazione risolta."
+      },
+      "approved": "Elemento approvato.",
+      "rejected": "Elemento rifiutato."
+    },
+    "lister": {
+      "panel": {
+        "title": "Pannello Lister",
+        "description": "Gestisci i tuoi annunci e le tue campagne."
+      },
+      "tabs": {
+        "ads": "I miei annunci",
+        "campaigns": "Campagne"
+      },
+      "campaigns": {
+        "title": "Campagne pubblicitarie",
+        "description": "Gestisci le tue campagne pubblicitarie e il budget.",
+        "create": "Crea campagna",
+        "name": "Nome campagna",
+        "status": "Stato",
+        "budget": "Budget",
+        "spent": "Speso",
+        "performance": "Prestazioni",
+        "dates": "Date",
+        "noCampaigns": "Nessuna campagna trovata."
+      }
+    },
+    "publisher": {
+      "panel": {
+        "title": "Pannello Editore",
+        "description": "Pubblica annunci rapidamente e gestisci i tuoi elenchi."
+      },
+      "tabs": {
+        "quickPost": "Pubblicazione rapida",
+        "myListings": "I miei elenchi"
+      },
+      "wizard": {
+        "title": "Crea nuovo annuncio",
+        "step": "Passo",
+        "jobTitle": "Titolo del lavoro",
+        "jobTitlePlaceholder": "es. Sviluppatore React Senior",
+        "category": "Categoria",
+        "categoryPlaceholder": "es. Ingegneria",
+        "description": "Descrizione",
+        "descriptionPlaceholder": "Descrivi il ruolo...",
+        "success": "Annuncio inviato con successo!"
+      }
+    },
+    "blogger": {
+      "panel": {
+        "title": "Pannello Blogger",
+        "description": "Gestisci i tuoi articoli e contenuti."
+      },
+      "tabs": {
+        "articles": "I miei articoli",
+        "write": "Scrivi articolo",
+        "media": "Libreria multimediale"
+      },
+      "articles": {
+        "title": "I miei articoli",
+        "description": "Visualizza e gestisci i tuoi post del blog."
+      },
+      "write": {
+        "title": "Scrivi nuovo articolo"
+      },
+      "media": {
+        "title": "Libreria multimediale",
+        "description": "Carica e gestisci le tue immagini e file."
+      }
+    },
+    "editor": {
+      "panel": {
+        "title": "Pannello Editor",
+        "description": "Revisiona e gestisci i contenuti."
+      },
+      "tabs": {
+        "review": "Coda di revisione",
+        "calendar": "Calendario",
+        "allPosts": "Tutti i post"
+      },
+      "review": {
+        "title": "Coda di revisione",
+        "description": "Approva o rifiuta gli articoli in sospeso.",
+        "approved": "Articolo approvato.",
+        "rejected": "Articolo rifiutato.",
+        "actionSuccess": "Azione {action} riuscita.",
+        "noPending": "Nessun articolo in sospeso."
+      },
+      "calendar": {
+        "title": "Calendario dei contenuti",
+        "description": "Pianifica e visualizza i post in arrivo.",
+        "comingSoon": "Vista calendario in arrivo."
+      }
+    },
+    "analyst": {
+      "panel": {
+        "title": "Pannello Analista",
+        "description": "Visualizza statistiche e report."
+      },
+      "tabs": {
+        "overview": "Panoramica",
+        "reports": "Report"
+      },
+      "reports": {
+        "title": "Report dati",
+        "description": "Scarica report di sistema e analisi.",
+        "name": "Nome report",
+        "date": "Data",
+        "type": "Tipo",
+        "size": "Dimensione",
+        "actions": "Azioni",
+        "downloadStarted": "Download avviato",
+        "downloading": "Download di {name}..."
+      }
+    }
+  },
+  "blogPost": {
+    "newsletter": {
+      "title": "Iscriviti alla nostra newsletter",
+      "description": "Ricevi le ultime informazioni e tendenze direttamente nella tua casella di posta.",
+      "placeholder": "Inserisci la tua email",
+      "subscribe": "Iscriviti",
+      "subscribing": "Iscrizione..."
+    },
+    "tags": "Tag",
+    "navigation": {
+      "previous": "Articolo precedente",
+      "next": "Articolo successivo"
+    },
+    "shareText": "Dai un'occhiata a questo articolo:",
+    "shareSharedTitle": "Condiviso",
+    "shareSharedDescription": "Grazie per aver condiviso questo articolo.",
+    "linkCopiedTitle": "Link copiato",
+    "linkCopiedDescription": "Condividilo con i tuoi amici.",
+    "linkCopiedClipboard": "URL copiato negli appunti.",
+    "shareErrorTitle": "Condivisione fallita",
+    "shareErrorDescription": "Impossibile condividere al momento.",
+    "backToBlog": "Torna al blog",
+    "viewsLabel": "visualizzazioni",
+    "authorRole": "Autore",
+    "share": "Condividi",
+    "shareSectionTitle": "Condividi questo articolo",
+    "authorBio": "Content Writer specializzato in consigli di carriera e approfondimenti di mercato.",
+    "viewProfile": "Visualizza profilo",
+    "relatedArticles": "Articoli correlati"
   }
 }

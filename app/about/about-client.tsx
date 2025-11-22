@@ -6,7 +6,11 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { useTranslation } from "@/contexts/i18n-context"
 
-export function AboutContent() {
+interface AboutContentProps {
+  cmsContent?: string | null
+}
+
+export function AboutContent({ cmsContent }: AboutContentProps) {
   const { t } = useTranslation()
   const stats = [
     { label: t('about.stats.activeUsers'), value: "50K+", icon: Users },
@@ -80,9 +84,13 @@ export function AboutContent() {
         <div className="container mx-auto max-w-4xl">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold mb-6">{t('about.mission.title')}</h2>
-            <p className="text-lg text-muted-foreground">
-              {t('about.mission.description')}
-            </p>
+            <div className="text-lg text-muted-foreground">
+              {cmsContent ? (
+                <div dangerouslySetInnerHTML={{ __html: cmsContent }} className="prose prose-lg dark:prose-invert mx-auto" />
+              ) : (
+                t('about.mission.description')
+              )}
+            </div>
           </div>
 
           <div className="grid md:grid-cols-2 gap-12 items-center">

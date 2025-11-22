@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
           application_url: applicationUrl || null,
           source: source || 'external',
           external_id: id,
-          created_by: profile.id, // Set the user as creator
+          // created_by: profile.id, // REMOVED: Do not assign user as creator for external jobs
           featured: false,
           urgent: false,
           views_count: 0,

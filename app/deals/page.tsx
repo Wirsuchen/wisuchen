@@ -16,6 +16,8 @@ import { formatEuro, formatEuroText } from "@/lib/utils"
 import { fetchWithCache } from "@/lib/utils/client-cache"
 import { toast } from "@/hooks/use-toast"
 import { useTranslation } from "@/contexts/i18n-context"
+import { useAuth } from "@/contexts/auth-context"
+import { useRouter } from "next/navigation"
 
 export default function DealsPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -35,6 +37,8 @@ export default function DealsPage() {
     pages: 1,
   })
   const { t, tr } = useTranslation()
+  const { user } = useAuth()
+  const router = useRouter()
 
   const handleCategoryChange = (category: string, checked: boolean) => {
     if (checked) {
@@ -304,13 +308,19 @@ export default function DealsPage() {
                           <Badge className="bg-accent text-accent-foreground">-{deal.discount}%</Badge>
                         </div>
                         <div className="absolute top-2 right-2">
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             className="bg-background/80 hover:bg-background"
                             onClick={async (e) => {
                               e.preventDefault()
                               e.stopPropagation()
+
+                              if (!user) {
+                                router.push('/login')
+                                return
+                              }
+
                               try {
                                 const response = await fetch('/api/saved/deals', {
                                   method: 'POST',
@@ -329,23 +339,23 @@ export default function DealsPage() {
                                 })
                                 const data = await response.json()
                                 if (data.success) {
-                                  toast({ 
-                                    title: t('deals.detail.savedTitle'), 
-                                    description: t('deals.detail.savedDescription') 
+                                  toast({
+                                    title: t('deals.detail.savedTitle'),
+                                    description: t('deals.detail.savedDescription')
                                   })
                                 } else {
-                                  toast({ 
-                                    title: t('deals.detail.saveErrorTitle'), 
-                                    description: data.error || t('deals.detail.saveErrorDescription'), 
-                                    variant: 'destructive' 
+                                  toast({
+                                    title: t('deals.detail.saveErrorTitle'),
+                                    description: data.error || t('deals.detail.saveErrorDescription'),
+                                    variant: 'destructive'
                                   })
                                 }
                               } catch (error) {
                                 console.error('Error saving deal:', error)
-                                toast({ 
-                                  title: t('notifications.error'), 
-                                  description: t('deals.detail.saveErrorDescription'), 
-                                  variant: 'destructive' 
+                                toast({
+                                  title: t('notifications.error'),
+                                  description: t('deals.detail.saveErrorDescription'),
+                                  variant: 'destructive'
                                 })
                               }
                             }}
@@ -423,7 +433,57 @@ export default function DealsPage() {
                                 <span className="text-sm text-muted-foreground ml-1">{tr('deals.reviewsCount', { count: deal.reviews })}</span>
                               </div>
                             </div>
-                            <Button variant="ghost" size="sm">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={async (e) => {
+                                e.preventDefault()
+                                e.stopPropagation()
+
+                                if (!user) {
+                                  router.push('/login')
+                                  return
+                                }
+
+                                try {
+                                  const response = await fetch('/api/saved/deals', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                      id: deal.id,
+                                      title: deal.title,
+                                      description: (deal as any).description || '',
+                                      currentPrice: deal.currentPrice,
+                                      originalPrice: deal.originalPrice,
+                                      image: deal.image,
+                                      url: (deal as any).url,
+                                      store: deal.brand,
+                                      category: (deal as any).category,
+                                    }),
+                                  })
+                                  const data = await response.json()
+                                  if (data.success) {
+                                    toast({
+                                      title: t('deals.detail.savedTitle'),
+                                      description: t('deals.detail.savedDescription')
+                                    })
+                                  } else {
+                                    toast({
+                                      title: t('deals.detail.saveErrorTitle'),
+                                      description: data.error || t('deals.detail.saveErrorDescription'),
+                                      variant: 'destructive'
+                                    })
+                                  }
+                                } catch (error) {
+                                  console.error('Error saving deal:', error)
+                                  toast({
+                                    title: t('notifications.error'),
+                                    description: t('deals.detail.saveErrorDescription'),
+                                    variant: 'destructive'
+                                  })
+                                }
+                              }}
+                            >
                               <Heart className="h-4 w-4" />
                             </Button>
                           </div>
@@ -460,10 +520,10 @@ export default function DealsPage() {
 
             {/* Pagination (hidden when only one page) */}
             {pagination.pages > 1 && (
-            <div className="flex items-center justify-center space-x-2 mt-8">
-              <Button variant="outline" disabled className="bg-transparent">
-                {t('common.previous')}
-              </Button>
+              <div className="flex items-center justify-center space-x-2 mt-8">
+                <Button variant="outline" disabled className="bg-transparent">
+                  {t('common.previous')}
+                </Button>
                 {Array.from({ length: pagination.pages }, (_, index) => {
                   const pageNumber = index + 1
                   const isActive = pageNumber === pagination.page
@@ -475,13 +535,13 @@ export default function DealsPage() {
                       disabled
                     >
                       {pageNumber}
-              </Button>
+                    </Button>
                   )
                 })}
                 <Button variant="outline" disabled className="bg-transparent">
-                {t('common.next')}
-              </Button>
-            </div>
+                  {t('common.next')}
+                </Button>
+              </div>
             )}
           </div>
         </div>

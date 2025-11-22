@@ -119,7 +119,7 @@ export function RegisterForm() {
         // Profile is automatically created by database trigger
         // Wait for trigger to complete, then update profile with additional information
         await new Promise(resolve => setTimeout(resolve, 1000))
-        
+
         const { error: profileError } = await supabase
           .from('profiles')
           .update({
@@ -134,7 +134,7 @@ export function RegisterForm() {
         }
 
         setMessage(t('auth.registrationSuccess', 'Registration successful! Redirecting to dashboard...'))
-        
+
         // Redirect to dashboard immediately
         setTimeout(() => {
           router.push('/dashboard')
@@ -205,7 +205,7 @@ export function RegisterForm() {
             <span className="bg-background px-2 text-muted-foreground">{t('auth.orContinueWith')}</span>
           </div>
         </div>
-        
+
         <form onSubmit={handleRegister} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="fullName">{t('auth.fullName')} *</Label>
@@ -254,12 +254,10 @@ export function RegisterForm() {
               <SelectContent>
                 <SelectItem value="job_seeker">{t('auth.jobSeeker', 'Job Seeker')}</SelectItem>
                 <SelectItem value="employer">{t('auth.employer', 'Employer')}</SelectItem>
-                <SelectItem value="publisher">{t('auth.publisher', 'Publisher')}</SelectItem>
-                <SelectItem value="blogger">{t('auth.blogger', 'Blogger')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="password">{t('auth.password')} *</Label>
             <div className="relative">
@@ -353,7 +351,7 @@ export function RegisterForm() {
           </Button>
         </form>
       </CardContent>
-      
+
       <CardFooter>
         <div className="text-sm text-center text-muted-foreground w-full">
           {t('auth.hasAccount')}{' '}
