@@ -49,7 +49,17 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   }
 
   const body = await req.json()
-  const { items, tax_rate, ...updateData } = body
+  const { items, tax_rate, recipient_details, ...otherData } = body
+
+  // Map recipient_details to billing fields
+  const updateData = {
+    ...otherData,
+    ...(recipient_details ? {
+      billing_name: recipient_details.name,
+      billing_email: recipient_details.email,
+      billing_address: recipient_details.address
+    } : {})
+  }
 
   // Recalculate totals if items or tax_rate changed
   let subtotal = updateData.subtotal
@@ -58,14 +68,14 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
   if (items) {
     subtotal = items.reduce((acc: number, item: any) => acc + (item.quantity * item.unit_price), 0)
-    const rate = tax_rate !== undefined ? tax_rate : updateData.tax_rate
+    const rate = tax_rate !== undefined ? tax_rate : (updateData.tax_rate || 0)
     tax_amount = subtotal * (rate / 100)
     total_amount = subtotal + tax_amount
   } else if (tax_rate !== undefined) {
     // Only tax rate changed
     const rate = tax_rate
-    tax_amount = subtotal * (rate / 100)
-    total_amount = subtotal + tax_amount
+    tax_amount = (subtotal || 0) * (rate / 100)
+    total_amount = (subtotal || 0) + tax_amount
   }
 
   const { error: updateError } = await supabase

@@ -10,7 +10,12 @@ export function InvoicePrintView({ invoice }: InvoicePrintViewProps) {
 
     if (!invoice) return null
 
-    const sender = invoice.sender_details || {}
+    const sender = invoice.sender_details || {
+        name: "Max Muster GmbH",
+        address: "Industriestr. 11a, 80331 München",
+        email: "contact@maxmuster.com",
+        vat_id: "DE 123 456 789"
+    }
     const recipient = invoice.recipient_details || {}
     const payment = invoice.payment_details || {}
     const items = invoice.items || invoice.invoice_items || []
@@ -26,7 +31,7 @@ export function InvoicePrintView({ invoice }: InvoicePrintViewProps) {
             {/* Header */}
             <div className="flex justify-between items-start mb-12">
                 <div>
-                    <h1 className="text-4xl font-bold text-red-600 mb-2">WIRsuchen</h1>
+                    <h1 className="text-4xl font-bold text-red-600 mb-2">Max Muster GmbH</h1>
                     <p className="text-sm text-gray-600">{t("invoices.print.professionalServices")}</p>
                 </div>
                 <div className="text-right">

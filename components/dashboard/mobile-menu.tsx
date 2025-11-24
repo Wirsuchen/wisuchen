@@ -38,7 +38,7 @@ export function DashboardMobileMenu() {
   const pathname = usePathname()
   const { user, logout } = useAuth()
   const role = (user as any)?.role
-  const isAdmin = !!(user && ((['admin','supervisor','moderator'] as any).includes(role) || user.email === 'admin@wirsuchen.com'))
+  const isAdmin = !!(user && ((['admin', 'supervisor', 'moderator'] as any).includes(role) || user.email === 'admin@wirsuchen.com'))
   const { t } = useTranslation()
 
   const navigation = [
@@ -83,7 +83,7 @@ export function DashboardMobileMenu() {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="outline" size="sm" className="w-full sm:w-auto">
+        <Button variant="outline" size="sm" className="w-full sm:w-auto print:hidden">
           <Menu className="h-4 w-4 mr-2" />
           {t("dashboard.nav.menuButton")}
         </Button>
@@ -92,7 +92,7 @@ export function DashboardMobileMenu() {
         <SheetHeader>
           <SheetTitle>{t("dashboard.title")}</SheetTitle>
         </SheetHeader>
-        
+
         {/* User Info */}
         {user && (
           <div className="flex items-center space-x-3 py-4 border-b">

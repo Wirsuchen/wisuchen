@@ -103,7 +103,7 @@ export function BlogPost({ post }: BlogPostProps) {
 
   const handleNewsletterSubscribe = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!newsletterEmail || !newsletterEmail.includes('@')) {
       toast({
         title: t('blog.invalidEmail', 'Invalid email'),
@@ -114,7 +114,7 @@ export function BlogPost({ post }: BlogPostProps) {
     }
 
     setIsSubscribing(true)
-    
+
     try {
       const response = await fetch('/api/newsletter/subscribe', {
         method: 'POST',
@@ -248,7 +248,7 @@ export function BlogPost({ post }: BlogPostProps) {
         <img
           src={post.image || "/placeholder.svg?height=400&width=800&query=blog post hero"}
           alt={post.title}
-          className="w-full h-64 md:h-96 object-cover rounded-lg"
+          className="w-full h-64 md:h-96 object-contain bg-white rounded-lg"
         />
       </div>
 
@@ -333,7 +333,7 @@ export function BlogPost({ post }: BlogPostProps) {
                       <img
                         src={relatedPost.image || "/placeholder.svg?height=80&width=120&query=blog post"}
                         alt={relatedPost.title}
-                        className="w-full h-20 object-cover rounded mb-2"
+                        className="w-full h-20 object-contain bg-white rounded mb-2"
                       />
                       <Link href={`/blog/${relatedPost.id}`}>
                         <h5 className="font-medium text-sm hover:text-accent transition-colors line-clamp-2">
@@ -360,9 +360,9 @@ export function BlogPost({ post }: BlogPostProps) {
                   {t('blogPost.newsletter.description')}
                 </p>
                 <form onSubmit={handleNewsletterSubscribe} className="space-y-2">
-                  <Input 
-                    type="email" 
-                    placeholder={t('blogPost.newsletter.placeholder')} 
+                  <Input
+                    type="email"
+                    placeholder={t('blogPost.newsletter.placeholder')}
                     className="text-sm"
                     value={newsletterEmail}
                     onChange={(e) => setNewsletterEmail(e.target.value)}

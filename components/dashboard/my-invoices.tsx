@@ -160,32 +160,26 @@ export function MyInvoices() {
     setIsCreating(true)
   }
 
+  const [invoiceToPrint, setInvoiceToPrint] = useState<any>(null)
+
+  useEffect(() => {
+    if (invoiceToPrint) {
+      // Small delay to ensure render is complete before printing
+      const timer = setTimeout(() => {
+        window.print()
+        // Reset after print dialog closes (or immediately, but user sees the dialog)
+        // We keep it to avoid flickering if they cancel and try again quickly
+        // But better to clear it after some time or on next action
+        setInvoiceToPrint(null)
+      }, 500)
+      return () => clearTimeout(timer)
+    }
+  }, [invoiceToPrint])
+
   const handleDownloadPDF = async (invoiceId: string) => {
-    setDownloading(invoiceId)
-    toast.info(t("invoices.messages.generatingPdf"))
-
-    try {
-      const response = await fetch(`/api/admin/invoices/${invoiceId}/download?lang=${locale}`)
-
-      if (!response.ok) {
-        throw new Error('Failed to download PDF')
-      }
-
-      const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `invoice-${invoiceId}.pdf`
-      document.body.appendChild(a)
-      a.click()
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
-      toast.success(t("invoices.messages.downloadSuccess"))
-    } catch (error) {
-      console.error('Download error:', error)
-      toast.error(t("invoices.messages.downloadError"))
-    } finally {
-      setDownloading(null)
+    const invoice = invoices.find(inv => inv.id === invoiceId)
+    if (invoice) {
+      setInvoiceToPrint(invoice)
     }
   }
 
@@ -246,206 +240,241 @@ export function MyInvoices() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">{t("dashboard.myInvoices")}</h1>
-          <p className="text-muted-foreground">{t("invoices.subtitle")}</p>
+    <>
+      <div className="space-y-6 print:hidden">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">{t("dashboard.myInvoices")}</h1>
+            <p className="text-muted-foreground">{t("invoices.subtitle")}</p>
+          </div>
+          {canCreateInvoices ? (
+            <Button onClick={() => setIsCreating(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              {t("invoices.createInvoiceButton")}
+            </Button>
+          ) : (
+            <Badge variant="outline" className="bg-muted text-muted-foreground">
+              {t("invoices.adminOnlyNotice")}
+            </Badge>
+          )}
         </div>
-        {canCreateInvoices ? (
-          <Button onClick={() => setIsCreating(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            {t("invoices.createInvoiceButton")}
-          </Button>
-        ) : (
-          <Badge variant="outline" className="bg-muted text-muted-foreground">
-            {t("invoices.adminOnlyNotice")}
-          </Badge>
+
+        {error && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                {t("invoices.stats.totalRevenue")}
+              </CardTitle>
+              <Euro className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{totalRevenue.toFixed(2)} €</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                {t("invoices.stats.pending")}
+              </CardTitle>
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{pendingInvoices}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                {t("invoices.stats.overdue")}
+              </CardTitle>
+              <AlertCircle className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{overdueInvoices}</div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("invoices.table.title")}</CardTitle>
+            <CardDescription>{t("invoices.table.description")}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="flex justify-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin" />
+              </div>
+            ) : invoices.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                {t("invoices.table.empty")}
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t("invoices.table.headers.invoiceId")}</TableHead>
+                    <TableHead>{t("invoices.table.headers.client")}</TableHead>
+                    <TableHead>{t("invoices.table.headers.amount")}</TableHead>
+                    <TableHead>{t("invoices.table.headers.status")}</TableHead>
+                    <TableHead>{t("invoices.table.headers.created")}</TableHead>
+                    <TableHead className="text-right">{t("invoices.table.headers.actions")}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {invoices.map((invoice) => (
+                    <TableRow key={invoice.id}>
+                      <TableCell className="font-medium">{invoice.invoice_number}</TableCell>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium">{invoice.billing_name || invoice.profiles?.full_name || 'Unknown'}</div>
+                          <div className="text-sm text-muted-foreground">{invoice.billing_email || invoice.profiles?.email}</div>
+                        </div>
+                      </TableCell>
+                      <TableCell>{Number(invoice.total_amount).toFixed(2)} €</TableCell>
+                      <TableCell>
+                        <Badge variant={
+                          invoice.status === 'paid' ? 'default' :
+                            invoice.status === 'overdue' ? 'destructive' :
+                              invoice.status === 'sent' ? 'secondary' : 'outline'
+                        }>
+                          {formatStatus(invoice.status)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{new Date(invoice.created_at).toLocaleDateString()}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              setSelectedInvoice(invoice)
+                              setIsPreviewDialogOpen(true)
+                            }}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDownloadPDF(invoice.id)}
+                            disabled={downloading === invoice.id}
+                          >
+                            {downloading === invoice.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Download className="h-4 w-4" />
+                            )}
+                          </Button>
+                          {canCreateInvoices && (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setEditingInvoice(invoice)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleDeleteInvoice(invoice.id)}
+                              >
+                                <Trash2 className="h-4 w-4 text-red-500" />
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
+
+        <Dialog open={isPreviewDialogOpen} onOpenChange={setIsPreviewDialogOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>{tr("invoices.preview.title", { id: selectedInvoice?.invoice_number })}</DialogTitle>
+              <DialogDescription>
+                {t("invoices.preview.description")}
+              </DialogDescription>
+            </DialogHeader>
+            {selectedInvoice && (
+              <div className="mt-4">
+                <CustomInvoiceTemplate
+                  invoice={{
+                    id: selectedInvoice.id,
+                    invoice_number: selectedInvoice.invoice_number,
+                    billing_name: selectedInvoice.billing_name || selectedInvoice.profiles?.full_name || 'Unknown',
+                    billing_address: selectedInvoice.billing_address || '',
+                    billing_email: selectedInvoice.billing_email || selectedInvoice.profiles?.email || '',
+                    issued_at: selectedInvoice.created_at,
+                    due_date: selectedInvoice.due_date,
+                    subtotal: Number(selectedInvoice.subtotal || 0),
+                    tax_rate: Number(selectedInvoice.tax_rate || 0),
+                    tax_amount: Number(selectedInvoice.tax_amount || 0),
+                    total_amount: Number(selectedInvoice.total_amount || 0),
+                    items: selectedInvoice.invoice_items?.map((item: any) => ({
+                      description: item.description,
+                      quantity: item.quantity,
+                      unit_price: item.unit_price,
+                      total_price: item.quantity * item.unit_price
+                    })) || [],
+                    sender_details: selectedInvoice.sender_details
+                  }}
+                />
+                <div className="flex justify-end gap-4 mt-6">
+                  <Button variant="outline" onClick={() => setIsPreviewDialogOpen(false)}>
+                    {t("invoices.form.cancel")}
+                  </Button>
+                  <Button onClick={() => handleDownloadPDF(selectedInvoice.id)}>
+                    <Download className="mr-2 h-4 w-4" />
+                    {t("invoices.preview.downloadPdf")}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <div className="hidden print:block">
+        {invoiceToPrint && (
+          <CustomInvoiceTemplate
+            invoice={{
+              id: invoiceToPrint.id,
+              invoice_number: invoiceToPrint.invoice_number,
+              billing_name: invoiceToPrint.billing_name || invoiceToPrint.profiles?.full_name || 'Unknown',
+              billing_address: invoiceToPrint.billing_address || '',
+              billing_email: invoiceToPrint.billing_email || invoiceToPrint.profiles?.email || '',
+              issued_at: invoiceToPrint.created_at,
+              due_date: invoiceToPrint.due_date,
+              subtotal: Number(invoiceToPrint.subtotal || 0),
+              tax_rate: Number(invoiceToPrint.tax_rate || 0),
+              tax_amount: Number(invoiceToPrint.tax_amount || 0),
+              total_amount: Number(invoiceToPrint.total_amount || 0),
+              items: invoiceToPrint.invoice_items?.map((item: any) => ({
+                description: item.description,
+                quantity: item.quantity,
+                unit_price: item.unit_price,
+                total_price: item.quantity * item.unit_price
+              })) || [],
+              sender_details: invoiceToPrint.sender_details
+            }}
+          />
         )}
       </div>
-
-      {error && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              {t("invoices.stats.totalRevenue")}
-            </CardTitle>
-            <Euro className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalRevenue.toFixed(2)} €</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              {t("invoices.stats.pending")}
-            </CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{pendingInvoices}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              {t("invoices.stats.overdue")}
-            </CardTitle>
-            <AlertCircle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{overdueInvoices}</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("invoices.table.title")}</CardTitle>
-          <CardDescription>{t("invoices.table.description")}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="flex justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin" />
-            </div>
-          ) : invoices.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              {t("invoices.table.empty")}
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t("invoices.table.headers.invoiceId")}</TableHead>
-                  <TableHead>{t("invoices.table.headers.client")}</TableHead>
-                  <TableHead>{t("invoices.table.headers.amount")}</TableHead>
-                  <TableHead>{t("invoices.table.headers.status")}</TableHead>
-                  <TableHead>{t("invoices.table.headers.created")}</TableHead>
-                  <TableHead className="text-right">{t("invoices.table.headers.actions")}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {invoices.map((invoice) => (
-                  <TableRow key={invoice.id}>
-                    <TableCell className="font-medium">{invoice.invoice_number}</TableCell>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">{invoice.billing_name || invoice.profiles?.full_name || 'Unknown'}</div>
-                        <div className="text-sm text-muted-foreground">{invoice.billing_email || invoice.profiles?.email}</div>
-                      </div>
-                    </TableCell>
-                    <TableCell>{Number(invoice.total_amount).toFixed(2)} €</TableCell>
-                    <TableCell>
-                      <Badge variant={
-                        invoice.status === 'paid' ? 'default' :
-                          invoice.status === 'overdue' ? 'destructive' :
-                            invoice.status === 'sent' ? 'secondary' : 'outline'
-                      }>
-                        {formatStatus(invoice.status)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{new Date(invoice.created_at).toLocaleDateString()}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => {
-                            setSelectedInvoice(invoice)
-                            setIsPreviewDialogOpen(true)
-                          }}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDownloadPDF(invoice.id)}
-                          disabled={downloading === invoice.id}
-                        >
-                          {downloading === invoice.id ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Download className="h-4 w-4" />
-                          )}
-                        </Button>
-                        {canCreateInvoices && (
-                          <>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => setEditingInvoice(invoice)}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleDeleteInvoice(invoice.id)}
-                            >
-                              <Trash2 className="h-4 w-4 text-red-500" />
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
-
-      <Dialog open={isPreviewDialogOpen} onOpenChange={setIsPreviewDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{tr("invoices.preview.title", { id: selectedInvoice?.invoice_number })}</DialogTitle>
-            <DialogDescription>
-              {t("invoices.preview.description")}
-            </DialogDescription>
-          </DialogHeader>
-          {selectedInvoice && (
-            <div className="mt-4">
-              <CustomInvoiceTemplate
-                data={{
-                  invoiceNumber: selectedInvoice.invoice_number,
-                  date: new Date(selectedInvoice.created_at).toLocaleDateString(),
-                  dueDate: new Date(selectedInvoice.due_date).toLocaleDateString(),
-                  clientName: selectedInvoice.billing_name || selectedInvoice.profiles?.full_name,
-                  clientEmail: selectedInvoice.billing_email || selectedInvoice.profiles?.email,
-                  clientAddress: selectedInvoice.billing_address,
-                  items: selectedInvoice.invoice_items?.map((item: any) => ({
-                    description: item.description,
-                    quantity: item.quantity,
-                    price: item.unit_price
-                  })) || [],
-                  vatRate: selectedInvoice.tax_rate,
-                  status: selectedInvoice.status
-                }}
-              />
-              <div className="flex justify-end gap-4 mt-6">
-                <Button variant="outline" onClick={() => setIsPreviewDialogOpen(false)}>
-                  {t("invoices.form.cancel")}
-                </Button>
-                <Button onClick={() => handleDownloadPDF(selectedInvoice.id)}>
-                  <Download className="mr-2 h-4 w-4" />
-                  {t("invoices.preview.downloadPdf")}
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-    </div>
+    </>
   )
 }
+

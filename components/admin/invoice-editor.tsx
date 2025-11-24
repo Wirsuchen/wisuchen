@@ -14,7 +14,7 @@ import { Slider } from "@/components/ui/slider"
 import { Trash2, Plus, Save, Printer } from "lucide-react"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
-import { InvoicePrintView } from "./invoice-print-view"
+import { CustomInvoiceTemplate } from "./custom-invoice-template"
 import { createClient } from "@/lib/supabase/client"
 import { Check, ChevronsUpDown } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -98,7 +98,11 @@ export function InvoiceEditor({ invoice, mode, onSuccess, onCancel }: InvoiceEdi
             status: invoice.status,
             tax_rate: invoice.tax_rate,
             notes: invoice.notes,
-            sender_details: invoice.sender_details || { name: "", address: "", email: "" },
+            sender_details: invoice.sender_details || {
+                name: "Max Muster GmbH",
+                address: "Industriestr. 11a, 80331 München",
+                email: "contact@maxmuster.com"
+            },
             recipient_details: invoice.recipient_details || { name: "", address: "", email: "" },
             payment_details: invoice.payment_details || {},
             items: invoice.invoice_items?.map((item: any) => ({
@@ -110,8 +114,16 @@ export function InvoiceEditor({ invoice, mode, onSuccess, onCancel }: InvoiceEdi
             status: "draft",
             tax_rate: 0,
             items: [{ description: "", quantity: 1, unit_price: 0 }],
-            sender_details: { name: "", address: "", email: "" },
-            recipient_details: { name: "", address: "", email: "" },
+            sender_details: {
+                name: "Max Muster GmbH",
+                address: "Industriestr. 11a, 80331 München",
+                email: "contact@maxmuster.com"
+            },
+            recipient_details: {
+                name: "Unser Kunde GmbH",
+                address: "Herr Florian Kundenberger\nGewerbestr. 11\nD-10111 Berlin",
+                email: "florian.kundenberger@example.com"
+            },
             payment_details: {},
         }
     })
@@ -438,15 +450,28 @@ export function InvoiceEditor({ invoice, mode, onSuccess, onCancel }: InvoiceEdi
             </div>
 
             <div className="hidden print:block">
-                <InvoicePrintView invoice={{
-                    ...form.getValues(),
-                    invoice_number: invoice?.invoice_number || "DRAFT",
-                    issued_at: invoice?.issued_at || new Date().toISOString(),
-                    due_date: invoice?.due_date || new Date().toISOString(),
-                    subtotal,
-                    tax_amount: taxAmount,
-                    total_amount: total,
-                }} />
+                <div className="hidden print:block">
+                    <CustomInvoiceTemplate invoice={{
+                        id: invoice?.id || "new",
+                        invoice_number: invoice?.invoice_number || "DRAFT",
+                        billing_name: form.watch("recipient_details.name"),
+                        billing_address: form.watch("recipient_details.address") || "",
+                        billing_email: form.watch("recipient_details.email"),
+                        issued_at: invoice?.created_at || new Date().toISOString(),
+                        due_date: invoice?.due_date || new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+                        subtotal,
+                        tax_rate: form.watch("tax_rate"),
+                        tax_amount: taxAmount,
+                        total_amount: total,
+                        items: form.watch("items").map(item => ({
+                            description: item.description,
+                            quantity: item.quantity,
+                            unit_price: item.unit_price,
+                            total_price: item.quantity * item.unit_price
+                        })),
+                        sender_details: form.watch("sender_details")
+                    }} />
+                </div>
             </div>
         </>
     )

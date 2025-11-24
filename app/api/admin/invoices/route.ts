@@ -11,7 +11,7 @@ export async function GET(req: Request) {
   const { data: profile } = await supabase
     .from('profiles')
     .select('role')
-    .eq('id', session.user.id)
+    .eq('user_id', session.user.id)
     .single()
 
   if (!profile || !['admin', 'supervisor'].includes(profile.role)) {
@@ -44,7 +44,7 @@ export async function POST(req: Request) {
   const { data: profile } = await supabase
     .from('profiles')
     .select('role')
-    .eq('id', session.user.id)
+    .eq('user_id', session.user.id)
     .single()
 
   if (!profile || !['admin', 'supervisor'].includes(profile.role)) {
@@ -90,17 +90,19 @@ export async function POST(req: Request) {
   const { data: invoice, error: invoiceError } = await supabase
     .from('invoices')
     .insert({
-      created_by: session.user.id, // Use session user as creator
+      user_id: user_id, // Link to the selected user
       invoice_number,
       status: 'draft',
-      // issued_at is not in schema, using created_at (auto)
-      amount: total_amount, // Map total_amount to amount
+      subtotal,
+      total_amount,
       tax_rate,
       tax_amount,
-      client_name: recipient_details?.name || 'Unknown', // Map billing_name to client_name
-      client_email: recipient_details?.email, // Map billing_email to client_email
-      client_address: recipient_details?.address, // Map billing_address to client_address
-      description: `Invoice ${invoice_number}`,
+      billing_name: recipient_details?.name || 'Unknown',
+      billing_email: recipient_details?.email,
+      billing_address: recipient_details?.address,
+      billing_vat_number: recipient_details?.vat_id,
+      issued_at: new Date().toISOString(),
+      due_date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(), // Default 14 days
       currency: 'EUR', // Default currency
     })
     .select()

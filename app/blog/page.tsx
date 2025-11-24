@@ -28,39 +28,39 @@ export default function BlogPage() {
 
   useEffect(() => {
     const supabase = createClient()
-    ;(async () => {
-      setLoading(true)
-      const { data } = await supabase
-        .from('blog_posts')
-        .select('id, title, slug, excerpt, content, featured_image_url, published_at, views_count, categories:categories(name,slug), profiles:profiles(full_name)')
-        .eq('status', 'published')
-        .order('published_at', { ascending: false })
-      const mapped = (data || []).map((p: any) => ({
-        id: p.id,
-        slug: p.slug,
-        title: p.title,
-        excerpt: p.excerpt || '',
-        content: p.content || '',
-        author: p.profiles?.full_name || 'Admin',
-        publishedDate: p.published_at || p.created_at,
-        readTime: `${Math.max(1, Math.round(((p.content || '').replace(/<[^>]+>/g, ' ').split(/\s+/).filter(Boolean).length) / 225))} min read`,
-        category: p.categories?.name || 'General',
-        categorySlug: p.categories?.slug || 'general',
-        tags: [],
-        image: p.featured_image_url || '/blog-market-trends.png',
-      featured: false,
-        views: p.views_count || 0,
-      }))
-      setPosts(mapped)
-      const counts: Record<string, { name: string; count: number }> = {}
-      mapped.forEach((m) => {
-        const key = m.categorySlug
-        if (!counts[key]) counts[key] = { name: m.category, count: 0 }
-        counts[key].count++
-      })
-      setCategories([{ id: 'all', name: t('blog.allPosts'), count: mapped.length }, ...Object.entries(counts).map(([id, v]) => ({ id, name: v.name, count: v.count }))])
-      setLoading(false)
-    })()
+      ; (async () => {
+        setLoading(true)
+        const { data } = await supabase
+          .from('blog_posts')
+          .select('id, title, slug, excerpt, content, featured_image_url, published_at, views_count, categories:categories(name,slug), profiles:profiles(full_name)')
+          .eq('status', 'published')
+          .order('published_at', { ascending: false })
+        const mapped = (data || []).map((p: any) => ({
+          id: p.id,
+          slug: p.slug,
+          title: p.title,
+          excerpt: p.excerpt || '',
+          content: p.content || '',
+          author: p.profiles?.full_name || 'Admin',
+          publishedDate: p.published_at || p.created_at,
+          readTime: `${Math.max(1, Math.round(((p.content || '').replace(/<[^>]+>/g, ' ').split(/\s+/).filter(Boolean).length) / 225))} min read`,
+          category: p.categories?.name || 'General',
+          categorySlug: p.categories?.slug || 'general',
+          tags: [],
+          image: p.featured_image_url || '/blog-market-trends.png',
+          featured: false,
+          views: p.views_count || 0,
+        }))
+        setPosts(mapped)
+        const counts: Record<string, { name: string; count: number }> = {}
+        mapped.forEach((m) => {
+          const key = m.categorySlug
+          if (!counts[key]) counts[key] = { name: m.category, count: 0 }
+          counts[key].count++
+        })
+        setCategories([{ id: 'all', name: t('blog.allPosts'), count: mapped.length }, ...Object.entries(counts).map(([id, v]) => ({ id, name: v.name, count: v.count }))])
+        setLoading(false)
+      })()
   }, [])
 
   const featuredPost = useMemo(() => posts[0], [posts])
@@ -89,7 +89,7 @@ export default function BlogPage() {
 
   const handleNewsletterSubscribe = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!newsletterEmail || !newsletterEmail.includes('@')) {
       toast({
         title: t('blog.invalidEmail'),
@@ -100,7 +100,7 @@ export default function BlogPage() {
     }
 
     setIsSubscribing(true)
-    
+
     try {
       const response = await fetch('/api/newsletter/subscribe', {
         method: 'POST',
@@ -206,7 +206,7 @@ export default function BlogPage() {
                 <img
                   src={featuredPost.image || "/placeholder.svg?height=400&width=600&query=remote work office"}
                   alt={featuredPost.title}
-                  className="w-full h-64 lg:h-full object-cover"
+                  className="w-full h-64 lg:h-full object-contain bg-white"
                 />
                 <div className="absolute top-4 left-4">
                   <Badge className="bg-accent text-accent-foreground">{t('blog.featured')}</Badge>
@@ -262,7 +262,7 @@ export default function BlogPage() {
                 <img
                   src={post.image || "/placeholder.svg?height=200&width=400&query=blog post"}
                   alt={post.title}
-                  className="w-full h-48 object-cover"
+                  className="w-full h-48 object-contain bg-white"
                 />
                 {post.featured && (
                   <div className="absolute top-2 left-2">
@@ -327,10 +327,10 @@ export default function BlogPage() {
               {t('blog.newsletterDescription')}
             </p>
             <form onSubmit={handleNewsletterSubscribe} className="flex flex-col md:flex-row gap-4 max-w-md mx-auto">
-              <Input 
-                type="email" 
-                placeholder={t('blog.enterEmailPlaceholder')} 
-                className="flex-1" 
+              <Input
+                type="email"
+                placeholder={t('blog.enterEmailPlaceholder')}
+                className="flex-1"
                 value={newsletterEmail}
                 onChange={(e) => setNewsletterEmail(e.target.value)}
                 disabled={isSubscribing}

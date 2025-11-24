@@ -61,7 +61,7 @@ export default function EditBlogPage() {
         'career-tips': 'job-tips',
         'industry-news': 'recruiting',
       }
-      const formCategory = post.category_id 
+      const formCategory = post.category_id
         ? categorySlugToForm[post.category?.slug || ''] || 'job-tips'
         : 'job-tips'
 
@@ -174,7 +174,7 @@ export default function EditBlogPage() {
     }
     const categorySlug = categoryMap[formData.category] ?? null
     const finalStatus = status || formData.status
-    
+
     try {
       setSaving(true)
       const res = await fetch(`/api/admin/blog/posts/${postId}`, {
@@ -307,7 +307,7 @@ export default function EditBlogPage() {
             {featuredImageUrl ? (
               <div className="space-y-2">
                 <div className="w-full h-48 border rounded-md overflow-hidden bg-muted">
-                  <img src={featuredImageUrl} alt={t('blog.admin.create.featured')} className="w-full h-full object-cover" />
+                  <img src={featuredImageUrl} alt={t('blog.admin.create.featured')} className="w-full h-full object-contain bg-white" />
                 </div>
                 <div className="flex gap-2">
                   <Button variant="outline" type="button" onClick={onPickImage} disabled={uploadingImage}>
@@ -360,7 +360,7 @@ export default function EditBlogPage() {
             />
             {formData.content && (
               <p className="text-sm text-muted-foreground">
-                {t('blog.admin.create.wordCount', { 
+                {t('blog.admin.create.wordCount', {
                   words: formData.content.replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(Boolean).length,
                   characters: formData.content.replace(/<[^>]+>/g, '').length
                 })}

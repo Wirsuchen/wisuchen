@@ -260,7 +260,7 @@ export default function CreateBlogPage() {
             {featuredImageUrl ? (
               <div className="space-y-2">
                 <div className="w-full h-48 border rounded-md overflow-hidden bg-muted">
-                  <img src={featuredImageUrl} alt={t('blog.admin.create.featured')} className="w-full h-full object-cover" />
+                  <img src={featuredImageUrl} alt={t('blog.admin.create.featured')} className="w-full h-full object-contain bg-white" />
                 </div>
                 <div className="flex gap-2">
                   <Button variant="outline" type="button" onClick={onPickImage} disabled={uploadingImage}>
