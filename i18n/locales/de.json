@@ -2298,5 +2298,33 @@
     "authorBio": "Content Writer spezialisiert auf Karriereberatung und Markteinblicke.",
     "viewProfile": "Profil ansehen",
     "relatedArticles": "Ähnliche Artikel"
+  },
+  "payment": {
+    "paypalCheckout": "PayPal Checkout",
+    "securePaymentProcessing": "Sichere Zahlungsabwicklung",
+    "customPayment": "Benutzerdefinierte Zahlung",
+    "paymentSummary": "Zahlungsübersicht",
+    "total": "Gesamt",
+    "selectPaymentPackage": "Zahlungspaket auswählen",
+    "choosePackageDescription": "Wählen Sie ein Stellenanzeigen-Paket oder erstellen Sie eine benutzerdefinierte Zahlung",
+    "completePaymentInPayPal": "Zahlung in PayPal abschließen",
+    "invoiceCreated": "Rechnung #{invoiceNumber} erstellt",
+    "completePaymentToActivate": "Zahlung abschließen zur Aktivierung",
+    "cancelPayment": "Zahlung abbrechen",
+    "openPayPal": "PayPal öffnen",
+    "processing": "Verarbeitung...",
+    "redirectingToPayPal": "Weiterleitung zu PayPal...",
+    "paymentSuccessful": "Zahlung erfolgreich!",
+    "paymentSuccessfulDescription": "Ihre Zahlung wurde erfolgreich verarbeitet.",
+    "returnToDashboard": "Zurück zum Dashboard",
+    "paymentFailed": "Zahlung fehlgeschlagen",
+    "paymentFailedDescription": "Bei der Verarbeitung Ihrer Zahlung ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+    "tryAgain": "Erneut versuchen",
+    "enterAmount": "Betrag eingeben",
+    "description": "Beschreibung",
+    "payWithPayPal": "Mit PayPal bezahlen",
+    "loginRequiredDescription": "Melden Sie sich an, um Abonnements zu kaufen oder zu verwalten.",
+    "creatingPaymentOrder": "Zahlungsauftrag wird erstellt",
+    "pleaseWaitSetupPayment": "Bitte warten Sie, während wir Ihre Zahlung einrichten..."
   }
 }

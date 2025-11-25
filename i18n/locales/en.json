@@ -2235,5 +2235,33 @@
     "authorBio": "Content Writer specializing in career advice and market insights.",
     "viewProfile": "View Profile",
     "relatedArticles": "Related Articles"
+  },
+  "payment": {
+    "paypalCheckout": "PayPal Checkout",
+    "securePaymentProcessing": "Secure Payment Processing",
+    "customPayment": "Custom Payment",
+    "paymentSummary": "Payment Summary",
+    "total": "Total",
+    "selectPaymentPackage": "Select Payment Package",
+    "choosePackageDescription": "Choose a job posting package or create a custom payment",
+    "completePaymentInPayPal": "Complete payment in PayPal",
+    "invoiceCreated": "Invoice #{invoiceNumber} created",
+    "completePaymentToActivate": "Complete payment to activate",
+    "cancelPayment": "Cancel Payment",
+    "openPayPal": "Open PayPal",
+    "processing": "Processing...",
+    "redirectingToPayPal": "Redirecting to PayPal...",
+    "paymentSuccessful": "Payment Successful!",
+    "paymentSuccessfulDescription": "Your payment has been processed successfully.",
+    "returnToDashboard": "Return to Dashboard",
+    "paymentFailed": "Payment Failed",
+    "paymentFailedDescription": "There was an error processing your payment. Please try again.",
+    "tryAgain": "Try Again",
+    "enterAmount": "Enter Amount",
+    "description": "Description",
+    "payWithPayPal": "Pay with PayPal",
+    "loginRequiredDescription": "Sign in to purchase or manage subscriptions.",
+    "creatingPaymentOrder": "Creating Payment Order",
+    "pleaseWaitSetupPayment": "Please wait while we set up your payment..."
   }
 }

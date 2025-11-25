@@ -9,10 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Separator } from '@/components/ui/separator'
-import { 
-  CreditCard, 
-  CheckCircle, 
-  XCircle, 
+import {
+  CreditCard,
+  CheckCircle,
+  XCircle,
   Clock,
   Euro,
   Receipt,
@@ -70,7 +70,7 @@ interface PayPalCheckoutProps {
 }
 
 export function PayPalCheckout({ selectedPlan }: PayPalCheckoutProps) {
-  const { t } = useTranslation()
+  const { t, tr } = useTranslation()
   const [step, setStep] = useState<'form' | 'processing' | 'approval' | 'completed' | 'failed'>('form')
   const [isLoading, setIsLoading] = useState(false)
   const [paymentOrder, setPaymentOrder] = useState<PaymentOrder | null>(null)
@@ -207,8 +207,8 @@ export function PayPalCheckout({ selectedPlan }: PayPalCheckoutProps) {
 
       if (response.ok) {
         setPaymentOrder(data)
-        
-          if (data.approval_url) {
+
+        if (data.approval_url) {
           setStep('approval')
           toast({
             title: t('payment.orderCreatedTitle', 'Payment Order Created'),
@@ -217,10 +217,10 @@ export function PayPalCheckout({ selectedPlan }: PayPalCheckoutProps) {
               'Redirecting to PayPal for payment approval...'
             ),
           })
-          
+
           // Redirect to PayPal
           window.open(data.approval_url, '_blank')
-          
+
           // Start polling for payment status
           pollPaymentStatus(data.order_id)
         } else {
@@ -350,21 +350,19 @@ export function PayPalCheckout({ selectedPlan }: PayPalCheckoutProps) {
       <div className="flex items-center justify-center space-x-4">
         {['form', 'processing', 'approval', 'completed'].map((stepName, index) => (
           <div key={stepName} className="flex items-center">
-            <div className={`flex items-center justify-center w-8 h-8 rounded-full border-2 ${
-              step === stepName 
-                ? 'border-blue-500 bg-blue-500 text-white' 
-                : index < ['form', 'processing', 'approval', 'completed'].indexOf(step)
+            <div className={`flex items-center justify-center w-8 h-8 rounded-full border-2 ${step === stepName
+              ? 'border-blue-500 bg-blue-500 text-white'
+              : index < ['form', 'processing', 'approval', 'completed'].indexOf(step)
                 ? 'border-green-500 bg-green-500 text-white'
                 : 'border-gray-300 text-gray-500'
-            }`}>
+              }`}>
               {step === stepName ? getStepIcon(step) : <span>{index + 1}</span>}
             </div>
             {index < 3 && (
-              <div className={`w-12 h-0.5 ${
-                index < ['form', 'processing', 'approval', 'completed'].indexOf(step)
-                  ? 'bg-green-500'
-                  : 'bg-gray-300'
-              }`} />
+              <div className={`w-12 h-0.5 ${index < ['form', 'processing', 'approval', 'completed'].indexOf(step)
+                ? 'bg-green-500'
+                : 'bg-gray-300'
+                }`} />
             )}
           </div>
         ))}
@@ -388,13 +386,12 @@ export function PayPalCheckout({ selectedPlan }: PayPalCheckoutProps) {
             {/* Predefined Packages */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {predefinedPackages.map((pkg) => (
-                <Card 
-                  key={pkg.id} 
-                  className={`cursor-pointer transition-all hover:shadow-md ${
-                    paymentForm.items[0]?.sku === `JOB_${pkg.id.toUpperCase()}` 
-                      ? 'ring-2 ring-blue-500' 
-                      : ''
-                  }`}
+                <Card
+                  key={pkg.id}
+                  className={`cursor-pointer transition-all hover:shadow-md ${paymentForm.items[0]?.sku === `JOB_${pkg.id.toUpperCase()}`
+                    ? 'ring-2 ring-blue-500'
+                    : ''
+                    }`}
                   onClick={() => handlePackageSelect(pkg.id)}
                 >
                   <CardContent className="p-4">
@@ -421,7 +418,7 @@ export function PayPalCheckout({ selectedPlan }: PayPalCheckoutProps) {
             {/* Custom Payment Form */}
             <div className="space-y-4">
               <h3 className="font-medium">{t('payment.customPayment')}</h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="amount">{t('payment.amount')}</Label>
@@ -431,8 +428,8 @@ export function PayPalCheckout({ selectedPlan }: PayPalCheckoutProps) {
                     step="0.01"
                     min="1"
                     value={paymentForm.amount}
-                    onChange={(e) => setPaymentForm(prev => ({ 
-                      ...prev, 
+                    onChange={(e) => setPaymentForm(prev => ({
+                      ...prev,
                       amount: e.target.value,
                       items: [{
                         ...prev.items[0],
@@ -465,8 +462,8 @@ export function PayPalCheckout({ selectedPlan }: PayPalCheckoutProps) {
                 <Input
                   id="description"
                   value={paymentForm.description}
-                  onChange={(e) => setPaymentForm(prev => ({ 
-                    ...prev, 
+                  onChange={(e) => setPaymentForm(prev => ({
+                    ...prev,
                     description: e.target.value,
                     items: [{
                       ...prev.items[0],
@@ -499,8 +496,8 @@ export function PayPalCheckout({ selectedPlan }: PayPalCheckoutProps) {
               </CardContent>
             </Card>
 
-            <Button 
-              onClick={createPayPalOrder} 
+            <Button
+              onClick={createPayPalOrder}
               disabled={isLoading || !paymentForm.amount}
               className="w-full"
               size="lg"
@@ -539,12 +536,12 @@ export function PayPalCheckout({ selectedPlan }: PayPalCheckoutProps) {
             <p className="text-muted-foreground mb-4">
               {t('payment.completePaymentInPayPal')}
             </p>
-            
+
             <div className="space-y-4">
               <Alert>
                 <Receipt className="w-4 h-4" />
                 <AlertDescription>
-                  {t('payment.invoiceCreated', { invoiceNumber: paymentOrder.invoice_number })}
+                  {tr('payment.invoiceCreated', { invoiceNumber: paymentOrder.invoice_number })}
                   {t('payment.completePaymentToActivate')}
                 </AlertDescription>
               </Alert>
