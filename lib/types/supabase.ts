@@ -7,11 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "13.0.5"
-  }
   public: {
     Tables: {
       affiliate_programs: {
@@ -334,70 +329,153 @@ export type Database = {
       }
       invoices: {
         Row: {
-          amount: number
-          client_address: string | null
-          client_email: string | null
-          client_name: string
-          created_at: string | null
-          created_by: string | null
-          currency: string
-          description: string | null
-          due_date: string | null
           id: string
           invoice_number: string
-          notes: string | null
-          paid_at: string | null
+          user_id: string | null
+          company_id: string | null
           status: Database["public"]["Enums"]["invoice_status"]
-          tax_amount: number
-          tax_rate: number
+          subtotal: number | null
+          tax_rate: number | null
+          tax_amount: number | null
+          total_amount: number | null
+          currency: string
+          billing_name: string | null
+          billing_email: string | null
+          billing_address: string | null
+          billing_city: string | null
+          billing_postal_code: string | null
+          billing_country: string | null
+          billing_vat_number: string | null
+          xml_content: string | null
+          pdf_url: string | null
+          payment_method: string | null
+          payment_reference: string | null
+          paid_at: string | null
+          due_date: string | null
+          issued_at: string | null
+          created_at: string | null
           updated_at: string | null
         }
         Insert: {
-          amount?: number
-          client_address?: string | null
-          client_email?: string | null
-          client_name: string
-          created_at?: string | null
-          created_by?: string | null
-          currency?: string
-          description?: string | null
-          due_date?: string | null
           id?: string
           invoice_number: string
-          notes?: string | null
-          paid_at?: string | null
+          user_id?: string | null
+          company_id?: string | null
           status?: Database["public"]["Enums"]["invoice_status"]
-          tax_amount?: number
-          tax_rate?: number
+          subtotal?: number | null
+          tax_rate?: number | null
+          tax_amount?: number | null
+          total_amount?: number | null
+          currency?: string
+          billing_name?: string | null
+          billing_email?: string | null
+          billing_address?: string | null
+          billing_city?: string | null
+          billing_postal_code?: string | null
+          billing_country?: string | null
+          billing_vat_number?: string | null
+          xml_content?: string | null
+          pdf_url?: string | null
+          payment_method?: string | null
+          payment_reference?: string | null
+          paid_at?: string | null
+          due_date?: string | null
+          issued_at?: string | null
+          created_at?: string | null
           updated_at?: string | null
         }
         Update: {
-          amount?: number
-          client_address?: string | null
-          client_email?: string | null
-          client_name?: string
-          created_at?: string | null
-          created_by?: string | null
-          currency?: string
-          description?: string | null
-          due_date?: string | null
           id?: string
           invoice_number?: string
-          notes?: string | null
-          paid_at?: string | null
+          user_id?: string | null
+          company_id?: string | null
           status?: Database["public"]["Enums"]["invoice_status"]
-          tax_amount?: number
-          tax_rate?: number
+          subtotal?: number | null
+          tax_rate?: number | null
+          tax_amount?: number | null
+          total_amount?: number | null
+          currency?: string
+          billing_name?: string | null
+          billing_email?: string | null
+          billing_address?: string | null
+          billing_city?: string | null
+          billing_postal_code?: string | null
+          billing_country?: string | null
+          billing_vat_number?: string | null
+          xml_content?: string | null
+          pdf_url?: string | null
+          payment_method?: string | null
+          payment_reference?: string | null
+          paid_at?: string | null
+          due_date?: string | null
+          issued_at?: string | null
+          created_at?: string | null
           updated_at?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "invoices_created_by_fkey"
-            columns: ["created_by"]
+            foreignKeyName: "invoices_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
-          },
+          }
+        ]
+      }
+      media_files: {
+        Row: {
+          alt_text: string | null
+          bucket_name: string
+          created_at: string | null
+          file_path: string
+          file_size: number | null
+          filename: string
+          height: number | null
+          id: string
+          is_public: boolean | null
+          mime_type: string | null
+          original_filename: string
+          uploaded_by: string | null
+          width: number | null
+        }
+        Insert: {
+          alt_text?: string | null
+          bucket_name: string
+          created_at?: string | null
+          file_path: string
+          file_size?: number | null
+          filename: string
+          height?: number | null
+          id?: string
+          is_public?: boolean | null
+          mime_type?: string | null
+          original_filename: string
+          uploaded_by?: string | null
+          width?: number | null
+        }
+        Update: {
+          alt_text?: string | null
+          bucket_name?: string
+          created_at?: string | null
+          file_path?: string
+          file_size?: number | null
+          filename?: string
+          height?: number | null
+          id?: string
+          is_public?: boolean | null
+          mime_type?: string | null
+          original_filename?: string
+          uploaded_by?: string | null
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "media_files_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
         ]
       }
       offers: {

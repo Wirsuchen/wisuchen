@@ -94,7 +94,7 @@ export default function CreateBlogPage() {
         uploadedBy = profile?.id ?? null
       }
 
-      await (supabase.from('media_files') as any).insert({
+      await supabase.from('media_files').insert({
         filename: nameSanitized,
         original_filename: file.name,
         file_path: path,
