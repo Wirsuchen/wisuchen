@@ -137,31 +137,51 @@ export function PayPalCheckout({ selectedPlan }: PayPalCheckoutProps) {
   const predefinedPackages = [
     {
       id: 'basic',
-      name: 'Basic Job Posting',
-      description: 'Standard job listing for 30 days',
+      name: t('payment.packages.basic.name'),
+      description: t('payment.packages.basic.description'),
       price: '19.99',
-      features: ['30-day listing', 'Basic visibility', 'Email support']
+      features: [
+        t('payment.packages.basic.feature1'),
+        t('payment.packages.basic.feature2'),
+        t('payment.packages.basic.feature3')
+      ]
     },
     {
       id: 'premium',
-      name: 'Premium Job Posting',
-      description: 'Featured job listing with priority placement',
+      name: t('payment.packages.premium.name'),
+      description: t('payment.packages.premium.description'),
       price: '29.99',
-      features: ['30-day listing', 'Featured placement', 'Priority support', 'Company branding']
+      features: [
+        t('payment.packages.premium.feature1'),
+        t('payment.packages.premium.feature2'),
+        t('payment.packages.premium.feature3'),
+        t('payment.packages.premium.feature4')
+      ]
     },
     {
       id: 'urgent',
-      name: 'Urgent Job Posting',
-      description: 'Top placement with urgent badge',
+      name: t('payment.packages.urgent.name'),
+      description: t('payment.packages.urgent.description'),
       price: '49.99',
-      features: ['30-day listing', 'Top placement', 'Urgent badge', 'Priority support', 'Analytics']
+      features: [
+        t('payment.packages.urgent.feature1'),
+        t('payment.packages.urgent.feature2'),
+        t('payment.packages.urgent.feature3'),
+        t('payment.packages.urgent.feature4'),
+        t('payment.packages.urgent.feature5')
+      ]
     },
     {
       id: 'company',
-      name: 'Company Package',
-      description: '5 job postings with company profile',
+      name: t('payment.packages.company.name'),
+      description: t('payment.packages.company.description'),
       price: '99.99',
-      features: ['5 job postings', 'Company profile page', 'Advanced analytics', 'Dedicated support']
+      features: [
+        t('payment.packages.company.feature1'),
+        t('payment.packages.company.feature2'),
+        t('payment.packages.company.feature3'),
+        t('payment.packages.company.feature4')
+      ]
     }
   ]
 

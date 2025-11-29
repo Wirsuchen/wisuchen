@@ -2302,11 +2302,14 @@
   "payment": {
     "paypalCheckout": "PayPal Checkout",
     "securePaymentProcessing": "Sichere Zahlungsabwicklung",
+    "selectPackageTitle": "Zahlungspaket auswählen",
+    "selectPackageDescription": "Wählen Sie ein Stellenanzeigen-Paket oder erstellen Sie eine benutzerdefinierte Zahlung",
     "customPayment": "Benutzerdefinierte Zahlung",
     "paymentSummary": "Zahlungsübersicht",
     "total": "Gesamt",
     "selectPaymentPackage": "Zahlungspaket auswählen",
     "choosePackageDescription": "Wählen Sie ein Stellenanzeigen-Paket oder erstellen Sie eine benutzerdefinierte Zahlung",
+    "waitingForPaymentApproval": "Warten auf Zahlungsbestätigung",
     "completePaymentInPayPal": "Zahlung in PayPal abschließen",
     "invoiceCreated": "Rechnung #{invoiceNumber} erstellt",
     "completePaymentToActivate": "Zahlung abschließen zur Aktivierung",
@@ -2317,14 +2320,61 @@
     "paymentSuccessful": "Zahlung erfolgreich!",
     "paymentSuccessfulDescription": "Ihre Zahlung wurde erfolgreich verarbeitet.",
     "returnToDashboard": "Zurück zum Dashboard",
+    "paymentCompleted": "Zahlung abgeschlossen",
+    "paymentCompletedDescription": "Ihre Zahlung wurde erfolgreich verarbeitet.",
     "paymentFailed": "Zahlung fehlgeschlagen",
     "paymentFailedDescription": "Bei der Verarbeitung Ihrer Zahlung ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+    "contactSupport": "Bitte kontaktieren Sie den Support, falls das Problem weiterhin besteht.",
     "tryAgain": "Erneut versuchen",
+    "amount": "Betrag",
+    "currency": "Währung",
     "enterAmount": "Betrag eingeben",
     "description": "Beschreibung",
+    "vatLabel": "MwSt. (19%)",
     "payWithPayPal": "Mit PayPal bezahlen",
     "loginRequiredDescription": "Melden Sie sich an, um Abonnements zu kaufen oder zu verwalten.",
     "creatingPaymentOrder": "Zahlungsauftrag wird erstellt",
-    "pleaseWaitSetupPayment": "Bitte warten Sie, während wir Ihre Zahlung einrichten..."
+    "pleaseWaitSetupPayment": "Bitte warten Sie, während wir Ihre Zahlung einrichten...",
+    "orderCreatedTitle": "Zahlungsauftrag erstellt",
+    "orderCreatedDescription": "Weiterleitung zu PayPal zur Zahlungsbestätigung...",
+    "paymentId": "Zahlungs-ID",
+    "invoice": "Rechnung",
+    "status": "Status",
+    "paid": "Bezahlt",
+    "makeAnotherPayment": "Weitere Zahlung tätigen",
+    "packages": {
+      "basic": {
+        "name": "Basis Stellenanzeige",
+        "description": "Standard Stellenanzeige für 30 Tage",
+        "feature1": "30-Tage-Anzeige",
+        "feature2": "Grundlegende Sichtbarkeit",
+        "feature3": "E-Mail-Support"
+      },
+      "premium": {
+        "name": "Premium Stellenanzeige",
+        "description": "Hervorgehobene Stellenanzeige mit Prioritätsplatzierung",
+        "feature1": "30-Tage-Anzeige",
+        "feature2": "Hervorgehobene Platzierung",
+        "feature3": "Prioritäts-Support",
+        "feature4": "Unternehmens-Branding"
+      },
+      "urgent": {
+        "name": "Dringende Stellenanzeige",
+        "description": "Top-Platzierung mit Dringend-Kennzeichnung",
+        "feature1": "30-Tage-Anzeige",
+        "feature2": "Top-Platzierung",
+        "feature3": "Dringend-Kennzeichnung",
+        "feature4": "Prioritäts-Support",
+        "feature5": "Analytics"
+      },
+      "company": {
+        "name": "Unternehmenspaket",
+        "description": "5 Stellenanzeigen mit Unternehmensprofil",
+        "feature1": "5 Stellenanzeigen",
+        "feature2": "Unternehmensprofilseite",
+        "feature3": "Erweiterte Analytics",
+        "feature4": "Dedizierter Support"
+      }
+    }
   }
 }

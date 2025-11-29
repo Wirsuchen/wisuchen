@@ -2239,11 +2239,14 @@
   "payment": {
     "paypalCheckout": "PayPal Checkout",
     "securePaymentProcessing": "Secure Payment Processing",
+    "selectPackageTitle": "Select Payment Package",
+    "selectPackageDescription": "Choose a job posting package or create a custom payment",
     "customPayment": "Custom Payment",
     "paymentSummary": "Payment Summary",
     "total": "Total",
     "selectPaymentPackage": "Select Payment Package",
     "choosePackageDescription": "Choose a job posting package or create a custom payment",
+    "waitingForPaymentApproval": "Waiting for Payment Approval",
     "completePaymentInPayPal": "Complete payment in PayPal",
     "invoiceCreated": "Invoice #{invoiceNumber} created",
     "completePaymentToActivate": "Complete payment to activate",
@@ -2254,14 +2257,61 @@
     "paymentSuccessful": "Payment Successful!",
     "paymentSuccessfulDescription": "Your payment has been processed successfully.",
     "returnToDashboard": "Return to Dashboard",
+    "paymentCompleted": "Payment Completed",
+    "paymentCompletedDescription": "Your payment has been successfully processed.",
     "paymentFailed": "Payment Failed",
     "paymentFailedDescription": "There was an error processing your payment. Please try again.",
+    "contactSupport": "Please contact support if the problem persists.",
     "tryAgain": "Try Again",
+    "amount": "Amount",
+    "currency": "Currency",
     "enterAmount": "Enter Amount",
     "description": "Description",
+    "vatLabel": "VAT (19%)",
     "payWithPayPal": "Pay with PayPal",
     "loginRequiredDescription": "Sign in to purchase or manage subscriptions.",
     "creatingPaymentOrder": "Creating Payment Order",
-    "pleaseWaitSetupPayment": "Please wait while we set up your payment..."
+    "pleaseWaitSetupPayment": "Please wait while we set up your payment...",
+    "orderCreatedTitle": "Payment Order Created",
+    "orderCreatedDescription": "Redirecting to PayPal for payment approval...",
+    "paymentId": "Payment ID",
+    "invoice": "Invoice",
+    "status": "Status",
+    "paid": "Paid",
+    "makeAnotherPayment": "Make Another Payment",
+    "packages": {
+      "basic": {
+        "name": "Basic Job Posting",
+        "description": "Standard job listing for 30 days",
+        "feature1": "30-day listing",
+        "feature2": "Basic visibility",
+        "feature3": "Email support"
+      },
+      "premium": {
+        "name": "Premium Job Posting",
+        "description": "Featured job listing with priority placement",
+        "feature1": "30-day listing",
+        "feature2": "Featured placement",
+        "feature3": "Priority support",
+        "feature4": "Company branding"
+      },
+      "urgent": {
+        "name": "Urgent Job Posting",
+        "description": "Top placement with urgent badge",
+        "feature1": "30-day listing",
+        "feature2": "Top placement",
+        "feature3": "Urgent badge",
+        "feature4": "Priority support",
+        "feature5": "Analytics"
+      },
+      "company": {
+        "name": "Company Package",
+        "description": "5 job postings with company profile",
+        "feature1": "5 job postings",
+        "feature2": "Company profile page",
+        "feature3": "Advanced analytics",
+        "feature4": "Dedicated support"
+      }
+    }
   }
 }

@@ -1480,5 +1480,118 @@
     "authorBio": "Rédacteur de contenu spécialisé dans les conseils de carrière et les informations sur le marché.",
     "viewProfile": "Voir le profil",
     "relatedArticles": "Articles similaires"
+  },
+  "payment": {
+    "paypalCheckout": "Paiement PayPal",
+    "securePaymentProcessing": "Traitement sécurisé du paiement",
+    "selectPackageTitle": "Sélectionner un forfait de paiement",
+    "selectPackageDescription": "Choisissez un forfait d'offre d'emploi ou créez un paiement personnalisé",
+    "customPayment": "Paiement personnalisé",
+    "paymentSummary": "Résumé du paiement",
+    "total": "Total",
+    "selectPaymentPackage": "Sélectionner un forfait de paiement",
+    "choosePackageDescription": "Choisissez un forfait d'offre d'emploi ou créez un paiement personnalisé",
+    "waitingForPaymentApproval": "En attente de l'approbation du paiement",
+    "completePaymentInPayPal": "Terminer le paiement sur PayPal",
+    "invoiceCreated": "Facture #{invoiceNumber} créée",
+    "completePaymentToActivate": "Terminer le paiement pour activer",
+    "cancelPayment": "Annuler le paiement",
+    "openPayPal": "Ouvrir PayPal",
+    "processing": "Traitement...",
+    "redirectingToPayPal": "Redirection vers PayPal...",
+    "paymentSuccessful": "Paiement réussi !",
+    "paymentSuccessfulDescription": "Votre paiement a été traité avec succès.",
+    "returnToDashboard": "Retour au tableau de bord",
+    "paymentCompleted": "Paiement terminé",
+    "paymentCompletedDescription": "Votre paiement a été traité avec succès.",
+    "paymentFailed": "Échec du paiement",
+    "paymentFailedDescription": "Une erreur s'est produite lors du traitement de votre paiement. Veuillez réessayer.",
+    "contactSupport": "Veuillez contacter le support si le problème persiste.",
+    "tryAgain": "Réessayer",
+    "amount": "Montant",
+    "currency": "Devise",
+    "enterAmount": "Entrer le montant",
+    "description": "Description",
+    "vatLabel": "TVA (19%)",
+    "payWithPayPal": "Payer avec PayPal",
+    "loginRequiredDescription": "Connectez-vous pour acheter ou gérer des abonnements.",
+    "creatingPaymentOrder": "Création de la commande de paiement",
+    "pleaseWaitSetupPayment": "Veuillez patienter pendant que nous configurons votre paiement...",
+    "orderCreatedTitle": "Commande de paiement créée",
+    "orderCreatedDescription": "Redirection vers PayPal pour l'approbation du paiement...",
+    "paymentId": "ID de paiement",
+    "invoice": "Facture",
+    "status": "Statut",
+    "paid": "Payé",
+    "makeAnotherPayment": "Effectuer un autre paiement",
+    "packages": {
+      "basic": {
+        "name": "Offre d'emploi basique",
+        "description": "Annonce d'emploi standard pour 30 jours",
+        "feature1": "Annonce de 30 jours",
+        "feature2": "Visibilité de base",
+        "feature3": "Support par e-mail"
+      },
+      "premium": {
+        "name": "Offre d'emploi premium",
+        "description": "Annonce d'emploi en vedette avec placement prioritaire",
+        "feature1": "Annonce de 30 jours",
+        "feature2": "Placement en vedette",
+        "feature3": "Support prioritaire",
+        "feature4": "Image de marque de l'entreprise"
+      },
+      "urgent": {
+        "name": "Offre d'emploi urgente",
+        "description": "Placement en haut avec badge urgent",
+        "feature1": "Annonce de 30 jours",
+        "feature2": "Placement en haut",
+        "feature3": "Badge urgent",
+        "feature4": "Support prioritaire",
+        "feature5": "Analyses"
+      },
+      "company": {
+        "name": "Forfait entreprise",
+        "description": "5 offres d'emploi avec profil d'entreprise",
+        "feature1": "5 offres d'emploi",
+        "feature2": "Page de profil d'entreprise",
+        "feature3": "Analyses avancées",
+        "feature4": "Support dédié"
+      }
+    },
+    "success": {
+      "title": "Paiement réussi !",
+      "successMessage": "Merci pour votre paiement. Votre transaction a été complétée.",
+      "details": {
+        "title": "Détails du paiement",
+        "paymentId": "ID de paiement",
+        "status": "Statut",
+        "amount": "Montant",
+        "invoice": "Facture"
+      },
+      "description": {
+        "completedOn": "Complété le {date}"
+      },
+      "status": {
+        "paid": "Payé"
+      },
+      "invoice": {
+        "title": "Détails de la facture",
+        "billingName": "Nom de facturation",
+        "billingEmail": "E-mail de facturation",
+        "invoiceStatus": "Statut de la facture"
+      },
+      "whatsNext": {
+        "title": "Et ensuite ?",
+        "description": "Vous pouvez maintenant accéder à vos fonctionnalités achetées ou gérer vos commandes."
+      },
+      "actions": {
+        "viewJobs": "Voir les emplois",
+        "manageJobs": "Gérer les emplois",
+        "backHome": "Retour à l'accueil"
+      },
+      "receipt": {
+        "message": "Un reçu a été envoyé à votre adresse e-mail."
+      }
+    }
   }
 }

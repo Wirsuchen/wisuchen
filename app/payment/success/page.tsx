@@ -15,12 +15,13 @@ interface PaymentSuccessProps {
     order_id?: string
     payment_id?: string
     invoice_id?: string
+    token?: string
   }
 }
 
 async function PaymentSuccessContent({ searchParams }: PaymentSuccessProps) {
   const supabase = await createClient()
-  
+
   // Check authentication
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) {
@@ -31,12 +32,13 @@ async function PaymentSuccessContent({ searchParams }: PaymentSuccessProps) {
   let error = null
 
   // Fetch payment details if we have an order_id or invoice_id
-  if (searchParams.order_id || searchParams.invoice_id) {
+  if (searchParams.order_id || searchParams.invoice_id || searchParams.token) {
     try {
-      const queryParam = searchParams.order_id 
-        ? `order_id=${searchParams.order_id}` 
+      const orderId = searchParams.order_id || searchParams.token
+      const queryParam = orderId
+        ? `order_id=${orderId}`
         : `invoice_id=${searchParams.invoice_id}`
-      
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/payment/paypal?${queryParam}`, {
         headers: {
           'Cookie': `sb-access-token=${(await supabase.auth.getSession()).data.session?.access_token}`
@@ -54,8 +56,8 @@ async function PaymentSuccessContent({ searchParams }: PaymentSuccessProps) {
   }
 
   return (
-    <PaymentSuccessContentClient 
-      paymentData={paymentData} 
+    <PaymentSuccessContentClient
+      paymentData={paymentData}
       error={error}
     />
   )
