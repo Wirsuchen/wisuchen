@@ -39,6 +39,9 @@ export const metadata: Metadata = {
   icons: {
     icon: "/favicon.ico", // public folder ka path
   },
+  other: {
+    google: "notranslate",
+  },
 }
 
 import { cookies } from 'next/headers'
@@ -52,7 +55,7 @@ export default async function RootLayout({
   const locale = cookieStore.get('NEXT_LOCALE')?.value || 'en'
 
   return (
-    <html lang={locale} className={`${geist.variable} antialiased`} suppressHydrationWarning>
+    <html lang={locale} className={`${geist.variable} antialiased notranslate`} translate="no" suppressHydrationWarning>
       <body className="min-h-screen bg-background font-sans antialiased">
         <CacheInitializer />
         <I18nProvider>
