@@ -19,7 +19,7 @@ export default function Error({
   useEffect(() => {
     // Log error to console for debugging
     console.error('Application error:', error)
-    
+
     // Optionally log to error tracking service (e.g., Sentry)
     // if (typeof window !== 'undefined' && window.Sentry) {
     //   window.Sentry.captureException(error)
@@ -44,13 +44,12 @@ export default function Error({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {process.env.NODE_ENV === 'development' && (
-            <div className="p-3 bg-muted rounded-md">
-              <p className="text-sm font-mono text-muted-foreground break-all">
-                {error.message}
-              </p>
-            </div>
-          )}
+          <div className="p-3 bg-muted rounded-md">
+            <p className="text-sm font-mono text-muted-foreground break-all">
+              {error.message}
+              {error.digest && <span className="block mt-1 text-xs">Digest: {error.digest}</span>}
+            </p>
+          </div>
           <div className="flex gap-2">
             <Button onClick={reset} variant="default">
               {t('common.tryAgain')}

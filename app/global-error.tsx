@@ -12,7 +12,7 @@ export default function GlobalError({
   useEffect(() => {
     // Log global error
     console.error('Global application error:', error)
-    
+
     // Optionally log to error tracking service
     // if (typeof window !== 'undefined' && window.Sentry) {
     //   window.Sentry.captureException(error)
@@ -37,6 +37,23 @@ export default function GlobalError({
           <p style={{ marginBottom: '2rem', color: '#666' }}>
             An unexpected error occurred. Please refresh the page.
           </p>
+          <div style={{
+            padding: '1rem',
+            backgroundColor: '#f5f5f5',
+            borderRadius: '0.25rem',
+            marginBottom: '2rem',
+            maxWidth: '600px',
+            overflow: 'auto'
+          }}>
+            <p style={{ fontFamily: 'monospace', fontSize: '0.875rem', color: '#666' }}>
+              {error.message}
+            </p>
+            {error.digest && (
+              <p style={{ fontFamily: 'monospace', fontSize: '0.75rem', color: '#999', marginTop: '0.5rem' }}>
+                Digest: {error.digest}
+              </p>
+            )}
+          </div>
           <button
             onClick={reset}
             style={{

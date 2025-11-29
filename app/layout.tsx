@@ -6,6 +6,7 @@ import { AuthProvider } from "@/contexts/auth-context"
 import { I18nProvider } from "@/contexts/i18n-context"
 import { CacheInitializer } from "@/components/cache-initializer"
 import { Toaster } from "@/components/ui/toaster"
+import { Suspense } from "react"
 
 const geist = Geist({
   subsets: ["latin"],
@@ -14,7 +15,7 @@ const geist = Geist({
 })
 
 export const metadata: Metadata = {
-    metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
   title: "WIRsuchen - Jobs & Deals Portal",
   description: "Find jobs, compare deals, and manage your career with WIRsuchen",
   generator: "WIRsuchen",
@@ -50,7 +51,11 @@ export default function RootLayout({
       <body className="min-h-screen bg-background font-sans antialiased">
         <CacheInitializer />
         <I18nProvider>
-          <AuthProvider>{children}</AuthProvider>
+          <AuthProvider>
+            <Suspense fallback={null}>
+              {children}
+            </Suspense>
+          </AuthProvider>
         </I18nProvider>
         <Toaster />
       </body>

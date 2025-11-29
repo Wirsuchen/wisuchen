@@ -1,22 +1,22 @@
 "use client"
 
-import { Heart, Trash2, ExternalLink, Calendar } from "lucide-react"
+import { Heart, Trash2, ExternalLink, Calendar, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PageLayout } from "@/components/layout/page-layout"
 import Link from "next/link"
-import { useEffect, useState } from "react"
+import { useEffect, useState, Suspense } from "react"
 import { useTranslation } from "@/contexts/i18n-context"
 
-export default function SavedPage() {
+function SavedContent() {
   const [items, setItems] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const { t, tr } = useTranslation()
 
   useEffect(() => {
-    ;(async () => {
+    ; (async () => {
       setLoading(true)
       try {
         const res = await fetch('/api/saved', { cache: 'no-store' })
@@ -161,9 +161,9 @@ export default function SavedPage() {
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={async () => {
                           await fetch(`/api/saved?offer_id=${deal.offerId}`, { method: 'DELETE' })
                           setItems(prev => prev.filter(i => i.offer_id !== deal.offerId))
@@ -219,5 +219,19 @@ export default function SavedPage() {
         </TabsContent>
       </Tabs>
     </PageLayout>
+  )
+}
+
+export default function SavedPage() {
+  return (
+    <Suspense fallback={
+      <PageLayout containerClassName="container mx-auto px-4 py-8 max-w-6xl">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      </PageLayout>
+    }>
+      <SavedContent />
+    </Suspense>
   )
 }
