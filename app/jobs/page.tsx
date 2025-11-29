@@ -489,7 +489,7 @@ function JobCard({ job }: { job: Job }) {
             className="block"
           >
             <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 hover:text-blue-600">
-              {job.title}
+              <span>{job.title}</span>
             </h3>
           </a>
           <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-sm text-gray-600">
@@ -637,7 +637,7 @@ function UserJobCard({ job }: { job: UserPostedJob }) {
             className="block"
           >
             <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 hover:text-blue-600">
-              {job.title}
+              <span>{job.title}</span>
             </h3>
           </Link>
           <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-sm text-gray-600">

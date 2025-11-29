@@ -41,13 +41,18 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({
+import { cookies } from 'next/headers'
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const cookieStore = await cookies()
+  const locale = cookieStore.get('NEXT_LOCALE')?.value || 'en'
+
   return (
-    <html lang="en" className={`${geist.variable} antialiased`}>
+    <html lang={locale} className={`${geist.variable} antialiased`} suppressHydrationWarning>
       <body className="min-h-screen bg-background font-sans antialiased">
         <CacheInitializer />
         <I18nProvider>
