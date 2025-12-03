@@ -36,7 +36,16 @@ export async function POST(request: NextRequest) {
     }
 
     const languageNames: Record<string, string> = { de: 'German', en: 'English', fr: 'French', it: 'Italian' }
-    const prompt = `Translate this ${String(contentType || 'general').replace('_', ' ')} from ${languageNames[fromLanguage]} to ${languageNames[toLanguage]}:\n\n${content}\n\nMaintain the tone, formatting, and professional style. Ensure all industry-specific terms are accurately translated.`
+    const prompt = `You are a professional translator. Translate the following ${String(contentType || 'general').replace('_', ' ')} from ${languageNames[fromLanguage]} to ${languageNames[toLanguage]}.
+    
+    IMPORTANT INSTRUCTIONS:
+    1. Return ONLY the translated text.
+    2. Do NOT add any conversational text, introductions, or explanations.
+    3. Maintain the original tone, formatting, and professional style.
+    4. Ensure all industry-specific terms are accurately translated.
+    
+    Content to translate:
+    ${content}`
 
     const stream = await streamContentGeneration(prompt)
     const sse = iterableToSSE(stream)

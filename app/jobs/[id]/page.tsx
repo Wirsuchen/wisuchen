@@ -29,6 +29,7 @@ import { fetchWithCache } from "@/lib/utils/client-cache"
 import { useAuth } from "@/contexts/auth-context"
 import { toast } from "@/hooks/use-toast"
 import { useTranslation } from "@/contexts/i18n-context"
+import { TranslateButton } from "@/components/ui/translate-button"
 
 const sanitizeJobDescription = (text: string) => {
   if (!text) return ""
@@ -303,7 +304,14 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
                       className="w-16 h-16 rounded-lg object-cover"
                     />
                     <div>
-                      <CardTitle className="text-2xl">{job.title}</CardTitle>
+                      <div className="flex items-center gap-2">
+                        <CardTitle className="text-2xl">{job.title}</CardTitle>
+                        <TranslateButton
+                          text={job.title}
+                          onTranslate={(t) => setJob(prev => prev ? ({ ...prev, title: t }) : null)}
+                          className="text-gray-400 hover:text-blue-600"
+                        />
+                      </div>
                       <CardDescription className="text-lg flex items-center mt-1">
                         <Building2 className="h-4 w-4 mr-1" />
                         {job.company}
@@ -405,7 +413,15 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
               <CardContent>
                 <div className="space-y-6">
                   <div>
-                    <h3 className="text-lg font-semibold mb-3">{t('jobs.detail.descriptionTitle')}</h3>
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-lg font-semibold">{t('jobs.detail.descriptionTitle')}</h3>
+                      <TranslateButton
+                        text={cleanedDescription}
+                        onTranslate={(t) => setJob(prev => prev ? ({ ...prev, description: t }) : null)}
+                        contentType="job_description"
+                        className="text-gray-400 hover:text-blue-600"
+                      />
+                    </div>
                     <div className="prose prose-sm max-w-none">
                       <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed">{cleanedDescription}</pre>
                     </div>

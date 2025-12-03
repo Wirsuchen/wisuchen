@@ -18,6 +18,8 @@ import { toast } from "@/hooks/use-toast"
 import { useTranslation } from "@/contexts/i18n-context"
 import { useAuth } from "@/contexts/auth-context"
 import { useRouter } from "next/navigation"
+import { Loader2, Languages } from "lucide-react"
+import { useTranslate } from "@/hooks/use-translate"
 
 export default function DealsPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -71,6 +73,7 @@ export default function DealsPage() {
         const mapped = (data.deals || []).map((d: any) => ({
           id: d.id,
           title: d.title,
+          description: d.description || '',
           brand: d.store || 'Partner',
           category: d.category || 'General',
           originalPrice: d.originalPrice ?? 0,
@@ -296,224 +299,13 @@ export default function DealsPage() {
             ) : viewMode === "grid" ? (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {sortedDeals.map((deal) => (
-                  <Card key={deal.id} className="hover:shadow-lg transition-shadow">
-                    <CardContent className="p-0">
-                      <div className="relative">
-                        <img
-                          src={deal.image || "/placeholder.svg?height=200&width=300&query=product"}
-                          alt={deal.title}
-                          className="w-full h-48 object-cover rounded-t-lg"
-                        />
-                        <div className="absolute top-2 left-2">
-                          <Badge className="bg-accent text-accent-foreground">-{deal.discount}%</Badge>
-                        </div>
-                        <div className="absolute top-2 right-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="bg-background/80 hover:bg-background"
-                            onClick={async (e) => {
-                              e.preventDefault()
-                              e.stopPropagation()
-
-                              if (!user) {
-                                router.push('/login')
-                                return
-                              }
-
-                              try {
-                                const response = await fetch('/api/saved/deals', {
-                                  method: 'POST',
-                                  headers: { 'Content-Type': 'application/json' },
-                                  body: JSON.stringify({
-                                    id: deal.id,
-                                    title: deal.title,
-                                    description: (deal as any).description || '',
-                                    currentPrice: deal.currentPrice,
-                                    originalPrice: deal.originalPrice,
-                                    image: deal.image,
-                                    url: (deal as any).url,
-                                    store: deal.brand,
-                                    category: (deal as any).category,
-                                  }),
-                                })
-                                const data = await response.json()
-                                if (data.success) {
-                                  toast({
-                                    title: t('deals.detail.savedTitle'),
-                                    description: t('deals.detail.savedDescription')
-                                  })
-                                } else {
-                                  toast({
-                                    title: t('deals.detail.saveErrorTitle'),
-                                    description: data.error || t('deals.detail.saveErrorDescription'),
-                                    variant: 'destructive'
-                                  })
-                                }
-                              } catch (error) {
-                                console.error('Error saving deal:', error)
-                                toast({
-                                  title: t('notifications.error'),
-                                  description: t('deals.detail.saveErrorDescription'),
-                                  variant: 'destructive'
-                                })
-                              }
-                            }}
-                          >
-                            <Heart className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        {deal.featured && (
-                          <div className="absolute bottom-2 left-2">
-                            <Badge variant="secondary">{t('deals.featured')}</Badge>
-                          </div>
-                        )}
-                      </div>
-                      <div className="p-4">
-                        <Link href={`/deals/${deal.id}`}>
-                          <h3 className="font-semibold hover:text-accent transition-colors line-clamp-2">
-                            {deal.title}
-                          </h3>
-                        </Link>
-
-                        <div className="flex items-center mt-2">
-                          <div className="flex items-center">
-                            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
-                            <span className="text-sm">{deal.rating}</span>
-                            <span className="text-sm text-muted-foreground ml-1">({deal.reviews})</span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center space-x-2 mt-3">
-                          <span className="text-2xl font-bold text-accent">{formatEuro(deal.currentPrice)}</span>
-                          <span className="text-sm text-muted-foreground line-through">{formatEuro(deal.originalPrice)}</span>
-                        </div>
-
-                        <div className="flex items-center justify-between mt-3">
-                          <div className="flex items-center text-sm text-green-600">
-                            <TrendingDown className="h-4 w-4 mr-1" />
-                            {tr('deals.saveAmount', { amount: formatEuro(deal.savings) })}
-                          </div>
-                          <span className="text-sm text-muted-foreground">{tr('deals.storesCount', { count: deal.stores.length })}</span>
-                        </div>
-
-                        <Button className="w-full mt-4" asChild>
-                          <Link href={(deal as any).url ? (deal as any).url : `/deals/${deal.id}`}>
-                            <ShoppingBag className="h-4 w-4 mr-2" />
-                            {(deal as any).url ? t('deals.viewDeal') : t('deals.comparePrices')}
-                          </Link>
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <DealCard key={deal.id} deal={deal} viewMode="grid" />
                 ))}
               </div>
             ) : (
               <div className="space-y-4">
                 {sortedDeals.map((deal) => (
-                  <Card key={deal.id} className="hover:shadow-lg transition-shadow">
-                    <CardContent className="p-6">
-                      <div className="flex items-start space-x-4">
-                        <img
-                          src={deal.image || "/placeholder.svg?height=120&width=120&query=product"}
-                          alt={deal.title}
-                          className="w-24 h-24 object-cover rounded-lg"
-                        />
-                        <div className="flex-1">
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <Link href={`/deals/${deal.id}`}>
-                                <h3 className="text-lg font-semibold hover:text-accent transition-colors">
-                                  {deal.title}
-                                </h3>
-                              </Link>
-                              <div className="flex items-center mt-1">
-                                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
-                                <span className="text-sm">{deal.rating}</span>
-                                <span className="text-sm text-muted-foreground ml-1">{tr('deals.reviewsCount', { count: deal.reviews })}</span>
-                              </div>
-                            </div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={async (e) => {
-                                e.preventDefault()
-                                e.stopPropagation()
-
-                                if (!user) {
-                                  router.push('/login')
-                                  return
-                                }
-
-                                try {
-                                  const response = await fetch('/api/saved/deals', {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({
-                                      id: deal.id,
-                                      title: deal.title,
-                                      description: (deal as any).description || '',
-                                      currentPrice: deal.currentPrice,
-                                      originalPrice: deal.originalPrice,
-                                      image: deal.image,
-                                      url: (deal as any).url,
-                                      store: deal.brand,
-                                      category: (deal as any).category,
-                                    }),
-                                  })
-                                  const data = await response.json()
-                                  if (data.success) {
-                                    toast({
-                                      title: t('deals.detail.savedTitle'),
-                                      description: t('deals.detail.savedDescription')
-                                    })
-                                  } else {
-                                    toast({
-                                      title: t('deals.detail.saveErrorTitle'),
-                                      description: data.error || t('deals.detail.saveErrorDescription'),
-                                      variant: 'destructive'
-                                    })
-                                  }
-                                } catch (error) {
-                                  console.error('Error saving deal:', error)
-                                  toast({
-                                    title: t('notifications.error'),
-                                    description: t('deals.detail.saveErrorDescription'),
-                                    variant: 'destructive'
-                                  })
-                                }
-                              }}
-                            >
-                              <Heart className="h-4 w-4" />
-                            </Button>
-                          </div>
-
-                          <div className="flex items-center justify-between mt-4">
-                            <div className="flex items-center space-x-4">
-                              <div className="flex items-center space-x-2">
-                                <span className="text-2xl font-bold text-accent">{formatEuro(deal.currentPrice)}</span>
-                                <span className="text-sm text-muted-foreground line-through">{formatEuro(deal.originalPrice)}</span>
-                                <Badge className="bg-accent text-accent-foreground">-{deal.discount}%</Badge>
-                              </div>
-                              <div className="flex items-center text-sm text-green-600">
-                                <TrendingDown className="h-4 w-4 mr-1" />
-                                {tr('deals.saveAmount', { amount: formatEuro(deal.savings) })}
-                              </div>
-                            </div>
-                            <div className="flex items-center space-x-4">
-                              <span className="text-sm text-muted-foreground">{tr('deals.storesCount', { count: deal.stores.length })}</span>
-                              <Button asChild>
-                                <Link href={(deal as any).url ? (deal as any).url : `/deals/${deal.id}`}>
-                                  <ShoppingBag className="h-4 w-4 mr-2" />
-                                  {(deal as any).url ? t('deals.viewDeal') : t('deals.comparePrices')}
-                                </Link>
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <DealCard key={deal.id} deal={deal} viewMode="list" />
                 ))}
               </div>
             )}
@@ -547,5 +339,246 @@ export default function DealsPage() {
         </div>
       </>
     </PageLayout>
+  )
+}
+
+function DealCard({ deal, viewMode }: { deal: any, viewMode: "grid" | "list" }) {
+  const { t, tr } = useTranslation()
+  const { user } = useAuth()
+  const router = useRouter()
+  const [title, setTitle] = useState(deal.title)
+  const [description, setDescription] = useState(deal.description)
+  const { translate } = useTranslate()
+  const [isTranslating, setIsTranslating] = useState(false)
+
+  const handleTranslate = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    setIsTranslating(true)
+    try {
+      const [newTitle, newDesc] = await Promise.all([
+        translate(deal.title, 'general'),
+        deal.description ? translate(deal.description, 'general') : Promise.resolve('')
+      ])
+
+      setTitle(newTitle)
+      if (newDesc) setDescription(newDesc)
+
+      toast({
+        title: t('common.success'),
+        description: t('common.translationSuccess'),
+      })
+    } catch (error) {
+      toast({
+        title: t('common.error'),
+        description: t('common.translationError'),
+        variant: 'destructive',
+      })
+    } finally {
+      setIsTranslating(false)
+    }
+  }
+
+  const handleSave = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    if (!user) {
+      router.push('/login')
+      return
+    }
+
+    try {
+      const response = await fetch('/api/saved/deals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: deal.id,
+          title: deal.title,
+          description: deal.description || '',
+          currentPrice: deal.currentPrice,
+          originalPrice: deal.originalPrice,
+          image: deal.image,
+          url: deal.url,
+          store: deal.brand,
+          category: deal.category,
+        }),
+      })
+      const data = await response.json()
+      if (data.success) {
+        toast({
+          title: t('deals.detail.savedTitle'),
+          description: t('deals.detail.savedDescription')
+        })
+      } else {
+        toast({
+          title: t('deals.detail.saveErrorTitle'),
+          description: data.error || t('deals.detail.saveErrorDescription'),
+          variant: 'destructive'
+        })
+      }
+    } catch (error) {
+      console.error('Error saving deal:', error)
+      toast({
+        title: t('notifications.error'),
+        description: t('deals.detail.saveErrorDescription'),
+        variant: 'destructive'
+      })
+    }
+  }
+
+  if (viewMode === "grid") {
+    return (
+      <Card className="hover:shadow-lg transition-shadow">
+        <CardContent className="p-0">
+          <div className="relative">
+            <img
+              src={deal.image || "/placeholder.svg?height=200&width=300&query=product"}
+              alt={title}
+              className="w-full h-48 object-cover rounded-t-lg"
+            />
+            <div className="absolute top-2 left-2">
+              <Badge className="bg-accent text-accent-foreground">-{deal.discount}%</Badge>
+            </div>
+            <div className="absolute top-2 right-2 flex gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="bg-background/80 hover:bg-background h-8 w-8 p-0"
+                onClick={handleTranslate}
+                disabled={isTranslating}
+                title={t('common.translate')}
+              >
+                {isTranslating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Languages className="h-4 w-4" />}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="bg-background/80 hover:bg-background h-8 w-8 p-0"
+                onClick={handleSave}
+              >
+                <Heart className="h-4 w-4" />
+              </Button>
+            </div>
+            {deal.featured && (
+              <div className="absolute bottom-2 left-2">
+                <Badge variant="secondary">{t('deals.featured')}</Badge>
+              </div>
+            )}
+          </div>
+          <div className="p-4">
+            <div className="flex justify-between items-start gap-2">
+              <Link href={`/deals/${deal.id}`} className="flex-1">
+                <h3 className="font-semibold hover:text-accent transition-colors line-clamp-2">
+                  {title}
+                </h3>
+              </Link>
+            </div>
+
+            <div className="flex items-center mt-2">
+              <div className="flex items-center">
+                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
+                <span className="text-sm">{deal.rating}</span>
+                <span className="text-sm text-muted-foreground ml-1">({deal.reviews})</span>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-2 mt-3">
+              <span className="text-2xl font-bold text-accent">{formatEuro(deal.currentPrice)}</span>
+              <span className="text-sm text-muted-foreground line-through">{formatEuro(deal.originalPrice)}</span>
+            </div>
+
+            <div className="flex items-center justify-between mt-3">
+              <div className="flex items-center text-sm text-green-600">
+                <TrendingDown className="h-4 w-4 mr-1" />
+                {tr('deals.saveAmount', { amount: formatEuro(deal.savings) })}
+              </div>
+              <span className="text-sm text-muted-foreground">{tr('deals.storesCount', { count: deal.stores.length })}</span>
+            </div>
+
+            <Button className="w-full mt-4" asChild>
+              <Link href={deal.url ? deal.url : `/deals/${deal.id}`}>
+                <ShoppingBag className="h-4 w-4 mr-2" />
+                {deal.url ? t('deals.viewDeal') : t('deals.comparePrices')}
+              </Link>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  return (
+    <Card className="hover:shadow-lg transition-shadow">
+      <CardContent className="p-6">
+        <div className="flex items-start space-x-4">
+          <img
+            src={deal.image || "/placeholder.svg?height=120&width=120&query=product"}
+            alt={title}
+            className="w-24 h-24 object-cover rounded-lg"
+          />
+          <div className="flex-1">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-start justify-between gap-2">
+                  <Link href={`/deals/${deal.id}`}>
+                    <h3 className="text-lg font-semibold hover:text-accent transition-colors">
+                      {title}
+                    </h3>
+                  </Link>
+                </div>
+                <div className="flex items-center mt-1">
+                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
+                  <span className="text-sm">{deal.rating}</span>
+                  <span className="text-sm text-muted-foreground ml-1">{tr('deals.reviewsCount', { count: deal.reviews })}</span>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleTranslate}
+                  disabled={isTranslating}
+                  title={t('common.translate')}
+                >
+                  {isTranslating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Languages className="h-4 w-4" />}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleSave}
+                >
+                  <Heart className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between mt-4">
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2">
+                  <span className="text-2xl font-bold text-accent">{formatEuro(deal.currentPrice)}</span>
+                  <span className="text-sm text-muted-foreground line-through">{formatEuro(deal.originalPrice)}</span>
+                  <Badge className="bg-accent text-accent-foreground">-{deal.discount}%</Badge>
+                </div>
+                <div className="flex items-center text-sm text-green-600">
+                  <TrendingDown className="h-4 w-4 mr-1" />
+                  {tr('deals.saveAmount', { amount: formatEuro(deal.savings) })}
+                </div>
+              </div>
+              <div className="flex items-center space-x-4">
+                <span className="text-sm text-muted-foreground">{tr('deals.storesCount', { count: deal.stores.length })}</span>
+                <Button asChild>
+                  <Link href={deal.url ? deal.url : `/deals/${deal.id}`}>
+                    <ShoppingBag className="h-4 w-4 mr-2" />
+                    {deal.url ? t('deals.viewDeal') : t('deals.comparePrices')}
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   )
 }

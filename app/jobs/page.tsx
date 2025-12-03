@@ -8,13 +8,16 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useJobs, type Job } from '@/hooks/use-jobs'
 import { PageLayout } from '@/components/layout/page-layout'
-import { Loader2, Search, MapPin, Briefcase, DollarSign, ExternalLink, Filter, RefreshCw, TrendingUp, Edit } from 'lucide-react'
+import { Loader2, Search, MapPin, Briefcase, DollarSign, ExternalLink, Filter, RefreshCw, TrendingUp, Edit, Languages } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/contexts/auth-context'
 import Link from 'next/link'
 import { useTranslation } from '@/contexts/i18n-context'
+import { TranslateButton } from '@/components/ui/translate-button'
+import { useTranslate } from '@/hooks/use-translate'
+import { useToast } from '@/hooks/use-toast'
 
 const sanitizeJobDescription = (text: string) => {
   if (!text) return ''
@@ -457,6 +460,11 @@ export default function JobsPage() {
  */
 function JobCard({ job }: { job: Job }) {
   const { t, tr } = useTranslation()
+  const [title, setTitle] = useState(job.title)
+  const [description, setDescription] = useState(job.description)
+  const { translate } = useTranslate()
+  const [isTranslating, setIsTranslating] = useState(false)
+  const { toast } = useToast()
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -470,12 +478,39 @@ function JobCard({ job }: { job: Job }) {
     return date.toLocaleDateString()
   }
 
+  const handleTranslate = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
 
+    setIsTranslating(true)
+    try {
+      const [newTitle, newDesc] = await Promise.all([
+        translate(job.title, 'general'),
+        job.description ? translate(job.description, 'job_description') : Promise.resolve('')
+      ])
+
+      setTitle(newTitle)
+      if (newDesc) setDescription(newDesc)
+
+      toast({
+        title: t('common.success'),
+        description: t('common.translationSuccess'),
+      })
+    } catch (error) {
+      toast({
+        title: t('common.error'),
+        description: t('common.translationError'),
+        variant: 'destructive',
+      })
+    } finally {
+      setIsTranslating(false)
+    }
+  }
 
   const onOpenDetails = () => {
     try {
       const key = `job:${job.source}:${job.externalId || job.id}`
-      sessionStorage.setItem(key, JSON.stringify(job))
+      sessionStorage.setItem(key, JSON.stringify({ ...job, title, description }))
     } catch { }
   }
 
@@ -483,15 +518,17 @@ function JobCard({ job }: { job: Job }) {
     <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-4 sm:p-6 border">
       <div className="flex flex-col sm:flex-row items-start justify-between gap-3 mb-3">
         <div className="flex-1 w-full sm:w-auto">
-          <a
-            href={`/jobs/${encodeURIComponent(job.externalId || job.id)}?source=${encodeURIComponent(job.source)}`}
-            onClick={onOpenDetails}
-            className="block"
-          >
-            <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 hover:text-blue-600">
-              <span>{job.title}</span>
-            </h3>
-          </a>
+          <div className="flex items-start justify-between gap-2">
+            <a
+              href={`/jobs/${encodeURIComponent(job.externalId || job.id)}?source=${encodeURIComponent(job.source)}`}
+              onClick={onOpenDetails}
+              className="block flex-1"
+            >
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 hover:text-blue-600">
+                <span>{title}</span>
+              </h3>
+            </a>
+          </div>
           <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-sm text-gray-600">
             {job.company && (
               <span className="flex items-center gap-1">
@@ -519,10 +556,12 @@ function JobCard({ job }: { job: Job }) {
         </div>
       </div>
 
-      {job.description && (
-        <p className="text-gray-700 mb-4 line-clamp-2">
-          {getJobSnippet(job.description)}...
-        </p>
+      {description && (
+        <div className="relative group">
+          <p className="text-gray-700 mb-4 line-clamp-2">
+            {getJobSnippet(description)}...
+          </p>
+        </div>
       )}
 
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
@@ -559,6 +598,16 @@ function JobCard({ job }: { job: Job }) {
         </div>
 
         <div className="flex gap-2 w-full sm:w-auto">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleTranslate}
+            disabled={isTranslating}
+            className="flex-1 sm:flex-initial text-muted-foreground hover:text-primary"
+          >
+            {isTranslating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Languages className="h-4 w-4 mr-2" />}
+            {t('common.translate')}
+          </Button>
           <Button asChild variant="outline" size="sm" className="flex-1 sm:flex-initial">
             <a
               href={`/jobs/${encodeURIComponent(job.externalId || job.id)}?source=${encodeURIComponent(job.source)}`}

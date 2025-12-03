@@ -40,7 +40,7 @@ export async function generateJobDescription(params: {
 
     return {
       success: true,
-      description: response.text,
+      description: response.text || '',
     }
   } catch (error: any) {
     console.error('Error generating job description:', error)
@@ -74,7 +74,7 @@ export async function generateMetaDescription(params: {
       },
     })
 
-    const description = response.text.replace(/["']/g, '').trim()
+    const description = (response.text || '').replace(/["']/g, '').trim()
     return {
       success: true,
       description: description.substring(0, maxLength),
@@ -128,7 +128,7 @@ export async function generateBlogArticle(params: {
 
     return {
       success: true,
-      content: response.text,
+      content: response.text || '',
     }
   } catch (error: any) {
     console.error('Error generating blog article:', error)
@@ -161,7 +161,16 @@ export async function translateContent(params: {
     it: 'Italian',
   }
 
-  const prompt = `Translate this ${contentType.replace('_', ' ')} from ${languageNames[fromLanguage]} to ${languageNames[toLanguage]}:\n\n${content}\n\nMaintain the tone, formatting, and professional style. Ensure all industry-specific terms are accurately translated.`
+  const prompt = `You are a professional translator. Translate the following ${contentType.replace('_', ' ')} from ${languageNames[fromLanguage]} to ${languageNames[toLanguage]}.
+  
+  IMPORTANT INSTRUCTIONS:
+  1. Return ONLY the translated text.
+  2. Do NOT add any conversational text, introductions, or explanations.
+  3. Maintain the original tone, formatting, and professional style.
+  4. Ensure all industry-specific terms are accurately translated.
+  
+  Content to translate:
+  ${content}`
 
   try {
     const response = await ai.models.generateContent({
@@ -175,7 +184,7 @@ export async function translateContent(params: {
 
     return {
       success: true,
-      translation: response.text,
+      translation: response.text || '',
     }
   } catch (error: any) {
     console.error('Error translating content:', error)
@@ -209,7 +218,7 @@ export async function generateSEOKeywords(params: {
       },
     })
 
-    const keywordsText = response.text.trim()
+    const keywordsText = (response.text || '').trim()
     const keywords = keywordsText
       .split(',')
       .map((k: string) => k.trim())
