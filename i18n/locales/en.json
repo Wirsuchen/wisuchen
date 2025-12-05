@@ -52,7 +52,15 @@
     "newsletterSubscribedDescription": "Thank you for subscribing to our newsletter",
     "newsletterErrorTryAgain": "Failed to subscribe. Please try again.",
     "newsletterErrorTryAgainLater": "Failed to subscribe. Please try again later.",
-    "subscribing": "Subscribing..."
+    "subscribing": "Subscribing...",
+    "info": "Info",
+    "translationSuccess": "Content translated successfully",
+    "translationError": "Failed to translate content. Please try again.",
+    "translationFromCache": "Translation loaded from cache",
+    "alreadyInSourceLanguage": "Content is already in the source language",
+    "translateAll": "Translate All",
+    "batchTranslationSuccess": "All items translated successfully",
+    "translating": "Translating..."
   },
   "nav": {
     "home": "Home",
@@ -459,11 +467,28 @@
     "faq": "FAQ",
     "support": "Support",
     "followUs": "Follow Us",
-    "newsletter": "Newsletter",
-    "subscribeNewsletter": "Subscribe to Newsletter",
-    "enterEmail": "Enter email",
+    "newsletter": "Stay updated with our latest news and offers.",
+    "subscribeNewsletter": "Subscribe to our newsletter",
+    "enterEmail": "Enter your email",
     "subscribe": "Subscribe",
-    "copyrightBrand": "© 2024 WIRsuchen."
+    "subscribing": "Subscribing...",
+    "copyrightBrand": "© 2024 WIRsuchen.",
+    "allRightsReserved": "All rights reserved.",
+    "facebook": "Facebook",
+    "instagram": "Instagram",
+    "company": "Project",
+    "legal": "Legal Notice",
+    "terms": "Terms & Conditions",
+    "privacy": "Privacy Policy",
+    "apiDocs": "API Docs",
+    "explore": "Explore",
+    "account": "Account",
+    "newsletterInvalidEmailTitle": "Invalid Email",
+    "newsletterInvalidEmailDescription": "Please enter a valid email address.",
+    "newsletterSubscribedTitle": "Subscribed!",
+    "newsletterSubscribedDescription": "You have successfully subscribed to our newsletter.",
+    "newsletterErrorTryAgain": "Something went wrong. Please try again.",
+    "newsletterErrorTryAgainLater": "Please try again later."
   },
   "about": {
     "stats": {
@@ -1962,32 +1987,6 @@
       "429": "Too Many Requests (rate limit exceeded)",
       "500": "Internal Server Error"
     }
-  },
-  "footer": {
-    "facebook": "Facebook",
-    "instagram": "Instagram",
-    "company": "Project",
-    "aboutUs": "About Us",
-    "legal": "Legal Notice",
-    "terms": "Terms & Conditions",
-    "privacy": "Privacy Policy",
-    "support": "Support",
-    "apiDocs": "API Docs",
-    "explore": "Explore",
-    "account": "Account",
-    "newsletterInvalidEmailTitle": "Invalid Email",
-    "newsletterInvalidEmailDescription": "Please enter a valid email address.",
-    "newsletterSubscribedTitle": "Subscribed!",
-    "newsletterSubscribedDescription": "You have successfully subscribed to our newsletter.",
-    "newsletterErrorTryAgain": "Something went wrong. Please try again.",
-    "newsletterErrorTryAgainLater": "Please try again later.",
-    "subscribeNewsletter": "Subscribe to our newsletter",
-    "newsletter": "Stay updated with our latest news and offers.",
-    "enterEmail": "Enter your email",
-    "subscribing": "Subscribing...",
-    "subscribe": "Subscribe",
-    "copyrightBrand": "WIRsuchen.",
-    "allRightsReserved": "All rights reserved."
   },
   "supervisor": {
     "panel": {

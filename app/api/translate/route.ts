@@ -1,37 +1,57 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { translateContent } from '@/lib/services/ai/gemini'
+import { translateText, translateBatch, SupportedLanguage } from '@/lib/services/google-translate'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { content, toLanguage, contentType = 'general' } = body
+    const { content, texts, toLanguage, fromLanguage, contentType = 'general' } = body
 
-    if (!content || !toLanguage) {
+    // Validate target language
+    const validLanguages: SupportedLanguage[] = ['en', 'de', 'fr', 'it']
+    if (!toLanguage || !validLanguages.includes(toLanguage)) {
       return NextResponse.json(
-        { error: 'Content and toLanguage are required' },
+        { error: 'Valid toLanguage is required (en, de, fr, it)' },
         { status: 400 }
       )
     }
 
-    // Default fromLanguage to 'en' if not specified, or maybe auto-detect?
-    // The translateContent function requires fromLanguage.
-    // For now, let's assume 'en' as source or pass it from client.
-    // Actually, let's assume 'en' if not provided, or maybe 'de' since it's WIRsuchen?
-    // Let's require it or default to 'en'.
-    const fromLanguage = body.fromLanguage || 'en'
+    // Handle batch translation
+    if (texts && Array.isArray(texts)) {
+      const result = await translateBatch(
+        texts,
+        toLanguage as SupportedLanguage,
+        fromLanguage as SupportedLanguage | undefined
+      )
 
-    const result = await translateContent({
+      if (!result.success) {
+        return NextResponse.json({ error: result.error }, { status: 500 })
+      }
+
+      return NextResponse.json({ translations: result.translations })
+    }
+
+    // Handle single text translation
+    if (!content) {
+      return NextResponse.json(
+        { error: 'Content or texts array is required' },
+        { status: 400 }
+      )
+    }
+
+    const result = await translateText(
       content,
-      fromLanguage,
-      toLanguage,
-      contentType,
-    })
+      toLanguage as SupportedLanguage,
+      fromLanguage as SupportedLanguage | undefined
+    )
 
     if (!result.success) {
       return NextResponse.json({ error: result.error }, { status: 500 })
     }
 
-    return NextResponse.json({ translation: result.translation })
+    return NextResponse.json({ 
+      translation: result.translation,
+      fromCache: result.fromCache 
+    })
   } catch (error: any) {
     console.error('Error in translate API:', error)
     return NextResponse.json(

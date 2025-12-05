@@ -237,6 +237,41 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
     }, 2000)
   }
 
+  const handleShare = async () => {
+    if (!job) return
+
+    const shareData = {
+      title: job.title,
+      text: `Check out this job at ${job.company}: ${job.title}`,
+      url: window.location.href,
+    }
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData)
+      } catch (error) {
+        if ((error as Error).name !== 'AbortError') {
+          console.error('Error sharing:', error)
+        }
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(window.location.href)
+        toast({
+          title: "Link copied",
+          description: "Job link copied to clipboard",
+        })
+      } catch (error) {
+        console.error('Error copying to clipboard:', error)
+        toast({
+          title: "Error",
+          description: "Failed to copy link",
+          variant: "destructive",
+        })
+      }
+    }
+  }
+
   if (loadingJob) {
     return (
       <div className="min-h-screen">
@@ -401,7 +436,7 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
                     >
                       <Heart className="h-4 w-4" />
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={handleShare}>
                       <Share2 className="h-4 w-4" />
                     </Button>
                   </div>

@@ -37,7 +37,17 @@
     "loadMore": "Mehr laden",
     "photos": "Fotos",
     "videos": "Videos",
-    "refresh": "Aktualisieren"
+    "refresh": "Aktualisieren",
+    "translate": "Übersetzen",
+    "changeLanguage": "Sprache ändern",
+    "info": "Info",
+    "translationSuccess": "Inhalt erfolgreich übersetzt",
+    "translationError": "Übersetzung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+    "translationFromCache": "Übersetzung aus dem Cache geladen",
+    "alreadyInSourceLanguage": "Inhalt ist bereits in der Quellsprache",
+    "translateAll": "Alle übersetzen",
+    "batchTranslationSuccess": "Alle Elemente erfolgreich übersetzt",
+    "translating": "Übersetze..."
   },
   "nav": {
     "home": "Startseite",
@@ -444,25 +454,30 @@
     "faq": "FAQ",
     "support": "Support",
     "followUs": "Folgen Sie uns",
-    "newsletter": "Newsletter",
+    "newsletter": "Bleiben Sie auf dem Laufenden mit unseren neuesten Nachrichten und Angeboten.",
     "subscribeNewsletter": "Newsletter abonnieren",
-    "enterEmail": "E-Mail eingeben",
+    "enterEmail": "Geben Sie Ihre E-Mail ein",
     "subscribe": "Abonnieren",
+    "subscribing": "Abonnieren...",
     "copyrightBrand": "© 2024 WIRsuchen.",
-    "allRightsReserved": "Alle Rechte vorbehalten",
+    "allRightsReserved": "Alle Rechte vorbehalten.",
     "madeWith": "Erstellt mit",
     "in": "in",
     "explore": "Entdecken",
     "account": "Konto",
     "company": "Unternehmen",
     "apiDocs": "API-Dokumentation",
+    "facebook": "Facebook",
+    "instagram": "Instagram",
+    "legal": "Impressum",
+    "terms": "AGB",
+    "privacy": "Datenschutz",
     "newsletterInvalidEmailTitle": "Ungültige E-Mail",
-    "newsletterInvalidEmailDescription": "Bitte geben Sie eine gültige E-Mail-Adresse ein",
+    "newsletterInvalidEmailDescription": "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
     "newsletterSubscribedTitle": "Abonniert!",
-    "newsletterSubscribedDescription": "Vielen Dank für Ihr Newsletter-Abonnement",
-    "newsletterErrorTryAgain": "Abonnement fehlgeschlagen. Bitte versuchen Sie es erneut.",
-    "newsletterErrorTryAgainLater": "Abonnement fehlgeschlagen. Bitte versuchen Sie es später erneut.",
-    "subscribing": "Abonnieren..."
+    "newsletterSubscribedDescription": "Sie haben sich erfolgreich für unseren Newsletter angemeldet.",
+    "newsletterErrorTryAgain": "Etwas ist schief gelaufen. Bitte versuchen Sie es erneut.",
+    "newsletterErrorTryAgainLater": "Bitte versuchen Sie es später erneut."
   },
   "forms": {
     "required": "Erforderlich",
@@ -624,84 +639,6 @@
     "passwordUpdatedDesc": "Ihr Passwort wurde erfolgreich aktualisiert.",
     "passwordUpdateFailed": "Passwortaktualisierung fehlgeschlagen",
     "passwordsDoNotMatch": "Passwörter stimmen nicht überein"
-  },
-  "invoices": {
-    "subtitle": "Erstellen und verwalten Sie Ihre Rechnungen",
-    "createInvoiceButton": "Rechnung erstellen",
-    "adminOnlyNotice": "Das Erstellen von Rechnungen ist nur für Admin-Benutzer verfügbar",
-    "stats": {
-      "totalInvoices": "Gesamte Rechnungen",
-      "totalRevenue": "Gesamtumsatz",
-      "pending": "Ausstehend",
-      "overdue": "Überfällig"
-    },
-    "status": {
-      "paid": "Bezahlt",
-      "pending": "Ausstehend",
-      "sent": "Gesendet",
-      "overdue": "Überfällig",
-      "draft": "Entwurf"
-    },
-    "form": {
-      "clientNameLabel": "Kundenname *",
-      "clientNamePlaceholder": "Firmenname",
-      "clientEmailLabel": "Kunden-E-Mail",
-      "clientEmailPlaceholder": "kunde@firma.de",
-      "clientAddressLabel": "Kundenadresse",
-      "clientAddressPlaceholder": "Straße, Stadt, Postleitzahl, Land",
-      "descriptionLabel": "Beschreibung *",
-      "descriptionPlaceholder": "Beschreiben Sie die Dienstleistungen oder Produkte...",
-      "amountLabel": "Betrag (€) *",
-      "amountPlaceholder": "1000",
-      "vatRateLabel": "Mehrwertsteuersatz (%)",
-      "vatRateOption0": "0% (Keine MwSt)",
-      "vatRateOption7": "7% (Ermäßigter Satz)",
-      "vatRateOption19": "19% (Standardsatz)",
-      "includeWatermark": "WIRsuchen-Wasserzeichen einfügen",
-      "createAndDownload": "Erstellen & Herunterladen"
-    },
-    "createDialog": {
-      "title": "Neue Rechnung erstellen",
-      "description": "Füllen Sie die Details unten aus, um eine neue Rechnung zu erstellen"
-    },
-    "table": {
-      "title": "Rechnungsverlauf",
-      "description": "Alle Ihre Rechnungen anzeigen und verwalten",
-      "headers": {
-        "invoiceId": "Rechnungs-ID",
-        "client": "Kunde",
-        "amount": "Betrag",
-        "vat": "MwSt",
-        "status": "Status",
-        "created": "Erstellt",
-        "dueDate": "Fälligkeitsdatum",
-        "actions": "Aktionen"
-      },
-      "empty": "Noch keine Rechnungen."
-    },
-    "preview": {
-      "title": "Rechnungsvorschau - {id}",
-      "description": "Sehen Sie sich Ihre Rechnung vor dem Herunterladen an",
-      "brandSubtitle": "Professionelle Dienstleistungen",
-      "badge": "RECHNUNG",
-      "from": "Von:",
-      "to": "An:",
-      "invoiceDate": "Rechnungsdatum:",
-      "dueDate": "Fällig am:",
-      "status": "Status:",
-      "lineItems": {
-        "description": "Beschreibung",
-        "amount": "Betrag",
-        "invoiceTotal": "Rechnungssumme"
-      },
-      "summary": {
-        "subtotal": "Zwischensumme:",
-        "vat": "MwSt ({rate}%):",
-        "total": "Gesamt:"
-      },
-      "footer": "Erstellt vom WIRsuchen-Rechnungssystem",
-      "downloadPdf": "PDF herunterladen"
-    }
   },
   "about": {
     "stats": {
@@ -2025,32 +1962,6 @@
       "htmlDownloadSuccess": "HTML erfolgreich heruntergeladen",
       "htmlDownloadError": "Fehler beim Herunterladen von HTML"
     }
-  },
-  "footer": {
-    "facebook": "Facebook",
-    "instagram": "Instagram",
-    "company": "Projekt",
-    "aboutUs": "Über uns",
-    "legal": "Impressum",
-    "terms": "AGB",
-    "privacy": "Datenschutz",
-    "support": "Support",
-    "apiDocs": "API Doku",
-    "explore": "Entdecken",
-    "account": "Konto",
-    "newsletterInvalidEmailTitle": "Ungültige E-Mail",
-    "newsletterInvalidEmailDescription": "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
-    "newsletterSubscribedTitle": "Abonniert!",
-    "newsletterSubscribedDescription": "Sie haben sich erfolgreich für unseren Newsletter angemeldet.",
-    "newsletterErrorTryAgain": "Etwas ist schief gelaufen. Bitte versuchen Sie es erneut.",
-    "newsletterErrorTryAgainLater": "Bitte versuchen Sie es später erneut.",
-    "subscribeNewsletter": "Newsletter abonnieren",
-    "newsletter": "Bleiben Sie auf dem Laufenden mit unseren neuesten Nachrichten und Angeboten.",
-    "enterEmail": "Geben Sie Ihre E-Mail ein",
-    "subscribing": "Abonnieren...",
-    "subscribe": "Abonnieren",
-    "copyrightBrand": "WIRsuchen.",
-    "allRightsReserved": "Alle Rechte vorbehalten."
   },
   "supervisor": {
     "panel": {

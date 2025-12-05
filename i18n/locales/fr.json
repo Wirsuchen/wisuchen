@@ -36,7 +36,17 @@
     "loadMore": "Charger plus",
     "photos": "Photos",
     "videos": "Vidéos",
-    "refresh": "Actualiser"
+    "refresh": "Actualiser",
+    "translate": "Traduire",
+    "changeLanguage": "Changer de langue",
+    "info": "Info",
+    "translationSuccess": "Contenu traduit avec succès",
+    "translationError": "Échec de la traduction. Veuillez réessayer.",
+    "translationFromCache": "Traduction chargée depuis le cache",
+    "alreadyInSourceLanguage": "Le contenu est déjà dans la langue source",
+    "translateAll": "Tout traduire",
+    "batchTranslationSuccess": "Tous les éléments ont été traduits avec succès",
+    "translating": "Traduction en cours..."
   },
   "nav": {
     "home": "Accueil",

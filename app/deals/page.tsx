@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { PageLayout } from "@/components/layout/page-layout"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -20,6 +20,8 @@ import { useAuth } from "@/contexts/auth-context"
 import { useRouter } from "next/navigation"
 import { Loader2, Languages } from "lucide-react"
 import { useTranslate } from "@/hooks/use-translate"
+import { useAutoTranslatedContent } from "@/contexts/dynamic-translation-context"
+
 
 export default function DealsPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -129,6 +131,21 @@ export default function DealsPage() {
 
   const sortedDeals = sortDeals(filteredDeals, sortBy)
 
+  // Prepare content items for auto-translation
+  const contentItems = useMemo(() => {
+    return sortedDeals.map((deal: any) => ({
+      id: `deal-${deal.id}`,
+      type: 'deal' as const,
+      fields: {
+        title: deal.title || '',
+        description: deal.description || '',
+      }
+    }))
+  }, [sortedDeals])
+
+  // Register deals for auto-translation when locale changes
+  const { getTranslated, isTranslating } = useAutoTranslatedContent(contentItems)
+
   const clearAll = () => {
     setSearchQuery("")
     setSortBy("best-deal")
@@ -136,6 +153,7 @@ export default function DealsPage() {
     setSelectedBrands([])
     setPriceRange("")
   }
+
 
   return (
     <PageLayout showBackButton={false} containerClassName="container mx-auto px-4 sm:px-6 py-8">
@@ -296,18 +314,28 @@ export default function DealsPage() {
               <div className="text-center py-12">
                 <p className="text-muted-foreground">{t('deals.noDealsFoundWithFilters')}</p>
               </div>
-            ) : viewMode === "grid" ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {sortedDeals.map((deal) => (
-                  <DealCard key={deal.id} deal={deal} viewMode="grid" />
-                ))}
-              </div>
             ) : (
-              <div className="space-y-4">
-                {sortedDeals.map((deal) => (
-                  <DealCard key={deal.id} deal={deal} viewMode="list" />
-                ))}
-              </div>
+              <>
+                {isTranslating && (
+                  <div className="flex items-center justify-center gap-2 py-2 text-sm text-muted-foreground">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>{t('common.translating')}</span>
+                  </div>
+                )}
+                {viewMode === "grid" ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {sortedDeals.map((deal) => (
+                      <DealCard key={deal.id} deal={deal} viewMode="grid" getTranslated={getTranslated} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {sortedDeals.map((deal) => (
+                      <DealCard key={deal.id} deal={deal} viewMode="list" getTranslated={getTranslated} />
+                    ))}
+                  </div>
+                )}
+              </>
             )}
 
             {/* Pagination (hidden when only one page) */}
@@ -342,28 +370,41 @@ export default function DealsPage() {
   )
 }
 
-function DealCard({ deal, viewMode }: { deal: any, viewMode: "grid" | "list" }) {
+interface DealCardProps {
+  deal: any
+  viewMode: "grid" | "list"
+  getTranslated: (id: string, field: string, original: string) => string
+}
+
+function DealCard({ deal, viewMode, getTranslated }: DealCardProps) {
   const { t, tr } = useTranslation()
   const { user } = useAuth()
   const router = useRouter()
-  const [title, setTitle] = useState(deal.title)
-  const [description, setDescription] = useState(deal.description)
   const { translate } = useTranslate()
-  const [isTranslating, setIsTranslating] = useState(false)
+  const [isManualTranslating, setIsManualTranslating] = useState(false)
+  const [manualTitle, setManualTitle] = useState<string | null>(null)
+  const [manualDescription, setManualDescription] = useState<string | null>(null)
+
+  // Generate content ID for this deal
+  const contentId = `deal-${deal.id}`
+
+  // Use manually translated content if available, otherwise use auto-translated
+  const title = manualTitle ?? getTranslated(contentId, 'title', deal.title)
+  const description = manualDescription ?? getTranslated(contentId, 'description', deal.description || '')
 
   const handleTranslate = async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
 
-    setIsTranslating(true)
+    setIsManualTranslating(true)
     try {
       const [newTitle, newDesc] = await Promise.all([
-        translate(deal.title, 'general'),
-        deal.description ? translate(deal.description, 'general') : Promise.resolve('')
+        translate(deal.title, { contentType: 'general' }),
+        deal.description ? translate(deal.description, { contentType: 'general' }) : Promise.resolve('')
       ])
 
-      setTitle(newTitle)
-      if (newDesc) setDescription(newDesc)
+      setManualTitle(newTitle)
+      if (newDesc) setManualDescription(newDesc)
 
       toast({
         title: t('common.success'),
@@ -376,7 +417,7 @@ function DealCard({ deal, viewMode }: { deal: any, viewMode: "grid" | "list" }) 
         variant: 'destructive',
       })
     } finally {
-      setIsTranslating(false)
+      setIsManualTranslating(false)
     }
   }
 
@@ -447,10 +488,10 @@ function DealCard({ deal, viewMode }: { deal: any, viewMode: "grid" | "list" }) 
                 size="sm"
                 className="bg-background/80 hover:bg-background h-8 w-8 p-0"
                 onClick={handleTranslate}
-                disabled={isTranslating}
+                disabled={isManualTranslating}
                 title={t('common.translate')}
               >
-                {isTranslating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Languages className="h-4 w-4" />}
+                {isManualTranslating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Languages className="h-4 w-4" />}
               </Button>
               <Button
                 variant="ghost"
@@ -539,10 +580,10 @@ function DealCard({ deal, viewMode }: { deal: any, viewMode: "grid" | "list" }) 
                   variant="ghost"
                   size="sm"
                   onClick={handleTranslate}
-                  disabled={isTranslating}
+                  disabled={isManualTranslating}
                   title={t('common.translate')}
                 >
-                  {isTranslating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Languages className="h-4 w-4" />}
+                  {isManualTranslating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Languages className="h-4 w-4" />}
                 </Button>
                 <Button
                   variant="ghost"
