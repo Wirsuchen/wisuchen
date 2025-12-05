@@ -10,12 +10,12 @@ import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { 
-  DollarSign, 
-  Play, 
-  RefreshCw, 
-  CheckCircle, 
-  XCircle, 
+import {
+  DollarSign,
+  Play,
+  RefreshCw,
+  CheckCircle,
+  XCircle,
   Clock,
   TrendingUp,
   Package
@@ -75,9 +75,9 @@ export function AffiliateImportManager() {
   })
 
   const affiliateSources = [
-    { 
-      value: 'awin', 
-      label: t('admin.affiliateImport.sources.awin'), 
+    {
+      value: 'awin',
+      label: t('admin.affiliateImport.sources.awin'),
       description: t('admin.affiliateImport.sources.awinDescription'),
       features: [
         t('admin.affiliateImport.features.highQualityBrands'),
@@ -85,9 +85,9 @@ export function AffiliateImportManager() {
         t('admin.affiliateImport.features.globalReach')
       ]
     },
-    { 
-      value: 'adcell', 
-      label: t('admin.affiliateImport.sources.adcell'), 
+    {
+      value: 'adcell',
+      label: t('admin.affiliateImport.sources.adcell'),
       description: t('admin.affiliateImport.sources.adcellDescription'),
       features: [
         t('admin.affiliateImport.features.germanMarketFocus'),
@@ -139,7 +139,7 @@ export function AffiliateImportManager() {
     }
 
     setIsImporting(true)
-    
+
     try {
       const response = await fetch('/api/import/affiliates', {
         method: 'POST',
@@ -195,10 +195,10 @@ export function AffiliateImportManager() {
             clearInterval(pollInterval)
             toast({
               title: t('admin.affiliateImport.importCompleted'),
-              description: t('admin.affiliateImport.importResults', { 
-                created: data.import_run.created_records, 
-                updated: data.import_run.updated_records, 
-                failed: data.import_run.failed_records 
+              description: t('admin.affiliateImport.importResults', {
+                created: data.import_run.created_records,
+                updated: data.import_run.updated_records,
+                failed: data.import_run.failed_records
               })
             })
             fetchImportRuns()
@@ -264,7 +264,7 @@ export function AffiliateImportManager() {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="import">{t('admin.affiliateImport.importOffers')}</TabsTrigger>
-          <TabsTrigger value="programs">{t('admin.affiliateImport.programs')}</TabsTrigger>
+          <TabsTrigger value="programs">{t('admin.affiliateImport.programs.title')}</TabsTrigger>
           <TabsTrigger value="history">{t('admin.affiliateImport.importHistory')}</TabsTrigger>
         </TabsList>
 
@@ -411,8 +411,8 @@ export function AffiliateImportManager() {
                 </label>
               </div>
 
-              <Button 
-                onClick={handleImport} 
+              <Button
+                onClick={handleImport}
                 disabled={isImporting || !importForm.source}
                 className="w-full"
               >
@@ -454,10 +454,10 @@ export function AffiliateImportManager() {
                         <span>{t('admin.affiliateImport.currentImport.progress')}</span>
                         <span>{currentImport.processed_records} / {currentImport.total_records || '?'}</span>
                       </div>
-                      <Progress 
-                        value={currentImport.total_records ? 
+                      <Progress
+                        value={currentImport.total_records ?
                           (currentImport.processed_records / currentImport.total_records) * 100 : 0
-                        } 
+                        }
                       />
                     </div>
                   )}
@@ -517,20 +517,20 @@ export function AffiliateImportManager() {
                             {program.is_active ? t('admin.affiliateImport.programs.active') : t('admin.affiliateImport.programs.inactive')}
                           </Badge>
                         </div>
-                        
+
                         <div className="space-y-2 text-sm">
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">{t('admin.affiliateImport.programs.provider')}:</span>
                             <span className="capitalize">{program.provider}</span>
                           </div>
-                          
+
                           {program.commission_rate && (
                             <div className="flex justify-between">
                               <span className="text-muted-foreground">{t('admin.affiliateImport.programs.commission')}:</span>
                               <span>{program.commission_rate}%</span>
                             </div>
                           )}
-                          
+
                           {program.last_sync_at && (
                             <div className="flex justify-between">
                               <span className="text-muted-foreground">{t('admin.affiliateImport.programs.lastSync')}:</span>

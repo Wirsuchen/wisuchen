@@ -46,7 +46,7 @@ interface User {
 }
 
 export function UserManagement() {
-  const { t } = useTranslation()
+  const { t, tr } = useTranslation()
   const [users, setUsers] = useState<User[]>([])
   const [filteredUsers, setFilteredUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
@@ -59,7 +59,7 @@ export function UserManagement() {
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 10
   const { toast } = useToast()
-  const PLANS = ['free','pro','premium']
+  const PLANS = ['free', 'pro', 'premium']
 
   const ROLES = [
     { value: 'supervisor', label: t('admin.userManagement.roles.supervisor'), color: 'bg-red-500' },
@@ -176,7 +176,7 @@ export function UserManagement() {
 
       toast({
         title: t('admin.userManagement.role.updated'),
-        description: t('admin.userManagement.role.updateDescription', { email: selectedUser.email, role: newRole }),
+        description: tr('admin.userManagement.role.updateDescription', { email: selectedUser.email, role: newRole }),
       })
 
       setIsDialogOpen(false)
@@ -364,10 +364,10 @@ export function UserManagement() {
               {totalPages > 1 && (
                 <div className="flex items-center justify-between mt-4">
                   <div className="text-sm text-muted-foreground">
-                    {t('admin.userManagement.pagination.showing', { 
-                      start: startIndex + 1, 
-                      end: Math.min(endIndex, filteredUsers.length), 
-                      total: filteredUsers.length 
+                    {tr('admin.userManagement.pagination.showing', {
+                      start: startIndex + 1,
+                      end: Math.min(endIndex, filteredUsers.length),
+                      total: filteredUsers.length
                     })}
                   </div>
                   <div className="flex gap-2">
@@ -414,7 +414,7 @@ export function UserManagement() {
           <DialogHeader>
             <DialogTitle>{t('admin.userManagement.dialog.changeRole')}</DialogTitle>
             <DialogDescription>
-              {t('admin.userManagement.dialog.updateRoleFor', { email: selectedUser?.email })}
+              {tr('admin.userManagement.dialog.updateRoleFor', { email: selectedUser?.email || '' })}
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
