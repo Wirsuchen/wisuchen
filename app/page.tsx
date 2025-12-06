@@ -346,6 +346,14 @@ export default function HomePage() {
               </Button>
             </div>
 
+            {/* Translation Indicator */}
+            {isTranslating && (
+              <div className="flex items-center justify-center gap-2 py-2 text-sm text-muted-foreground mb-4">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>{t('common.translating')}</span>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {jobsLoading ? (
                 <div className="col-span-full flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-accent" /></div>
@@ -457,7 +465,16 @@ export default function HomePage() {
                   <Card key={deal.id} className="hover:shadow-lg transition-shadow">
                     <CardHeader>
                       <div className="flex items-start justify-between">
-                        <CardTitle className="text-lg line-clamp-2">{getTranslated(`home-deal-${deal.id}`, 'title', deal.title)}</CardTitle>
+                        <CardTitle className="text-lg line-clamp-2">
+                          {isTranslating ? (
+                            <span className="inline-flex items-center gap-2">
+                              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                              <span className="animate-pulse">{getTranslated(`home-deal-${deal.id}`, 'title', deal.title)}</span>
+                            </span>
+                          ) : (
+                            getTranslated(`home-deal-${deal.id}`, 'title', deal.title)
+                          )}
+                        </CardTitle>
                         <Badge className="bg-accent text-accent-foreground shrink-0">{tr('deals.percentOff', { percent: deal.discount })}</Badge>
                       </div>
                     </CardHeader>
