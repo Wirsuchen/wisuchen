@@ -14,8 +14,9 @@ import { ShimmerButton } from "@/components/magicui/shimmer-button"
 import { DotPattern } from "@/components/magicui/dot-pattern"
 import { formatEuroText, formatEuro } from "@/lib/utils"
 import { fetchWithCache } from "@/lib/utils/client-cache"
-import { useTranslation } from "@/contexts/i18n-context"
+import { useTranslation, useI18n } from "@/contexts/i18n-context"
 import { useState, useEffect } from "react"
+import { useTranslatedJobs, useTranslatedDeals } from "@/hooks/use-auto-translate"
 import type { Job } from "@/hooks/use-jobs"
 
 interface Deal {
@@ -86,10 +87,15 @@ function dedupeJobs(jobs: Job[]): Job[] {
 
 export default function HomePage() {
   const { t, tr } = useTranslation()
-  const [topDeals, setTopDeals] = useState<Deal[]>([])
+  const { locale } = useI18n()
+  const [rawDeals, setRawDeals] = useState<Deal[]>([])
   const [dealsLoading, setDealsLoading] = useState(true)
-  const [topJobs, setTopJobs] = useState<Job[]>([])
+  const [rawJobs, setRawJobs] = useState<Job[]>([])
   const [jobsLoading, setJobsLoading] = useState(true)
+
+  // Auto-translate jobs and deals when locale changes (FREE Lingva)
+  const { jobs: topJobs, isTranslating: isTranslatingJobs } = useTranslatedJobs(rawJobs)
+  const { deals: topDeals, isTranslating: isTranslatingDeals } = useTranslatedDeals(rawDeals)
 
   // Real counts from APIs
   const [stats, setStats] = useState({
@@ -116,10 +122,10 @@ export default function HomePage() {
         60 * 60 * 1000
       )
       const deals: Deal[] = data?.deals || []
-      setTopDeals(deals.length > 0 ? deals.slice(0, 3) : [])
+      setRawDeals(deals.length > 0 ? deals.slice(0, 3) : [])
     } catch (error) {
       console.error('Error fetching deals:', error)
-      setTopDeals([])
+      setRawDeals([])
     } finally {
       setDealsLoading(false)
     }
@@ -137,10 +143,10 @@ export default function HomePage() {
       )
       const jobs: Job[] = data?.data?.jobs || []
       const uniqueJobs = dedupeJobs(jobs)
-      setTopJobs(uniqueJobs.length > 0 ? uniqueJobs.slice(0, 4) : [])
+      setRawJobs(uniqueJobs.length > 0 ? uniqueJobs.slice(0, 4) : [])
     } catch (e) {
       console.error('Error fetching jobs:', e)
-      setTopJobs([])
+      setRawJobs([])
     } finally {
       setJobsLoading(false)
     }
@@ -314,7 +320,7 @@ export default function HomePage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {jobsLoading ? (
+              {(jobsLoading || isTranslatingJobs) ? (
                 <div className="col-span-full flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-accent" /></div>
               ) : topJobs.length > 0 ? (
                 topJobs.map((job) => {
@@ -402,7 +408,7 @@ export default function HomePage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {dealsLoading ? (
+              {(dealsLoading || isTranslatingDeals) ? (
                 <div className="col-span-full flex justify-center py-12">
                   <Loader2 className="h-8 w-8 animate-spin text-accent" />
                 </div>

@@ -1,10 +1,40 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { translateText, translateBatch, SupportedLanguage } from '@/lib/services/google-translate'
+import { 
+  translateText, 
+  translateBatch, 
+  translateJob,
+  translateDeal,
+  translateBlog,
+  SupportedLanguage 
+} from '@/lib/services/lingva-translate'
 
+/**
+ * Translation API Route
+ * 
+ * Uses Lingva Translate (FREE, unlimited, Google-quality)
+ * No API key required!
+ * 
+ * Supports:
+ * - Single text translation
+ * - Batch text translation
+ * - Job translation (title + description)
+ * - Deal translation (title + description)
+ * - Blog translation (title + description + content)
+ */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { content, texts, toLanguage, fromLanguage, contentType = 'general' } = body
+    const { 
+      content, 
+      texts, 
+      toLanguage, 
+      fromLanguage, 
+      contentType = 'general',
+      // For structured content
+      title,
+      description,
+      blogContent
+    } = body
 
     // Validate target language
     const validLanguages: SupportedLanguage[] = ['en', 'de', 'fr', 'it']
@@ -13,6 +43,53 @@ export async function POST(request: NextRequest) {
         { error: 'Valid toLanguage is required (en, de, fr, it)' },
         { status: 400 }
       )
+    }
+
+    // Handle job translation
+    if (contentType === 'job' && title !== undefined) {
+      const result = await translateJob(
+        title || '',
+        description || '',
+        toLanguage as SupportedLanguage,
+        fromLanguage as SupportedLanguage | undefined
+      )
+      return NextResponse.json({ 
+        success: true,
+        title: result.title,
+        description: result.description
+      })
+    }
+
+    // Handle deal translation
+    if (contentType === 'deal' && title !== undefined) {
+      const result = await translateDeal(
+        title || '',
+        description || '',
+        toLanguage as SupportedLanguage,
+        fromLanguage as SupportedLanguage | undefined
+      )
+      return NextResponse.json({ 
+        success: true,
+        title: result.title,
+        description: result.description
+      })
+    }
+
+    // Handle blog translation
+    if (contentType === 'blog' && title !== undefined) {
+      const result = await translateBlog(
+        title || '',
+        description || '',
+        blogContent || '',
+        toLanguage as SupportedLanguage,
+        fromLanguage as SupportedLanguage | undefined
+      )
+      return NextResponse.json({ 
+        success: true,
+        title: result.title,
+        description: result.description,
+        content: result.content
+      })
     }
 
     // Handle batch translation
@@ -50,7 +127,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ 
       translation: result.translation,
-      fromCache: result.fromCache 
+      fromCache: result.fromCache,
+      source: result.source || 'lingva'
     })
   } catch (error: any) {
     console.error('Error in translate API:', error)
@@ -58,5 +136,26 @@ export async function POST(request: NextRequest) {
       { error: error.message || 'Internal server error' },
       { status: 500 }
     )
+  }
+}
+
+// Health check endpoint
+export async function GET() {
+  try {
+    // Test translation to check if Lingva is working
+    const result = await translateText('Hello', 'de', 'en')
+    
+    return NextResponse.json({
+      status: 'ok',
+      service: 'Lingva Translate (FREE)',
+      test: result.success ? 'passed' : 'failed',
+      testResult: result.translation,
+      cost: 'FREE - No API key required'
+    })
+  } catch (error: any) {
+    return NextResponse.json({
+      status: 'error',
+      error: error.message
+    }, { status: 500 })
   }
 }
