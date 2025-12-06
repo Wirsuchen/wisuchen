@@ -142,20 +142,32 @@ export async function POST(request: NextRequest) {
 // Health check endpoint
 export async function GET() {
   try {
-    // Test translation to check if Lingva is working
+    // Import health check function
+    const { checkLingvaHealth } = await import('@/lib/services/lingva-translate')
+    
+    // Check service availability
+    const healthStatus = await checkLingvaHealth()
+    
+    // Test actual translation
     const result = await translateText('Hello', 'de', 'en')
     
     return NextResponse.json({
-      status: 'ok',
-      service: 'Lingva Translate (FREE)',
+      status: healthStatus.available ? 'ok' : 'degraded',
+      services: {
+        lingva: healthStatus.lingva ? 'available' : 'unavailable',
+        libreTranslate: healthStatus.libre ? 'available' : 'unavailable',
+      },
       test: result.success ? 'passed' : 'failed',
       testResult: result.translation,
+      testSource: result.source,
       cost: 'FREE - No API key required'
     })
   } catch (error: any) {
+    console.error('Health check error:', error)
     return NextResponse.json({
       status: 'error',
-      error: error.message
+      error: error.message,
+      suggestion: 'Translation services may be temporarily unavailable'
     }, { status: 500 })
   }
 }

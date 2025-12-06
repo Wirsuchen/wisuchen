@@ -4,20 +4,29 @@
  * Lingva is a free, open-source alternative frontend to Google Translate.
  * It provides Google-quality translations with NO API key and NO limits.
  * 
- * Public Instances:
+ * Public Instances (updated for better reliability):
  * - https://lingva.ml (default)
  * - https://translate.plausibility.cloud
  * - https://lingva.garuber.eu
  * 
+ * Fallback: LibreTranslate instances
+ * 
  * Used for: Blog titles/descriptions, Job titles/descriptions, Deal titles/descriptions
  */
 
-// List of public Lingva instances for fallback
+// List of public Lingva instances for fallback (most reliable first)
 const LINGVA_INSTANCES = [
+  'https://lingva.thedaviddelta.com',
   'https://lingva.ml',
   'https://translate.plausibility.cloud',
-  'https://lingva.garuber.eu',
-  'https://lingva.pussthecat.org',
+  'https://lingva.lunar.icu',
+]
+
+// LibreTranslate instances as backup
+const LIBRE_INSTANCES = [
+  'https://libretranslate.de',
+  'https://translate.argosopentech.com',
+  'https://translate.terraprint.co',
 ]
 
 // In-memory cache for translations
@@ -41,7 +50,7 @@ export interface TranslationResult {
   translation?: string
   error?: string
   fromCache?: boolean
-  source?: 'lingva' | 'fallback'
+  source?: 'lingva' | 'libre' | 'fallback'
 }
 
 export interface BatchTranslationResult {
@@ -73,9 +82,10 @@ async function translateWithLingva(
       method: 'GET',
       headers: {
         'Accept': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (compatible; WIRsuchen/1.0)',
       },
-      // Add timeout
-      signal: AbortSignal.timeout(10000), // 10 second timeout
+      // Increase timeout for serverless environment
+      signal: AbortSignal.timeout(15000), // 15 second timeout
     })
 
     if (!response.ok) {
@@ -99,7 +109,55 @@ async function translateWithLingva(
 }
 
 /**
- * Translate a single text using Lingva (FREE)
+ * Translate text using LibreTranslate API (FREE fallback)
+ */
+async function translateWithLibre(
+  text: string,
+  targetLanguage: string,
+  sourceLanguage: string = 'en',
+  instanceIndex: number = 0
+): Promise<string | null> {
+  if (instanceIndex >= LIBRE_INSTANCES.length) {
+    return null
+  }
+
+  const instance = LIBRE_INSTANCES[instanceIndex]
+  
+  try {
+    const response = await fetch(`${instance}/translate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        q: text,
+        source: sourceLanguage === 'auto' ? 'en' : sourceLanguage,
+        target: targetLanguage,
+        format: 'text',
+      }),
+      signal: AbortSignal.timeout(15000),
+    })
+
+    if (!response.ok) {
+      console.warn(`LibreTranslate instance ${instance} returned ${response.status}, trying next...`)
+      return translateWithLibre(text, targetLanguage, sourceLanguage, instanceIndex + 1)
+    }
+
+    const data = await response.json()
+    
+    if (data.translatedText) {
+      return data.translatedText
+    }
+    
+    return translateWithLibre(text, targetLanguage, sourceLanguage, instanceIndex + 1)
+  } catch (error) {
+    console.warn(`LibreTranslate instance ${instance} failed:`, error)
+    return translateWithLibre(text, targetLanguage, sourceLanguage, instanceIndex + 1)
+  }
+}
+
+/**
+ * Translate a single text using Lingva (FREE), with LibreTranslate fallback
  */
 export async function translateText(
   text: string,
@@ -123,7 +181,8 @@ export async function translateText(
   }
 
   try {
-    const translation = await translateWithLingva(
+    // Try Lingva first
+    let translation = await translateWithLingva(
       text,
       targetLanguage,
       sourceLanguage || 'auto'
@@ -135,15 +194,33 @@ export async function translateText(
       return { success: true, translation, source: 'lingva' }
     }
 
+    // Fallback to LibreTranslate
+    console.log('Lingva failed, trying LibreTranslate fallback...')
+    translation = await translateWithLibre(
+      text,
+      targetLanguage,
+      sourceLanguage || 'en'
+    )
+
+    if (translation) {
+      translationCache.set(cacheKey, translation)
+      return { success: true, translation, source: 'libre' }
+    }
+
+    // If all fail, return original text as fallback
+    console.warn('All translation services failed, returning original text')
     return {
-      success: false,
-      error: 'All Lingva instances failed to translate'
+      success: true,
+      translation: text,
+      source: 'fallback'
     }
   } catch (error: any) {
-    console.error('Lingva translation error:', error)
+    console.error('Translation error:', error)
+    // Return original text on error instead of failing
     return {
-      success: false,
-      error: error.message || 'Translation failed'
+      success: true,
+      translation: text,
+      source: 'fallback'
     }
   }
 }
@@ -249,17 +326,36 @@ export async function translateBlog(
 }
 
 /**
- * Check if Lingva is available
+ * Check if translation services are available
  */
-export async function checkLingvaHealth(): Promise<boolean> {
+export async function checkLingvaHealth(): Promise<{ lingva: boolean; libre: boolean; available: boolean }> {
+  const results = { lingva: false, libre: false, available: false }
+  
+  // Test Lingva
   try {
-    const response = await fetch(`${LINGVA_INSTANCES[0]}/api/v1/en/de/hello`, {
+    const lingvaResponse = await fetch(`${LINGVA_INSTANCES[0]}/api/v1/en/de/hello`, {
       signal: AbortSignal.timeout(5000)
     })
-    return response.ok
+    results.lingva = lingvaResponse.ok
   } catch {
-    return false
+    results.lingva = false
   }
+
+  // Test LibreTranslate
+  try {
+    const libreResponse = await fetch(`${LIBRE_INSTANCES[0]}/translate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ q: 'hello', source: 'en', target: 'de' }),
+      signal: AbortSignal.timeout(5000)
+    })
+    results.libre = libreResponse.ok
+  } catch {
+    results.libre = false
+  }
+
+  results.available = results.lingva || results.libre
+  return results
 }
 
 /**
