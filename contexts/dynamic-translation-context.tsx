@@ -53,8 +53,8 @@ interface DynamicTranslationContextType {
 
 const DynamicTranslationContext = createContext<DynamicTranslationContextType | undefined>(undefined)
 
-// In-memory cache for translations across components
-const translationCache: TranslationCache = {}
+// Global in-memory cache for translations
+const globalTranslationCache: TranslationCache = {}
 
 interface DynamicTranslationProviderProps {
     children: ReactNode
@@ -65,13 +65,15 @@ export function DynamicTranslationProvider({ children }: DynamicTranslationProvi
     const [isTranslating, setIsTranslating] = useState(false)
     const [progress, setProgress] = useState({ current: 0, total: 0 })
     const [translatedContent, setTranslatedContent] = useState<TranslatedContent>({})
+
+    // Use refs to track state without causing re-renders
     const registeredContentRef = useRef<Map<string, ContentItem>>(new Map())
-    const previousLocaleRef = useRef<string>(locale)
-    const isInitialMountRef = useRef(true)
+    const lastTranslatedLocaleRef = useRef<string>('en')
+    const isTranslatingRef = useRef<boolean>(false)
+    const translationTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
     // Generate cache key for a piece of content
     const getCacheKey = useCallback((text: string): string => {
-        // Simple hash for cache key
         let hash = 0
         for (let i = 0; i < Math.min(text.length, 100); i++) {
             hash = ((hash << 5) - hash) + text.charCodeAt(i)
@@ -83,25 +85,24 @@ export function DynamicTranslationProvider({ children }: DynamicTranslationProvi
     // Check if translation is cached
     const getCachedTranslation = useCallback((text: string, targetLang: string): string | null => {
         const key = getCacheKey(text)
-        return translationCache[key]?.[targetLang] || null
+        return globalTranslationCache[key]?.[targetLang] || null
     }, [getCacheKey])
 
     // Cache a translation
     const cacheTranslation = useCallback((text: string, targetLang: string, translation: string) => {
         const key = getCacheKey(text)
-        if (!translationCache[key]) {
-            translationCache[key] = {}
+        if (!globalTranslationCache[key]) {
+            globalTranslationCache[key] = {}
         }
-        translationCache[key][targetLang] = translation
+        globalTranslationCache[key][targetLang] = translation
     }, [getCacheKey])
 
     // Translate content using the API
     const translateTexts = useCallback(async (texts: string[], targetLang: string): Promise<string[]> => {
         if (targetLang === 'en' || texts.length === 0) {
-            return texts // English is source, no translation needed
+            return texts
         }
 
-        // Check cache first
         const results: string[] = []
         const textsToTranslate: { index: number; text: string }[] = []
 
@@ -114,7 +115,6 @@ export function DynamicTranslationProvider({ children }: DynamicTranslationProvi
             }
         })
 
-        // If all cached, return immediately
         if (textsToTranslate.length === 0) {
             return results
         }
@@ -138,14 +138,12 @@ export function DynamicTranslationProvider({ children }: DynamicTranslationProvi
                     cacheTranslation(item.text, targetLang, translation)
                 })
             } else {
-                // On error, use original texts
                 textsToTranslate.forEach(item => {
                     results[item.index] = item.text
                 })
             }
         } catch (error) {
             console.error('Translation error:', error)
-            // On error, use original texts
             textsToTranslate.forEach(item => {
                 results[item.index] = item.text
             })
@@ -156,17 +154,19 @@ export function DynamicTranslationProvider({ children }: DynamicTranslationProvi
 
     // Translate all registered content
     const translateAllContent = useCallback(async (targetLang: string) => {
+        // Prevent concurrent translations
+        if (isTranslatingRef.current) return
+
         const items = Array.from(registeredContentRef.current.values())
 
         if (items.length === 0 || targetLang === 'en') {
-            // English is source language, clear translations to show originals
             setTranslatedContent({})
             return
         }
 
+        isTranslatingRef.current = true
         setIsTranslating(true)
 
-        // Collect all texts to translate
         const allTexts: { contentId: string; field: string; text: string }[] = []
 
         items.forEach(item => {
@@ -180,11 +180,11 @@ export function DynamicTranslationProvider({ children }: DynamicTranslationProvi
         setProgress({ current: 0, total: allTexts.length })
 
         if (allTexts.length === 0) {
+            isTranslatingRef.current = false
             setIsTranslating(false)
             return
         }
 
-        // Translate in batches of 20 for efficiency
         const batchSize = 20
         const newTranslations: TranslatedContent = {}
 
@@ -205,7 +205,6 @@ export function DynamicTranslationProvider({ children }: DynamicTranslationProvi
                 setProgress({ current: Math.min(i + batchSize, allTexts.length), total: allTexts.length })
             } catch (error) {
                 console.error('Batch translation error:', error)
-                // On error, keep original text
                 batch.forEach(item => {
                     if (!newTranslations[item.contentId]) {
                         newTranslations[item.contentId] = {}
@@ -216,26 +215,36 @@ export function DynamicTranslationProvider({ children }: DynamicTranslationProvi
         }
 
         setTranslatedContent(newTranslations)
+        isTranslatingRef.current = false
         setIsTranslating(false)
     }, [translateTexts])
 
-    // Auto-translate when locale changes
+    // Auto-translate when locale changes (debounced)
     useEffect(() => {
-        // Skip on initial mount
-        if (isInitialMountRef.current) {
-            isInitialMountRef.current = false
-            previousLocaleRef.current = locale
-            return
+        // Only translate if locale actually changed
+        if (lastTranslatedLocaleRef.current === locale) return
+
+        // Clear any pending translation
+        if (translationTimeoutRef.current) {
+            clearTimeout(translationTimeoutRef.current)
         }
 
-        // Only translate if locale actually changed
-        if (previousLocaleRef.current !== locale) {
-            previousLocaleRef.current = locale
+        // Update the ref immediately
+        lastTranslatedLocaleRef.current = locale
+
+        // Debounce the translation to prevent multiple rapid calls
+        translationTimeoutRef.current = setTimeout(() => {
             translateAllContent(locale)
+        }, 100)
+
+        return () => {
+            if (translationTimeoutRef.current) {
+                clearTimeout(translationTimeoutRef.current)
+            }
         }
     }, [locale, translateAllContent])
 
-    // Register content for translation
+    // Register content for translation (does NOT trigger immediate translation)
     const registerContent = useCallback((items: ContentItem[]) => {
         let hasNewItems = false
 
@@ -246,11 +255,17 @@ export function DynamicTranslationProvider({ children }: DynamicTranslationProvi
             }
         })
 
-        // If we have new items and locale is not English, translate them
-        if (hasNewItems && locale !== 'en') {
-            translateAllContent(locale)
+        // Only translate new items if we're not in English and not already translating
+        if (hasNewItems && lastTranslatedLocaleRef.current !== 'en' && !isTranslatingRef.current) {
+            // Use a small delay to batch multiple registrations
+            if (translationTimeoutRef.current) {
+                clearTimeout(translationTimeoutRef.current)
+            }
+            translationTimeoutRef.current = setTimeout(() => {
+                translateAllContent(lastTranslatedLocaleRef.current)
+            }, 200)
         }
-    }, [locale, translateAllContent])
+    }, [translateAllContent])
 
     // Unregister content
     const unregisterContent = useCallback((ids: string[]) => {
@@ -258,7 +273,6 @@ export function DynamicTranslationProvider({ children }: DynamicTranslationProvi
             registeredContentRef.current.delete(id)
         })
 
-        // Clean up translations for unregistered content
         setTranslatedContent(prev => {
             const next = { ...prev }
             ids.forEach(id => delete next[id])
@@ -269,13 +283,14 @@ export function DynamicTranslationProvider({ children }: DynamicTranslationProvi
     // Get translated content
     const getTranslated = useCallback((id: string, field: string, original: string): string => {
         if (locale === 'en') {
-            return original // English is source language
+            return original
         }
         return translatedContent[id]?.[field] || original
     }, [locale, translatedContent])
 
     // Force re-translate all content
     const retranslateAll = useCallback(async () => {
+        isTranslatingRef.current = false // Reset the flag
         await translateAllContent(locale)
     }, [locale, translateAllContent])
 
@@ -314,16 +329,25 @@ export function useDynamicTranslation() {
 export function useAutoTranslatedContent(items: ContentItem[]) {
     const { registerContent, unregisterContent, getTranslated, isTranslating, progress, currentLocale } = useDynamicTranslation()
     const itemIdsRef = useRef<string[]>([])
+    const lastItemsKeyRef = useRef<string>('')
 
     useEffect(() => {
-        if (items.length > 0) {
-            // Register new items
-            registerContent(items)
+        if (items.length === 0) return
 
-            // Track registered IDs for cleanup
-            const newIds = items.map(item => item.id)
-            itemIdsRef.current = newIds
-        }
+        // Generate a stable key from item IDs
+        const itemsKey = items.map(item => item.id).join(',')
+
+        // Skip if items haven't changed
+        if (lastItemsKeyRef.current === itemsKey) return
+
+        lastItemsKeyRef.current = itemsKey
+
+        // Register new items
+        registerContent(items)
+
+        // Track registered IDs for cleanup
+        const newIds = items.map(item => item.id)
+        itemIdsRef.current = newIds
 
         return () => {
             // Cleanup on unmount

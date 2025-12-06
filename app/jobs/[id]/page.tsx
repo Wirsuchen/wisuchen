@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, use } from "react"
+import React, { useEffect, useState, use } from "react"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { Button } from "@/components/ui/button"
@@ -28,8 +28,9 @@ import type { Job } from "@/hooks/use-jobs"
 import { fetchWithCache } from "@/lib/utils/client-cache"
 import { useAuth } from "@/contexts/auth-context"
 import { toast } from "@/hooks/use-toast"
-import { useTranslation } from "@/contexts/i18n-context"
+import { useTranslation, useI18n } from "@/contexts/i18n-context"
 import { TranslateButton } from "@/components/ui/translate-button"
+import { useTranslatedText } from "@/contexts/dynamic-translation-context"
 
 const sanitizeJobDescription = (text: string) => {
   if (!text) return ""
@@ -201,6 +202,74 @@ function JobDetailContent({ params }: { params: Promise<{ id: string }> }) {
 
     fetchSimilarJobs()
   }, [job])
+
+  // Auto-translate job when locale changes
+  const { locale } = useI18n()
+  const originalJobRef = React.useRef<{ title: string; description: string } | null>(null)
+  const lastTranslatedLocaleRef = React.useRef<string>('en')
+  const jobIdRef = React.useRef<string | null>(null)
+
+  useEffect(() => {
+    if (!job) return
+
+    // Store original content when job ID changes
+    if (jobIdRef.current !== job.id) {
+      jobIdRef.current = job.id
+      originalJobRef.current = {
+        title: job.title,
+        description: job.description || ''
+      }
+      lastTranslatedLocaleRef.current = 'en' // Reset to English for new job
+    }
+
+    // Skip if locale hasn't changed
+    if (lastTranslatedLocaleRef.current === locale) return
+
+    // Update the last translated locale
+    lastTranslatedLocaleRef.current = locale
+
+    // If locale is English, restore original
+    if (locale === 'en') {
+      if (originalJobRef.current) {
+        setJob(prev => prev ? ({
+          ...prev,
+          title: originalJobRef.current!.title,
+          description: originalJobRef.current!.description
+        }) : null)
+      }
+      return
+    }
+
+    // Translate to target locale
+    const translateJob = async () => {
+      try {
+        const response = await fetch('/api/translate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contentType: 'job',
+            title: originalJobRef.current?.title || job.title,
+            description: originalJobRef.current?.description || job.description || '',
+            toLanguage: locale,
+            fromLanguage: 'en'
+          })
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          setJob(prev => prev ? ({
+            ...prev,
+            title: data.title || prev.title,
+            description: data.description || prev.description
+          }) : null)
+        }
+      } catch (error) {
+        console.error('Auto-translation error:', error)
+      }
+    }
+
+    translateJob()
+  }, [locale, job?.id]) // Only re-run when locale or job ID changes
 
   const handleImproveDescription = () => {
     setIsImproving(true)

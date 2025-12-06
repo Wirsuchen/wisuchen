@@ -196,11 +196,33 @@ export function useTranslatedJobs<T extends { id: string; title: string; descrip
   const [translatedJobs, setTranslatedJobs] = useState<T[]>(jobs)
   const [isTranslating, setIsTranslating] = useState(false)
   const cacheRef = useRef<Map<string, { title: string; description?: string }>>(new Map())
-
+  const lastLocaleRef = useRef<string>(sourceLanguage)
+  const jobsKeyRef = useRef<string>('')
+  
   useEffect(() => {
-    // If same language or no jobs, return original
-    if (locale === sourceLanguage || jobs.length === 0) {
-      setTranslatedJobs(jobs)
+    // Generate a key from job IDs to detect when jobs change
+    const newJobsKey = jobs.map(j => j.id).join(',')
+    const jobsChanged = jobsKeyRef.current !== newJobsKey
+    const localeChanged = lastLocaleRef.current !== locale
+    
+    // Update refs
+    if (jobsChanged) jobsKeyRef.current = newJobsKey
+    if (localeChanged) lastLocaleRef.current = locale
+    
+    // If same language, return original jobs
+    if (locale === sourceLanguage) {
+      if (localeChanged || jobsChanged) {
+        setTranslatedJobs(jobs)
+      }
+      return
+    }
+    
+    // Skip if nothing changed
+    if (!localeChanged && !jobsChanged) return
+    
+    // No jobs, skip
+    if (jobs.length === 0) {
+      setTranslatedJobs([])
       return
     }
 
@@ -271,11 +293,33 @@ export function useTranslatedDeals<T extends { id: string; title: string; descri
   const [translatedDeals, setTranslatedDeals] = useState<T[]>(deals)
   const [isTranslating, setIsTranslating] = useState(false)
   const cacheRef = useRef<Map<string, { title: string; description?: string }>>(new Map())
-
+  const lastLocaleRef = useRef<string>(sourceLanguage)
+  const dealsKeyRef = useRef<string>('')
+  
   useEffect(() => {
-    // If same language or no deals, return original
-    if (locale === sourceLanguage || deals.length === 0) {
-      setTranslatedDeals(deals)
+    // Generate a key from deal IDs to detect when deals change
+    const newDealsKey = deals.map(d => d.id).join(',')
+    const dealsChanged = dealsKeyRef.current !== newDealsKey
+    const localeChanged = lastLocaleRef.current !== locale
+    
+    // Update refs
+    if (dealsChanged) dealsKeyRef.current = newDealsKey
+    if (localeChanged) lastLocaleRef.current = locale
+    
+    // If same language, return original deals
+    if (locale === sourceLanguage) {
+      if (localeChanged || dealsChanged) {
+        setTranslatedDeals(deals)
+      }
+      return
+    }
+    
+    // Skip if nothing changed
+    if (!localeChanged && !dealsChanged) return
+    
+    // No deals, skip
+    if (deals.length === 0) {
+      setTranslatedDeals([])
       return
     }
 

@@ -14,9 +14,9 @@ import { ShimmerButton } from "@/components/magicui/shimmer-button"
 import { DotPattern } from "@/components/magicui/dot-pattern"
 import { formatEuroText, formatEuro } from "@/lib/utils"
 import { fetchWithCache } from "@/lib/utils/client-cache"
-import { useTranslation, useI18n } from "@/contexts/i18n-context"
-import { useState, useEffect } from "react"
-import { useTranslatedJobs, useTranslatedDeals } from "@/hooks/use-auto-translate"
+import { useTranslation } from "@/contexts/i18n-context"
+import { useState, useEffect, useMemo } from "react"
+import { useAutoTranslatedContent } from "@/contexts/dynamic-translation-context"
 import type { Job } from "@/hooks/use-jobs"
 
 interface Deal {
@@ -28,6 +28,7 @@ interface Deal {
   store: string
   rating: number
   image: string
+  description?: string
 }
 
 // Normalize various employment type shapes to our i18n keys
@@ -87,15 +88,41 @@ function dedupeJobs(jobs: Job[]): Job[] {
 
 export default function HomePage() {
   const { t, tr } = useTranslation()
-  const { locale } = useI18n()
-  const [rawDeals, setRawDeals] = useState<Deal[]>([])
+  const [topDeals, setTopDeals] = useState<Deal[]>([])
   const [dealsLoading, setDealsLoading] = useState(true)
-  const [rawJobs, setRawJobs] = useState<Job[]>([])
+  const [topJobs, setTopJobs] = useState<Job[]>([])
   const [jobsLoading, setJobsLoading] = useState(true)
 
-  // Auto-translate jobs and deals when locale changes (FREE Lingva)
-  const { jobs: topJobs, isTranslating: isTranslatingJobs } = useTranslatedJobs(rawJobs)
-  const { deals: topDeals, isTranslating: isTranslatingDeals } = useTranslatedDeals(rawDeals)
+  // Prepare content items for auto-translation (using stable ID-based comparison)
+  const jobIdsKey = topJobs.map(j => j.id).join(',')
+  const jobContentItems = useMemo(() => {
+    return topJobs.map(job => ({
+      id: `home-job-${job.id}`,
+      type: 'job' as const,
+      fields: {
+        title: job.title || '',
+        description: job.description || '',
+      }
+    }))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jobIdsKey])
+
+  const dealIdsKey = topDeals.map(d => d.id).join(',')
+  const dealContentItems = useMemo(() => {
+    return topDeals.map(deal => ({
+      id: `home-deal-${deal.id}`,
+      type: 'deal' as const,
+      fields: {
+        title: deal.title || '',
+        description: deal.description || '',
+      }
+    }))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dealIdsKey])
+
+  // Register all content for auto-translation when locale changes
+  const allContentItems = useMemo(() => [...jobContentItems, ...dealContentItems], [jobContentItems, dealContentItems])
+  const { getTranslated, isTranslating } = useAutoTranslatedContent(allContentItems)
 
   // Real counts from APIs
   const [stats, setStats] = useState({
@@ -122,10 +149,10 @@ export default function HomePage() {
         60 * 60 * 1000
       )
       const deals: Deal[] = data?.deals || []
-      setRawDeals(deals.length > 0 ? deals.slice(0, 3) : [])
+      setTopDeals(deals.length > 0 ? deals.slice(0, 3) : [])
     } catch (error) {
       console.error('Error fetching deals:', error)
-      setRawDeals([])
+      setTopDeals([])
     } finally {
       setDealsLoading(false)
     }
@@ -143,10 +170,10 @@ export default function HomePage() {
       )
       const jobs: Job[] = data?.data?.jobs || []
       const uniqueJobs = dedupeJobs(jobs)
-      setRawJobs(uniqueJobs.length > 0 ? uniqueJobs.slice(0, 4) : [])
+      setTopJobs(uniqueJobs.length > 0 ? uniqueJobs.slice(0, 4) : [])
     } catch (e) {
       console.error('Error fetching jobs:', e)
-      setRawJobs([])
+      setTopJobs([])
     } finally {
       setJobsLoading(false)
     }
@@ -320,7 +347,7 @@ export default function HomePage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {(jobsLoading || isTranslatingJobs) ? (
+              {jobsLoading ? (
                 <div className="col-span-full flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-accent" /></div>
               ) : topJobs.length > 0 ? (
                 topJobs.map((job) => {
@@ -355,7 +382,7 @@ export default function HomePage() {
                       <CardHeader>
                         <div className="flex items-start justify-between">
                           <div>
-                            <CardTitle className="text-lg">{job.title}</CardTitle>
+                            <CardTitle className="text-lg">{getTranslated(`home-job-${job.id}`, 'title', job.title)}</CardTitle>
                             <CardDescription>{job.company}</CardDescription>
                           </div>
                         </div>
@@ -408,7 +435,7 @@ export default function HomePage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {(dealsLoading || isTranslatingDeals) ? (
+              {dealsLoading ? (
                 <div className="col-span-full flex justify-center py-12">
                   <Loader2 className="h-8 w-8 animate-spin text-accent" />
                 </div>
@@ -421,7 +448,7 @@ export default function HomePage() {
                   <Card key={deal.id} className="hover:shadow-lg transition-shadow">
                     <CardHeader>
                       <div className="flex items-start justify-between">
-                        <CardTitle className="text-lg line-clamp-2">{deal.title}</CardTitle>
+                        <CardTitle className="text-lg line-clamp-2">{getTranslated(`home-deal-${deal.id}`, 'title', deal.title)}</CardTitle>
                         <Badge className="bg-accent text-accent-foreground shrink-0">{tr('deals.percentOff', { percent: deal.discount })}</Badge>
                       </div>
                     </CardHeader>

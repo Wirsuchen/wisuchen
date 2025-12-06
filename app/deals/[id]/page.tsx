@@ -1,8 +1,8 @@
 "use client"
 
+import React, { useState, useEffect, useRef } from "react"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
-import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { fetchWithCache } from "@/lib/utils/client-cache"
 import { Button } from "@/components/ui/button"
@@ -30,7 +30,7 @@ import {
 import Link from "next/link"
 import { formatEuro, formatEuroText } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
-import { useTranslation } from "@/contexts/i18n-context"
+import { useTranslation, useI18n } from "@/contexts/i18n-context"
 import { useAuth } from "@/contexts/auth-context"
 import { TranslateButton } from "@/components/ui/translate-button"
 
@@ -170,6 +170,74 @@ export default function DealDetailPage() {
       cancelled = true
     }
   }, [dealId])
+
+  // Auto-translate deal when locale changes
+  const { locale } = useI18n()
+  const originalDealRef = useRef<{ title: string; description: string } | null>(null)
+  const lastTranslatedLocaleRef = useRef<string>('en')
+  const dealIdRefForTranslation = useRef<string | null>(null)
+
+  useEffect(() => {
+    if (!deal) return
+
+    // Store original content when deal ID changes
+    if (dealIdRefForTranslation.current !== deal.id) {
+      dealIdRefForTranslation.current = deal.id
+      originalDealRef.current = {
+        title: deal.title,
+        description: deal.description || ''
+      }
+      lastTranslatedLocaleRef.current = 'en' // Reset to English for new deal
+    }
+
+    // Skip if locale hasn't changed
+    if (lastTranslatedLocaleRef.current === locale) return
+
+    // Update the last translated locale
+    lastTranslatedLocaleRef.current = locale
+
+    // If locale is English, restore original
+    if (locale === 'en') {
+      if (originalDealRef.current) {
+        setDeal(prev => prev ? ({
+          ...prev,
+          title: originalDealRef.current!.title,
+          description: originalDealRef.current!.description
+        }) : null)
+      }
+      return
+    }
+
+    // Translate to target locale
+    const translateDeal = async () => {
+      try {
+        const response = await fetch('/api/translate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contentType: 'deal',
+            title: originalDealRef.current?.title || deal.title,
+            description: originalDealRef.current?.description || deal.description || '',
+            toLanguage: locale,
+            fromLanguage: 'en'
+          })
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          setDeal(prev => prev ? ({
+            ...prev,
+            title: data.title || prev.title,
+            description: data.description || prev.description
+          }) : null)
+        }
+      } catch (error) {
+        console.error('Auto-translation error:', error)
+      }
+    }
+
+    translateDeal()
+  }, [locale, deal?.id]) // Only re-run when locale or deal ID changes
 
   if (loading) {
     return (

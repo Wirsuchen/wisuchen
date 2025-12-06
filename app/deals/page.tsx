@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Separator } from "@/components/ui/separator"
-import { Search, Filter, Heart, Star, ShoppingBag, TrendingDown, Grid3X3, List } from "lucide-react"
+import { Search, Filter, Heart, Star, ShoppingBag, TrendingDown, Grid3X3, List, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { filterDeals, sortDeals } from "@/lib/filters"
 import { formatEuro, formatEuroText } from "@/lib/utils"
@@ -18,8 +18,6 @@ import { toast } from "@/hooks/use-toast"
 import { useTranslation } from "@/contexts/i18n-context"
 import { useAuth } from "@/contexts/auth-context"
 import { useRouter } from "next/navigation"
-import { Loader2, Languages } from "lucide-react"
-import { useTranslate } from "@/hooks/use-translate"
 import { useAutoTranslatedContent } from "@/contexts/dynamic-translation-context"
 
 
@@ -131,7 +129,8 @@ export default function DealsPage() {
 
   const sortedDeals = sortDeals(filteredDeals, sortBy)
 
-  // Prepare content items for auto-translation
+  // Prepare content items for auto-translation (using stable ID-based comparison)
+  const contentItemsIdKey = useMemo(() => sortedDeals.map((d: any) => d.id).join(','), [sortedDeals])
   const contentItems = useMemo(() => {
     return sortedDeals.map((deal: any) => ({
       id: `deal-${deal.id}`,
@@ -141,7 +140,8 @@ export default function DealsPage() {
         description: deal.description || '',
       }
     }))
-  }, [sortedDeals])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contentItemsIdKey, sortedDeals]) // Using contentItemsIdKey for stable comparison
 
   // Register deals for auto-translation when locale changes
   const { getTranslated, isTranslating } = useAutoTranslatedContent(contentItems)
@@ -376,50 +376,18 @@ interface DealCardProps {
   getTranslated: (id: string, field: string, original: string) => string
 }
 
+
 function DealCard({ deal, viewMode, getTranslated }: DealCardProps) {
   const { t, tr } = useTranslation()
   const { user } = useAuth()
   const router = useRouter()
-  const { translate } = useTranslate()
-  const [isManualTranslating, setIsManualTranslating] = useState(false)
-  const [manualTitle, setManualTitle] = useState<string | null>(null)
-  const [manualDescription, setManualDescription] = useState<string | null>(null)
 
   // Generate content ID for this deal
   const contentId = `deal-${deal.id}`
 
-  // Use manually translated content if available, otherwise use auto-translated
-  const title = manualTitle ?? getTranslated(contentId, 'title', deal.title)
-  const description = manualDescription ?? getTranslated(contentId, 'description', deal.description || '')
-
-  const handleTranslate = async (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-
-    setIsManualTranslating(true)
-    try {
-      const [newTitle, newDesc] = await Promise.all([
-        translate(deal.title, { contentType: 'general' }),
-        deal.description ? translate(deal.description, { contentType: 'general' }) : Promise.resolve('')
-      ])
-
-      setManualTitle(newTitle)
-      if (newDesc) setManualDescription(newDesc)
-
-      toast({
-        title: t('common.success'),
-        description: t('common.translationSuccess'),
-      })
-    } catch (error) {
-      toast({
-        title: t('common.error'),
-        description: t('common.translationError'),
-        variant: 'destructive',
-      })
-    } finally {
-      setIsManualTranslating(false)
-    }
-  }
+  // Use auto-translated content (translation happens centrally from header language change)
+  const title = getTranslated(contentId, 'title', deal.title)
+  const description = getTranslated(contentId, 'description', deal.description || '')
 
   const handleSave = async (e: React.MouseEvent) => {
     e.preventDefault()
@@ -483,16 +451,6 @@ function DealCard({ deal, viewMode, getTranslated }: DealCardProps) {
               <Badge className="bg-accent text-accent-foreground">-{deal.discount}%</Badge>
             </div>
             <div className="absolute top-2 right-2 flex gap-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="bg-background/80 hover:bg-background h-8 w-8 p-0"
-                onClick={handleTranslate}
-                disabled={isManualTranslating}
-                title={t('common.translate')}
-              >
-                {isManualTranslating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Languages className="h-4 w-4" />}
-              </Button>
               <Button
                 variant="ghost"
                 size="sm"
@@ -576,15 +534,6 @@ function DealCard({ deal, viewMode, getTranslated }: DealCardProps) {
                 </div>
               </div>
               <div className="flex gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleTranslate}
-                  disabled={isManualTranslating}
-                  title={t('common.translate')}
-                >
-                  {isManualTranslating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Languages className="h-4 w-4" />}
-                </Button>
                 <Button
                   variant="ghost"
                   size="sm"

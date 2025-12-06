@@ -13,6 +13,7 @@ import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
 import { useToast } from "@/hooks/use-toast"
 import { useTranslation } from "@/contexts/i18n-context"
+import { useAutoTranslatedContent } from "@/contexts/dynamic-translation-context"
 
 export default function BlogPage() {
   const { t } = useTranslation()
@@ -86,6 +87,24 @@ export default function BlogPage() {
         return new Date(b.publishedDate).getTime() - new Date(a.publishedDate).getTime()
     }
   })
+
+
+  // Prepare content items for auto-translation (using stable ID-based comparison)
+  const contentItemsIdKey = useMemo(() => sortedPosts.map((p: any) => p.id).join(','), [sortedPosts])
+  const contentItems = useMemo(() => {
+    return sortedPosts.map((post: any) => ({
+      id: `blog-${post.id}`,
+      type: 'blog' as const,
+      fields: {
+        title: post.title || '',
+        excerpt: post.excerpt || '',
+      }
+    }))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contentItemsIdKey, sortedPosts]) // Using contentItemsIdKey for stable comparison
+
+  // Register blog posts for auto-translation when locale changes
+  const { getTranslated, isTranslating } = useAutoTranslatedContent(contentItems)
 
   const handleNewsletterSubscribe = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -224,14 +243,14 @@ export default function BlogPage() {
                     {featuredPost.readTime}
                   </div>
                 </div>
-                <h2 className="text-2xl font-bold mb-4">{featuredPost.title}</h2>
-                <p className="text-muted-foreground mb-6">{featuredPost.excerpt}</p>
+                <h2 className="text-2xl font-bold mb-4">{getTranslated(`blog-${featuredPost.id}`, 'title', featuredPost.title)}</h2>
+                <p className="text-muted-foreground mb-6">{getTranslated(`blog-${featuredPost.id}`, 'excerpt', featuredPost.excerpt)}</p>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-primary-foreground text-sm font-bold">
                       {featuredPost.author
                         .split(" ")
-                        .map((n) => n[0])
+                        .map((n: string) => n[0])
                         .join("")}
                     </div>
                     <div>
@@ -280,16 +299,16 @@ export default function BlogPage() {
                 </div>
                 <Link href={`/blog/${post.slug}`}>
                   <h3 className="text-lg font-semibold mb-3 hover:text-accent transition-colors line-clamp-2">
-                    {post.title}
+                    {getTranslated(`blog-${post.id}`, 'title', post.title)}
                   </h3>
                 </Link>
-                <p className="text-muted-foreground text-sm mb-4 line-clamp-3">{post.excerpt}</p>
+                <p className="text-muted-foreground text-sm mb-4 line-clamp-3">{getTranslated(`blog-${post.id}`, 'excerpt', post.excerpt)}</p>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center text-primary-foreground text-xs font-bold">
                       {post.author
                         .split(" ")
-                        .map((n) => n[0])
+                        .map((n: string) => n[0])
                         .join("")}
                     </div>
                     <div>

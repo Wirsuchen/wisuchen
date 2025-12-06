@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -22,7 +22,7 @@ import {
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
 import { Input } from "@/components/ui/input"
-import { useTranslation } from '@/contexts/i18n-context'
+import { useTranslation, useI18n } from '@/contexts/i18n-context'
 
 interface BlogPostProps {
   post: {
@@ -42,11 +42,65 @@ interface BlogPostProps {
 
 export function BlogPost({ post }: BlogPostProps) {
   const { t } = useTranslation()
+  const { locale } = useI18n()
   const [isLiked, setIsLiked] = useState(false)
   const [likes, setLikes] = useState(Math.floor(Math.random() * 100) + 50)
   const [newsletterEmail, setNewsletterEmail] = useState("")
   const [isSubscribing, setIsSubscribing] = useState(false)
   const { toast } = useToast()
+
+  // Auto-translation state
+  const [translatedTitle, setTranslatedTitle] = useState(post.title)
+  const [translatedExcerpt, setTranslatedExcerpt] = useState(post.excerpt)
+  const [translatedContent, setTranslatedContent] = useState(post.content)
+  const originalPostRef = useRef({ title: post.title, excerpt: post.excerpt, content: post.content })
+  const lastTranslatedLocaleRef = useRef<string>('en')
+
+  // Auto-translate when locale changes
+  useEffect(() => {
+    // Skip if locale hasn't changed
+    if (lastTranslatedLocaleRef.current === locale) return
+
+    // Update the last translated locale
+    lastTranslatedLocaleRef.current = locale
+
+    // If locale is English, restore original
+    if (locale === 'en') {
+      setTranslatedTitle(originalPostRef.current.title)
+      setTranslatedExcerpt(originalPostRef.current.excerpt)
+      setTranslatedContent(originalPostRef.current.content)
+      return
+    }
+
+    // Translate to target locale
+    const translateBlog = async () => {
+      try {
+        const response = await fetch('/api/translate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contentType: 'blog',
+            title: originalPostRef.current.title,
+            description: originalPostRef.current.excerpt,
+            content: originalPostRef.current.content,
+            toLanguage: locale,
+            fromLanguage: 'en'
+          })
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          if (data.title) setTranslatedTitle(data.title)
+          if (data.description) setTranslatedExcerpt(data.description)
+          if (data.content) setTranslatedContent(data.content)
+        }
+      } catch (error) {
+        console.error('Auto-translation error:', error)
+      }
+    }
+
+    translateBlog()
+  }, [locale, post.id])
 
   const handleLike = () => {
     setIsLiked(!isLiked)
@@ -207,9 +261,9 @@ export function BlogPost({ post }: BlogPostProps) {
           </div>
         </div>
 
-        <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">{post.title}</h1>
+        <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">{translatedTitle}</h1>
 
-        <p className="text-xl text-muted-foreground mb-6">{post.excerpt}</p>
+        <p className="text-xl text-muted-foreground mb-6">{translatedExcerpt}</p>
 
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
@@ -255,7 +309,7 @@ export function BlogPost({ post }: BlogPostProps) {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Article Content */}
         <div className="lg:col-span-3">
-          <div className="prose prose-lg max-w-none" dangerouslySetInnerHTML={{ __html: post.content }} />
+          <div className="prose prose-lg max-w-none" dangerouslySetInnerHTML={{ __html: translatedContent }} />
 
           {/* Tags */}
           <div className="mt-8 pt-8 border-t">

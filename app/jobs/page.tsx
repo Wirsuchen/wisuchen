@@ -8,16 +8,13 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useJobs, type Job } from '@/hooks/use-jobs'
 import { PageLayout } from '@/components/layout/page-layout'
-import { Loader2, Search, MapPin, Briefcase, DollarSign, ExternalLink, Filter, RefreshCw, TrendingUp, Edit, Languages } from 'lucide-react'
+import { Loader2, Search, MapPin, Briefcase, DollarSign, ExternalLink, Filter, RefreshCw, TrendingUp, Edit } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/contexts/auth-context'
 import Link from 'next/link'
 import { useTranslation } from '@/contexts/i18n-context'
-import { TranslateButton } from '@/components/ui/translate-button'
-import { useTranslate } from '@/hooks/use-translate'
-import { useToast } from '@/hooks/use-toast'
 import { useAutoTranslatedContent } from '@/contexts/dynamic-translation-context'
 
 
@@ -124,7 +121,8 @@ export default function JobsPage() {
     return deduped
   }, [jobs])
 
-  // Prepare content items for auto-translation
+  // Prepare content items for auto-translation (using stable ID-based comparison)
+  const contentItemsIdKey = useMemo(() => uniqueJobs.map(j => j.id).join(','), [uniqueJobs])
   const contentItems = useMemo(() => {
     return uniqueJobs.map(job => ({
       id: `job-${job.source}-${job.id}`,
@@ -134,7 +132,8 @@ export default function JobsPage() {
         description: job.description || '',
       }
     }))
-  }, [uniqueJobs])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contentItemsIdKey, uniqueJobs]) // Using contentItemsIdKey for stable comparison
 
   // Register jobs for auto-translation when locale changes
   const { getTranslated, isTranslating } = useAutoTranslatedContent(contentItems)
@@ -492,18 +491,13 @@ interface JobCardProps {
 
 function JobCard({ job, getTranslated }: JobCardProps) {
   const { t, tr } = useTranslation()
-  const { translate } = useTranslate()
-  const [isManualTranslating, setIsManualTranslating] = useState(false)
-  const [manualTitle, setManualTitle] = useState<string | null>(null)
-  const [manualDescription, setManualDescription] = useState<string | null>(null)
-  const { toast } = useToast()
 
   // Generate content ID for this job
   const contentId = `job-${job.source}-${job.id}`
 
-  // Use manually translated content if available, otherwise use auto-translated
-  const title = manualTitle ?? getTranslated(contentId, 'title', job.title)
-  const description = manualDescription ?? getTranslated(contentId, 'description', job.description || '')
+  // Use auto-translated content (translation happens centrally from header language change)
+  const title = getTranslated(contentId, 'title', job.title)
+  const description = getTranslated(contentId, 'description', job.description || '')
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -515,35 +509,6 @@ function JobCard({ job, getTranslated }: JobCardProps) {
     if (diffInHours < 48) return t('jobs.time.yesterday')
     if (diffInHours < 168) return tr('jobs.time.daysAgo', { days: Math.floor(diffInHours / 24) })
     return date.toLocaleDateString()
-  }
-
-  const handleTranslate = async (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-
-    setIsManualTranslating(true)
-    try {
-      const [newTitle, newDesc] = await Promise.all([
-        translate(job.title, { contentType: 'general' }),
-        job.description ? translate(job.description, { contentType: 'job_description' }) : Promise.resolve('')
-      ])
-
-      setManualTitle(newTitle)
-      if (newDesc) setManualDescription(newDesc)
-
-      toast({
-        title: t('common.success'),
-        description: t('common.translationSuccess'),
-      })
-    } catch (error) {
-      toast({
-        title: t('common.error'),
-        description: t('common.translationError'),
-        variant: 'destructive',
-      })
-    } finally {
-      setIsManualTranslating(false)
-    }
   }
 
   const onOpenDetails = () => {
@@ -637,16 +602,6 @@ function JobCard({ job, getTranslated }: JobCardProps) {
         </div>
 
         <div className="flex gap-2 w-full sm:w-auto">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleTranslate}
-            disabled={isManualTranslating}
-            className="flex-1 sm:flex-initial text-muted-foreground hover:text-primary"
-          >
-            {isManualTranslating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Languages className="h-4 w-4 mr-2" />}
-            {t('common.translate')}
-          </Button>
           <Button asChild variant="outline" size="sm" className="flex-1 sm:flex-initial">
             <a
               href={`/jobs/${encodeURIComponent(job.externalId || job.id)}?source=${encodeURIComponent(job.source)}`}
