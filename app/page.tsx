@@ -382,7 +382,16 @@ export default function HomePage() {
                       <CardHeader>
                         <div className="flex items-start justify-between">
                           <div>
-                            <CardTitle className="text-lg">{getTranslated(`home-job-${job.id}`, 'title', job.title)}</CardTitle>
+                            <CardTitle className="text-lg">
+                              {isTranslating ? (
+                                <span className="inline-flex items-center gap-2">
+                                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                                  <span className="animate-pulse">{getTranslated(`home-job-${job.id}`, 'title', job.title)}</span>
+                                </span>
+                              ) : (
+                                getTranslated(`home-job-${job.id}`, 'title', job.title)
+                              )}
+                            </CardTitle>
                             <CardDescription>{job.company}</CardDescription>
                           </div>
                         </div>

@@ -217,6 +217,14 @@ export default function BlogPage() {
           </Select>
         </div>
 
+        {/* Translation Indicator */}
+        {isTranslating && (
+          <div className="flex items-center justify-center gap-2 py-2 text-sm text-muted-foreground mb-4">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span>{t('common.translating')}</span>
+          </div>
+        )}
+
         {/* Featured Post */}
         {selectedCategory === "all" && !searchQuery && featuredPost && (
           <Card className="mb-12 overflow-hidden">
@@ -243,7 +251,16 @@ export default function BlogPage() {
                     {featuredPost.readTime}
                   </div>
                 </div>
-                <h2 className="text-2xl font-bold mb-4">{getTranslated(`blog-${featuredPost.id}`, 'title', featuredPost.title)}</h2>
+                <h2 className="text-2xl font-bold mb-4">
+                  {isTranslating ? (
+                    <span className="inline-flex items-center gap-2">
+                      <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                      <span className="animate-pulse">{getTranslated(`blog-${featuredPost.id}`, 'title', featuredPost.title)}</span>
+                    </span>
+                  ) : (
+                    getTranslated(`blog-${featuredPost.id}`, 'title', featuredPost.title)
+                  )}
+                </h2>
                 <p className="text-muted-foreground mb-6">{getTranslated(`blog-${featuredPost.id}`, 'excerpt', featuredPost.excerpt)}</p>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
@@ -299,7 +316,14 @@ export default function BlogPage() {
                 </div>
                 <Link href={`/blog/${post.slug}`}>
                   <h3 className="text-lg font-semibold mb-3 hover:text-accent transition-colors line-clamp-2">
-                    {getTranslated(`blog-${post.id}`, 'title', post.title)}
+                    {isTranslating ? (
+                      <span className="inline-flex items-center gap-2">
+                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                        <span className="animate-pulse">{getTranslated(`blog-${post.id}`, 'title', post.title)}</span>
+                      </span>
+                    ) : (
+                      getTranslated(`blog-${post.id}`, 'title', post.title)
+                    )}
                   </h3>
                 </Link>
                 <p className="text-muted-foreground text-sm mb-4 line-clamp-3">{getTranslated(`blog-${post.id}`, 'excerpt', post.excerpt)}</p>

@@ -325,13 +325,13 @@ export default function DealsPage() {
                 {viewMode === "grid" ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     {sortedDeals.map((deal) => (
-                      <DealCard key={deal.id} deal={deal} viewMode="grid" getTranslated={getTranslated} />
+                      <DealCard key={deal.id} deal={deal} viewMode="grid" getTranslated={getTranslated} isTranslating={isTranslating} />
                     ))}
                   </div>
                 ) : (
                   <div className="space-y-4">
                     {sortedDeals.map((deal) => (
-                      <DealCard key={deal.id} deal={deal} viewMode="list" getTranslated={getTranslated} />
+                      <DealCard key={deal.id} deal={deal} viewMode="list" getTranslated={getTranslated} isTranslating={isTranslating} />
                     ))}
                   </div>
                 )}
@@ -374,10 +374,11 @@ interface DealCardProps {
   deal: any
   viewMode: "grid" | "list"
   getTranslated: (id: string, field: string, original: string) => string
+  isTranslating?: boolean
 }
 
 
-function DealCard({ deal, viewMode, getTranslated }: DealCardProps) {
+function DealCard({ deal, viewMode, getTranslated, isTranslating = false }: DealCardProps) {
   const { t, tr } = useTranslation()
   const { user } = useAuth()
   const router = useRouter()
@@ -470,7 +471,14 @@ function DealCard({ deal, viewMode, getTranslated }: DealCardProps) {
             <div className="flex justify-between items-start gap-2">
               <Link href={`/deals/${deal.id}`} className="flex-1">
                 <h3 className="font-semibold hover:text-accent transition-colors line-clamp-2">
-                  {title}
+                  {isTranslating ? (
+                    <span className="inline-flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                      <span className="animate-pulse">{title}</span>
+                    </span>
+                  ) : (
+                    title
+                  )}
                 </h3>
               </Link>
             </div>
@@ -523,7 +531,14 @@ function DealCard({ deal, viewMode, getTranslated }: DealCardProps) {
                 <div className="flex items-start justify-between gap-2">
                   <Link href={`/deals/${deal.id}`}>
                     <h3 className="text-lg font-semibold hover:text-accent transition-colors">
-                      {title}
+                      {isTranslating ? (
+                        <span className="inline-flex items-center gap-2">
+                          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                          <span className="animate-pulse">{title}</span>
+                        </span>
+                      ) : (
+                        title
+                      )}
                     </h3>
                   </Link>
                 </div>

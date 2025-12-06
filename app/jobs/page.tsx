@@ -450,6 +450,7 @@ export default function JobsPage() {
                   key={`${job.source}-${job.id}`}
                   job={job}
                   getTranslated={getTranslated}
+                  isTranslating={isTranslating}
                 />
               ))}
             </div>
@@ -487,9 +488,10 @@ export default function JobsPage() {
 interface JobCardProps {
   job: Job
   getTranslated: (id: string, field: string, original: string) => string
+  isTranslating?: boolean
 }
 
-function JobCard({ job, getTranslated }: JobCardProps) {
+function JobCard({ job, getTranslated, isTranslating = false }: JobCardProps) {
   const { t, tr } = useTranslation()
 
   // Generate content ID for this job
@@ -529,7 +531,14 @@ function JobCard({ job, getTranslated }: JobCardProps) {
               className="block flex-1"
             >
               <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 hover:text-blue-600">
-                <span>{title}</span>
+                {isTranslating ? (
+                  <span className="inline-flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    <span className="animate-pulse bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 bg-clip-text text-transparent">{title}</span>
+                  </span>
+                ) : (
+                  <span>{title}</span>
+                )}
               </h3>
             </a>
           </div>
