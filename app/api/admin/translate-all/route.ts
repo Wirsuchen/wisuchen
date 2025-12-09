@@ -58,10 +58,11 @@ export async function POST(request: NextRequest) {
     if (type === 'all' || type === 'job') {
       let allJobs: Array<{ id: string; title: string; description: string; source: string }> = []
       
-      // Get jobs from ad_listings (user posted jobs in database)
+      // Get jobs from offers table (user posted jobs)
       const { data: dbJobs } = await (supabase as any)
-        .from('ad_listings')
+        .from('offers')
         .select('id, title, description')
+        .eq('type', 'job')
         .limit(limit)
       
       if (dbJobs) {
