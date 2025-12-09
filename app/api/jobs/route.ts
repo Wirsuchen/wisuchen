@@ -7,6 +7,7 @@ import { searchAdzunaJobs } from '@/lib/api/adzuna'
 import { cacheWrap } from '@/lib/api/cache'
 import { withRateLimit } from '@/lib/utils/rate-limiter'
 import { sanitizeSnippet } from '@/lib/utils/text'
+import { getStoredTranslationsBatch, ContentType } from '@/lib/services/translation-service'
 
 // Deduplicate external jobs by composite key: title + company + location (+ external_id when present)
 function normalizeText(v: unknown): string {
@@ -53,11 +54,12 @@ async function handler(request: NextRequest) {
     const search = searchParams.get('search')
     const featured = searchParams.get('featured')
     const includeExternal = (searchParams.get('include_external') ?? 'true') === 'true'
+    const lang = searchParams.get('lang') || 'en' // Language parameter for translations
     
     const offset = (page - 1) * limit
 
-    // Create cache key based on all query parameters
-    const cacheKey = `jobs:${page}:${limit}:${category || 'all'}:${location || 'all'}:${type || 'all'}:${remote || 'false'}:${search || 'all'}:${featured || 'all'}:${includeExternal}`
+    // Create cache key based on all query parameters (including language)
+    const cacheKey = `jobs:${page}:${limit}:${category || 'all'}:${location || 'all'}:${type || 'all'}:${remote || 'false'}:${search || 'all'}:${featured || 'all'}:${includeExternal}:${lang}`
     console.log('🔑 [Jobs API] Cache key:', cacheKey)
 
     // Use cached response if available
@@ -195,8 +197,37 @@ async function handler(request: NextRequest) {
       }
     })
 
+    // Apply translations if language is not English
+    let translatedJobs = combined
+    if (lang !== 'en' && combined.length > 0) {
+      try {
+        // Get content IDs for batch lookup
+        const contentIds = combined.map(j => `job-${j.source || 'db'}-${j.id}`)
+        const translations = await getStoredTranslationsBatch(contentIds, lang, 'job' as ContentType)
+        
+        // Apply translations, falling back to original if not found
+        translatedJobs = combined.map(job => {
+          const translation = translations.get(`job-${job.source || 'db'}-${job.id}`)
+          if (translation) {
+            return {
+              ...job,
+              title: translation.title || job.title,
+              description: translation.description || job.description,
+              short_description: translation.description ? sanitizeSnippet(translation.description) : job.short_description
+            }
+          }
+          return job
+        })
+        
+        console.log(`[Jobs API] Applied ${translations.size} translations for lang=${lang}`)
+      } catch (error) {
+        console.error('[Jobs API] Translation error:', error)
+        // Continue with original content on error
+      }
+    }
+
     return {
-      jobs: combined,
+      jobs: translatedJobs,
       pagination: {
         page,
         limit,
@@ -207,7 +238,8 @@ async function handler(request: NextRequest) {
         database: jobs?.length || 0,
         activeJobsDb: dedupedExternal.filter(j => j.source?.includes('active-jobs')).length,
         adzuna: dedupedExternal.filter(j => j.source === 'adzuna').length,
-      }
+      },
+      language: lang
     }
     })
 

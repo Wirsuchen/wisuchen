@@ -1,140 +1,311 @@
-import { translateContent } from '@/lib/services/ai/gemini'
+/**
+ * Backend Translation Service with Supabase Storage
+ * 
+ * Stores translations in database for instant retrieval.
+ * Uses Lingva (FREE) for translations with fallback to Gemini.
+ */
 
-// Simple in-memory cache for translations
-// Key: "text:targetLang", Value: translatedText
-const translationCache = new Map<string, string>()
+import { createClient } from '@/lib/supabase/server'
+import { translateText } from '@/lib/services/lingva-translate'
 
-export const translationService = {
-  /**
-   * Translate a batch of texts to a target language
-   * Uses caching to minimize API calls
-   */
-  async translateBatch(texts: string[], targetLanguage: 'de' | 'en' | 'fr' | 'it'): Promise<string[]> {
-    if (targetLanguage === 'en') return texts // Assuming source is English
+export type SupportedLanguage = 'en' | 'de' | 'fr' | 'it'
+export type ContentType = 'job' | 'deal' | 'blog'
 
-    // Identify texts that need translation (not in cache)
-    const uniqueTexts = [...new Set(texts.filter(t => t && t.trim().length > 0))]
-    const missingTranslations = uniqueTexts.filter(text => !translationCache.has(`${text}:${targetLanguage}`))
+export interface TranslationFields {
+  title?: string
+  description?: string
+  excerpt?: string
+  content?: string
+}
 
-    // If we have missing translations, fetch them in batches
-    if (missingTranslations.length > 0) {
-      // Process in chunks of 20 to avoid hitting token limits
-      const chunkSize = 20
-      for (let i = 0; i < missingTranslations.length; i += chunkSize) {
-        const chunk = missingTranslations.slice(i, i + chunkSize)
-        
-        // Create a map for the prompt
-        const mapToTranslate: Record<string, string> = {}
-        chunk.forEach((text, index) => {
-          mapToTranslate[`item_${index}`] = text
-        })
+interface StoredTranslation {
+  id: string
+  content_id: string
+  language: string
+  type: string
+  translations: TranslationFields
+  created_at: string
+  updated_at: string
+}
 
-        try {
-          // We use the existing translateContent but pass a JSON string
-          // This relies on the model being smart enough to return JSON when asked
-          // Alternatively, we can modify gemini.ts to support batch, but let's try to use the existing function with a clever prompt
-          
-          // Since translateContent expects a specific prompt structure, we might need to bypass it or use it creatively.
-          // The existing function wraps the content in a prompt: "Translate this ... from ... to ...: \n\n${content}"
-          // If we pass a JSON string as content, it might try to translate the JSON structure.
-          
-          // Let's try to use a custom prompt via a new method in gemini.ts if possible, 
-          // but since I can't easily modify gemini.ts without potentially breaking other things, 
-          // I will try to use translateContent with a JSON string and hope for the best, 
-          // OR (safer) just loop and call it in parallel with concurrency limit.
-          
-          // Parallel calls with concurrency limit is safer for reliability, though slower.
-          // Given we have ~20 items per page, 20 parallel calls might hit rate limits.
-          // Let's try a batch prompt approach by constructing a special content string.
-          
-          const contentToTranslate = JSON.stringify(mapToTranslate, null, 2)
-          const prompt = `
-            Please translate the values in the following JSON object to ${targetLanguage}. 
-            Do not translate the keys. 
-            Return ONLY the valid JSON object with translated values.
-            
-            ${contentToTranslate}
-          `
-          
-          // We use 'general' content type to avoid specific formatting instructions
-          const result = await translateContent({
-            content: prompt,
-            fromLanguage: 'en', // Assuming source is English
-            toLanguage: targetLanguage,
-            contentType: 'general'
-          })
+// Languages to translate to (excluding English which is the source)
+const TARGET_LANGUAGES: SupportedLanguage[] = ['de', 'fr', 'it']
 
-          if (result.success && result.translation) {
-            try {
-              // Clean up markdown code blocks if present
-              const cleanJson = result.translation.replace(/```json/g, '').replace(/```/g, '').trim()
-              const translatedMap = JSON.parse(cleanJson)
-              
-              // Update cache
-              Object.keys(translatedMap).forEach((key, index) => {
-                const originalText = chunk[index] // This assumes order is preserved or keys match
-                // Better: use the key mapping
-                // The key was item_${index}, which corresponds to chunk[index]
-                // But the model might mess up keys.
-                // Actually, relying on the model to preserve keys 'item_0' etc is usually reliable.
-                
-                if (translatedMap[key] && chunk[parseInt(key.replace('item_', ''))]) {
-                   translationCache.set(`${chunk[parseInt(key.replace('item_', ''))]}:${targetLanguage}`, translatedMap[key])
-                }
-              })
-            } catch (e) {
-              console.error('Failed to parse batch translation response', e)
-              // Fallback: mark as same text to avoid retry loop
-              chunk.forEach(t => translationCache.set(`${t}:${targetLanguage}`, t))
-            }
-          }
-        } catch (error) {
-          console.error('Batch translation error', error)
+/**
+ * Get stored translations from Supabase
+ */
+export async function getStoredTranslation(
+  contentId: string,
+  language: string,
+  type: ContentType
+): Promise<TranslationFields | null> {
+  try {
+    const supabase = await createClient()
+    
+    // Use type assertion since translations table isn't in generated types yet
+    const { data, error } = await (supabase as any)
+      .from('translations')
+      .select('translations')
+      .eq('content_id', contentId)
+      .eq('language', language)
+      .eq('type', type)
+      .single()
+    
+    if (error || !data) {
+      return null
+    }
+    
+    return data.translations as TranslationFields
+  } catch (error) {
+    console.error('Error getting stored translation:', error)
+    return null
+  }
+}
+
+/**
+ * Get translations for multiple content items at once
+ */
+export async function getStoredTranslationsBatch(
+  contentIds: string[],
+  language: string,
+  type: ContentType
+): Promise<Map<string, TranslationFields>> {
+  const result = new Map<string, TranslationFields>()
+  
+  if (contentIds.length === 0 || language === 'en') {
+    return result
+  }
+  
+  try {
+    const supabase = await createClient()
+    
+    // Use type assertion since translations table isn't in generated types yet
+    const { data, error } = await (supabase as any)
+      .from('translations')
+      .select('content_id, translations')
+      .in('content_id', contentIds)
+      .eq('language', language)
+      .eq('type', type)
+    
+    if (error || !data) {
+      return result
+    }
+    
+    for (const row of data as any[]) {
+      result.set(row.content_id, row.translations as TranslationFields)
+    }
+    
+    return result
+  } catch (error) {
+    console.error('Error getting batch translations:', error)
+    return result
+  }
+}
+
+/**
+ * Store translation in Supabase
+ */
+export async function storeTranslation(
+  contentId: string,
+  language: string,
+  type: ContentType,
+  translations: TranslationFields
+): Promise<boolean> {
+  try {
+    const supabase = await createClient()
+    
+    // Use type assertion since translations table isn't in generated types yet
+    const { error } = await (supabase as any)
+      .from('translations')
+      .upsert({
+        content_id: contentId,
+        language,
+        type,
+        translations,
+        updated_at: new Date().toISOString()
+      }, {
+        onConflict: 'content_id,language,type'
+      })
+    
+    if (error) {
+      console.error('Error storing translation:', error)
+      return false
+    }
+    
+    return true
+  } catch (error) {
+    console.error('Error storing translation:', error)
+    return false
+  }
+}
+
+/**
+ * Translate fields using Lingva (FREE)
+ */
+async function translateFields(
+  fields: TranslationFields,
+  targetLanguage: SupportedLanguage
+): Promise<TranslationFields> {
+  const result: TranslationFields = {}
+  
+  for (const [key, value] of Object.entries(fields)) {
+    if (value && typeof value === 'string' && value.trim().length > 0) {
+      const translated = await translateText(value, targetLanguage, 'en')
+      result[key as keyof TranslationFields] = translated.translation || value
+    }
+  }
+  
+  return result
+}
+
+/**
+ * Ensure content is translated to all languages and stored in DB
+ * Returns immediately if translations exist, otherwise translates and stores
+ */
+export async function ensureTranslated(
+  contentId: string,
+  type: ContentType,
+  fields: TranslationFields,
+  languages: SupportedLanguage[] = TARGET_LANGUAGES
+): Promise<void> {
+  for (const lang of languages) {
+    if (lang === 'en') continue
+    
+    // Check if translation exists
+    const existing = await getStoredTranslation(contentId, lang, type)
+    if (existing) continue
+    
+    // Translate and store
+    try {
+      const translated = await translateFields(fields, lang)
+      await storeTranslation(contentId, lang, type, translated)
+      
+      // Small delay to avoid rate limiting
+      await new Promise(resolve => setTimeout(resolve, 200))
+    } catch (error) {
+      console.error(`Error translating ${contentId} to ${lang}:`, error)
+    }
+  }
+}
+
+/**
+ * Translate a batch of content items with small delays
+ * Used for bulk translation jobs
+ */
+export async function translateBatchWithDelay(
+  items: Array<{ id: string; fields: TranslationFields }>,
+  type: ContentType,
+  languages: SupportedLanguage[] = TARGET_LANGUAGES,
+  delayMs: number = 500,
+  onProgress?: (completed: number, total: number) => void
+): Promise<{ success: number; failed: number }> {
+  let success = 0
+  let failed = 0
+  const total = items.length * languages.filter(l => l !== 'en').length
+  let completed = 0
+  
+  for (const item of items) {
+    for (const lang of languages) {
+      if (lang === 'en') continue
+      
+      try {
+        // Check if already exists
+        const existing = await getStoredTranslation(item.id, lang, type)
+        if (existing) {
+          success++
+          completed++
+          continue
         }
+        
+        // Translate
+        const translated = await translateFields(item.fields, lang)
+        const stored = await storeTranslation(item.id, lang, type, translated)
+        
+        if (stored) {
+          success++
+        } else {
+          failed++
+        }
+        
+        completed++
+        onProgress?.(completed, total)
+        
+        // Delay between translations
+        await new Promise(resolve => setTimeout(resolve, delayMs))
+      } catch (error) {
+        console.error(`Error translating ${item.id} to ${lang}:`, error)
+        failed++
+        completed++
       }
     }
+  }
+  
+  return { success, failed }
+}
 
-    // Return translations from cache
-    return texts.map(text => translationCache.get(`${text}:${targetLanguage}`) || text)
+/**
+ * Apply stored translations to a list of items
+ * Falls back to original content if translation missing
+ */
+export async function applyTranslations<T extends { id: string }>(
+  items: T[],
+  type: ContentType,
+  language: string,
+  fieldMappings: { source: keyof T; target: keyof T }[]
+): Promise<T[]> {
+  if (language === 'en' || items.length === 0) {
+    return items
+  }
+  
+  // Get all translations in one query
+  const contentIds = items.map(item => `${type}-${item.id}`)
+  const translations = await getStoredTranslationsBatch(contentIds, language, type)
+  
+  // Apply translations, falling back to original
+  return items.map(item => {
+    const translation = translations.get(`${type}-${item.id}`)
+    if (!translation) {
+      return item
+    }
+    
+    const result = { ...item }
+    for (const mapping of fieldMappings) {
+      const translatedValue = translation[mapping.source as keyof TranslationFields]
+      if (translatedValue) {
+        (result as any)[mapping.target] = translatedValue
+      }
+    }
+    
+    return result
+  })
+}
+
+// Legacy compatibility - keeping old translationService object
+export const translationService = {
+  async translateBatch(texts: string[], targetLanguage: 'de' | 'en' | 'fr' | 'it'): Promise<string[]> {
+    if (targetLanguage === 'en') return texts
+    
+    const results: string[] = []
+    for (const text of texts) {
+      const translated = await translateText(text, targetLanguage, 'en')
+      results.push(translated.translation || text)
+    }
+    return results
   },
-
-  /**
-   * Translate jobs list
-   */
+  
   async translateJobs(jobs: any[], targetLanguage: string): Promise<any[]> {
     if (!targetLanguage || targetLanguage === 'en') return jobs
-    
-    const lang = targetLanguage as 'de' | 'fr' | 'it'
-    if (!['de', 'fr', 'it'].includes(lang)) return jobs
-
-    // Extract titles
-    const titles = jobs.map(j => j.title)
-    const translatedTitles = await this.translateBatch(titles, lang)
-
-    // Apply translations
-    return jobs.map((job, index) => ({
-      ...job,
-      title: translatedTitles[index] || job.title
-    }))
+    return applyTranslations(jobs, 'job', targetLanguage, [
+      { source: 'title' as any, target: 'title' as any },
+      { source: 'description' as any, target: 'description' as any }
+    ])
   },
-
-  /**
-   * Translate deals list
-   */
+  
   async translateDeals(deals: any[], targetLanguage: string): Promise<any[]> {
     if (!targetLanguage || targetLanguage === 'en') return deals
-
-    const lang = targetLanguage as 'de' | 'fr' | 'it'
-    if (!['de', 'fr', 'it'].includes(lang)) return deals
-
-    // Extract titles
-    const titles = deals.map(d => d.title)
-    const translatedTitles = await this.translateBatch(titles, lang)
-
-    // Apply translations
-    return deals.map((deal, index) => ({
-      ...deal,
-      title: translatedTitles[index] || deal.title
-    }))
+    return applyTranslations(deals, 'deal', targetLanguage, [
+      { source: 'title' as any, target: 'title' as any },
+      { source: 'description' as any, target: 'description' as any }
+    ])
   }
 }

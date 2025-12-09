@@ -43,6 +43,7 @@ export interface SearchJobsParams {
   radiusKm?: number
   countries?: string[]
   postcodes?: string[]
+  locale?: string // Language for translations (en, de, fr, it)
 }
 
 interface JobsResponse {
@@ -104,6 +105,7 @@ export function useJobs(initialParams?: SearchJobsParams): UseJobsReturn {
       if (params.radiusKm) queryParams.append('radiusKm', params.radiusKm.toString())
       if (params.countries?.length) queryParams.append('countries', params.countries.join(','))
       if (params.postcodes?.length) queryParams.append('postcodes', params.postcodes.join(','))
+      if (params.locale) queryParams.append('locale', params.locale) // Language for translations
 
       const url = `/api/v1/jobs/search?${queryParams.toString()}`
       

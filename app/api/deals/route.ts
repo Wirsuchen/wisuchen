@@ -3,7 +3,7 @@ import { withRateLimit } from '@/lib/utils/rate-limiter'
 import { API_CONFIG, CACHE_CONFIG } from '@/lib/config/api-keys'
 import { cacheWrap } from '@/lib/api/cache'
 import { dealSyncService } from '@/lib/services/deal-sync'
-import { translationService } from '@/lib/services/translation-service'
+import { translationService, getStoredTranslationsBatch, ContentType } from '@/lib/services/translation-service'
 
 /**
  * Deals API - Fetches from Supabase database first, falls back to RapidAPI

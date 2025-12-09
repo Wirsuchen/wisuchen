@@ -384,69 +384,69 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
     <div className="min-h-screen">
       <Header />
 
-      <main className="pt-28 md:pt-32 lg:pt-36 container mx-auto px-4 py-8">
+      <main className="pt-20 sm:pt-24 md:pt-28 lg:pt-32 container mx-auto px-3 sm:px-4 py-6 sm:py-8">
         {/* Back Button */}
-        <div className="mb-6">
+        <div className="mb-4 sm:mb-6">
           <Button variant="ghost" asChild className="p-0 h-auto font-normal text-muted-foreground hover:text-foreground">
-            <Link href="/jobs" className="inline-flex items-center">
+            <Link href="/jobs" className="inline-flex items-center text-sm sm:text-base">
               <ArrowLeft className="mr-2 h-4 w-4" />
               {t('jobs.detail.backToJobs')}
             </Link>
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2">
             <Card>
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start space-x-4">
+              <CardHeader className="p-4 sm:p-6">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                  <div className="flex items-start gap-3 sm:gap-4 min-w-0">
                     <img
                       src={"/placeholder-logo.svg"}
                       alt={`${job.company} logo`}
-                      className="w-16 h-16 rounded-lg object-cover"
+                      className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg object-cover flex-shrink-0"
                     />
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <CardTitle className="text-2xl">{job.title}</CardTitle>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start gap-2 flex-wrap">
+                        <CardTitle className="text-xl sm:text-2xl leading-tight">{job.title}</CardTitle>
                         <TranslateButton
                           text={job.title}
                           onTranslate={(t) => setJob(prev => prev ? ({ ...prev, title: t }) : null)}
-                          className="text-gray-400 hover:text-blue-600"
+                          className="text-gray-400 hover:text-blue-600 flex-shrink-0"
                         />
                       </div>
-                      <CardDescription className="text-lg flex items-center mt-1">
-                        <Building2 className="h-4 w-4 mr-1" />
-                        {job.company}
+                      <CardDescription className="text-base sm:text-lg flex items-center mt-1 truncate">
+                        <Building2 className="h-4 w-4 mr-1 flex-shrink-0" />
+                        <span className="truncate">{job.company}</span>
                       </CardDescription>
-                      <div className="flex flex-wrap items-center gap-4 mt-3 text-sm text-muted-foreground">
+                      <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-2 sm:gap-4 mt-3 text-xs sm:text-sm text-muted-foreground">
                         <div className="flex items-center">
-                          <MapPin className="h-4 w-4 mr-1" />
-                          {job.location}
+                          <MapPin className="h-4 w-4 mr-1 flex-shrink-0" />
+                          <span className="truncate">{job.location}</span>
                         </div>
                         {salaryText && (
                           <div className="flex items-center">
-                            <Euro className="h-4 w-4 mr-1" />
-                            {salaryText}
+                            <Euro className="h-4 w-4 mr-1 flex-shrink-0" />
+                            <span className="truncate">{salaryText}</span>
                           </div>
                         )}
                         {jobType && (
                           <div className="flex items-center">
-                            <Briefcase className="h-4 w-4 mr-1" />
-                            {jobType}
+                            <Briefcase className="h-4 w-4 mr-1 flex-shrink-0" />
+                            <span className="truncate">{jobType}</span>
                           </div>
                         )}
                         {postedDate && (
                           <div className="flex items-center">
-                            <Clock className="h-4 w-4 mr-1" />
-                            {postedDate}
+                            <Clock className="h-4 w-4 mr-1 flex-shrink-0" />
+                            <span className="truncate">{postedDate}</span>
                           </div>
                         )}
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     <Button
                       variant="outline"
                       size="sm"
@@ -502,47 +502,48 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
                           })
                         }
                       }}
+                      className="p-2 h-auto"
                     >
                       <Heart className="h-4 w-4" />
                     </Button>
-                    <Button variant="outline" size="sm" onClick={handleShare}>
+                    <Button variant="outline" size="sm" onClick={handleShare} className="p-2 h-auto">
                       <Share2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
-                <div className="flex items-center space-x-2 mt-4">
-                  {jobType && <Badge variant="secondary" className="capitalize">{jobType}</Badge>}
+                <div className="flex items-center gap-2 mt-4 flex-wrap">
+                  {jobType && <Badge variant="secondary" className="capitalize text-xs sm:text-sm">{jobType}</Badge>}
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4 sm:p-6">
                 <div className="space-y-6">
                   <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-lg font-semibold">{t('jobs.detail.descriptionTitle')}</h3>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+                      <h3 className="text-base sm:text-lg font-semibold">{t('jobs.detail.descriptionTitle')}</h3>
                       <TranslateButton
                         text={cleanedDescription}
                         onTranslate={(t) => setJob(prev => prev ? ({ ...prev, description: t }) : null)}
                         contentType="job_description"
-                        className="text-gray-400 hover:text-blue-600"
+                        className="text-gray-400 hover:text-blue-600 flex-shrink-0"
                       />
                     </div>
-                    <div className="prose prose-sm max-w-none">
-                      <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed">{cleanedDescription}</pre>
+                    <div className="prose prose-sm max-w-none overflow-x-auto">
+                      <pre className="whitespace-pre-wrap font-sans text-xs sm:text-sm leading-relaxed">{cleanedDescription}</pre>
                     </div>
                   </div>
 
                   {/* AI Improve Description */}
-                  <div className={`border rounded-lg p-4 bg-muted/50 ${!canUseAI ? 'opacity-60' : ''}`}>
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-3">
-                      <h4 className="font-semibold flex items-center">
-                        <Sparkles className="h-4 w-4 mr-2 text-accent" />
+                  <div className={`border rounded-lg p-3 sm:p-4 bg-muted/50 ${!canUseAI ? 'opacity-60' : ''}`}>
+                    <div className="flex flex-col gap-3 mb-3">
+                      <h4 className="font-semibold flex items-center text-sm sm:text-base">
+                        <Sparkles className="h-4 w-4 mr-2 text-accent flex-shrink-0" />
                         {t('jobs.detail.aiEnhancedTitle')}
                       </h4>
-                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3 w-full sm:w-auto">
+                      <div className="flex flex-col gap-2 w-full">
                         {!canUseAI && (
                           <Link
                             href="/pricing"
-                            className="text-xs text-muted-foreground hover:underline text-left sm:text-right"
+                            className="text-xs text-muted-foreground hover:underline"
                           >
                             {t('jobs.detail.upgradeToUse')}
                           </Link>
@@ -551,7 +552,7 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
                           onClick={handleImproveDescription}
                           disabled={isImproving || !canUseAI}
                           size="sm"
-                          className="w-full sm:w-auto bg-accent text-accent-foreground"
+                          className="w-full bg-accent text-accent-foreground text-xs sm:text-sm"
                           aria-disabled={!canUseAI}
                           title={!canUseAI ? t('jobs.detail.subscribersOnly') : undefined}
                         >
@@ -560,13 +561,13 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
                       </div>
                     </div>
                     {improvedDescription ? (
-                      <div className="prose prose-sm max-w-none">
-                        <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed bg-background p-4 rounded border">
+                      <div className="prose prose-sm max-w-none overflow-x-auto">
+                        <pre className="whitespace-pre-wrap font-sans text-xs sm:text-sm leading-relaxed bg-background p-3 sm:p-4 rounded border">
                           {improvedDescription}
                         </pre>
                       </div>
                     ) : (
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-xs sm:text-sm text-muted-foreground">
                         {canUseAI
                           ? t('jobs.detail.aiHelpText')
                           : t('jobs.detail.aiUpgradeText')}
@@ -578,10 +579,10 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
 
                   {Array.isArray((job as any).benefits) && (job as any).benefits.length > 0 && (
                     <div>
-                      <h3 className="text-lg font-semibold mb-3">{t('jobs.detail.benefitsTitle')}</h3>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                      <h3 className="text-base sm:text-lg font-semibold mb-3">{t('jobs.detail.benefitsTitle')}</h3>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                         {(job as any).benefits.map((benefit: string) => (
-                          <Badge key={benefit} variant="secondary" className="justify-center py-2">
+                          <Badge key={benefit} variant="secondary" className="justify-center py-2 text-xs sm:text-sm">
                             {benefit}
                           </Badge>
                         ))}
@@ -594,17 +595,16 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
           </div>
 
           {/* Sidebar */}
-
           <div className="space-y-6">
             {/* Apply Card */}
             <Card>
-              <CardHeader>
-                <CardTitle>{t('jobs.detail.applyTitle')}</CardTitle>
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="text-base sm:text-lg">{t('jobs.detail.applyTitle')}</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="p-4 sm:p-6 space-y-4">
                 {job.applicationUrl && (
                   <Button asChild className="w-full" size="lg">
-                    <a href={job.applicationUrl}>
+                    <a href={job.applicationUrl} className="text-sm sm:text-base">
                       <ExternalLink className="h-4 w-4 mr-2" />
                       {t('jobs.apply')}
                     </a>
@@ -612,7 +612,7 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
                 )}
                 <Button
                   variant="outline"
-                  className="w-full bg-transparent"
+                  className="w-full bg-transparent text-sm sm:text-base"
                   onClick={async () => {
                     if (!job) return
 
@@ -677,24 +677,24 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
 
             {/* Company Info */}
             <Card>
-              <CardHeader>
-                <CardTitle>{t('jobs.detail.aboutCompany')} {job.company}</CardTitle>
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="text-base sm:text-lg">{t('jobs.detail.aboutCompany')} {job.company}</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center text-sm">
-                  <Users className="h-4 w-4 mr-2 text-muted-foreground" />
-                  {job.companySize}
+              <CardContent className="p-4 sm:p-6 space-y-3">
+                <div className="flex items-center text-xs sm:text-sm">
+                  <Users className="h-4 w-4 mr-2 text-muted-foreground flex-shrink-0" />
+                  <span className="truncate">{job.companySize}</span>
                 </div>
-                <div className="flex items-center text-sm">
-                  <Building2 className="h-4 w-4 mr-2 text-muted-foreground" />
-                  {job.industry}
+                <div className="flex items-center text-xs sm:text-sm">
+                  <Building2 className="h-4 w-4 mr-2 text-muted-foreground flex-shrink-0" />
+                  <span className="truncate">{job.industry}</span>
                 </div>
-                <div className="flex items-center text-sm">
-                  <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
+                <div className="flex items-center text-xs sm:text-sm">
+                  <Calendar className="h-4 w-4 mr-2 text-muted-foreground flex-shrink-0" />
                   {t('jobs.detail.foundedIn')} 2015
                 </div>
                 {(job as any).website && (
-                  <Button variant="outline" className="w-full mt-4 bg-transparent" asChild>
+                  <Button variant="outline" className="w-full mt-4 bg-transparent text-xs sm:text-sm" asChild>
                     <Link href={(job as any).website} target="_blank">
                       <ExternalLink className="h-4 w-4 mr-2" />
                       {t('jobs.detail.visitWebsite')}
@@ -707,21 +707,21 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
             {/* Related Jobs moved to full-width section below */}
           </div>
         </div >
-        {/* Recommended Jobs - full width, 3 in a row */}
-        < section className="mt-8" >
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">{t('jobs.detail.recommendedTitle')}</h2>
-            <Button variant="outline" className="bg-transparent" asChild>
+        {/* Recommended Jobs - full width, responsive grid */}
+        <section className="mt-8 sm:mt-10 lg:mt-12">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
+            <h2 className="text-lg sm:text-xl font-semibold">{t('jobs.detail.recommendedTitle')}</h2>
+            <Button variant="outline" className="bg-transparent text-xs sm:text-sm w-full sm:w-auto" asChild>
               <Link href="/jobs">{t('common.viewAll')}</Link>
             </Button>
           </div>
           {
             loadingRelated ? (
-              <p className="text-sm text-muted-foreground text-center py-6">{t('jobs.detail.loadingRecommended')}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground text-center py-6">{t('jobs.detail.loadingRecommended')}</p>
             ) : relatedJobs.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-6">{t('jobs.detail.noRecommendations')}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground text-center py-6">{t('jobs.detail.noRecommendations')}</p>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 {relatedJobs.map((relatedJob) => {
                   const salaryText = relatedJob.salary?.text || (
                     relatedJob.salary?.min || relatedJob.salary?.max
@@ -730,7 +730,7 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
                   )
                   return (
                     <Card key={`${relatedJob.source}-${relatedJob.externalId || relatedJob.id}`} className="hover:bg-muted/50 transition-colors">
-                      <CardContent className="p-4">
+                      <CardContent className="p-3 sm:p-4">
                         <Link
                           href={`/jobs/${encodeURIComponent(relatedJob.externalId || relatedJob.id)}?source=${encodeURIComponent(relatedJob.source)}`}
                           onClick={() => {
@@ -740,13 +740,13 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
                             } catch { }
                           }}
                         >
-                          <h4 className="font-medium hover:text-accent transition-colors line-clamp-2">{relatedJob.title}</h4>
+                          <h4 className="font-medium hover:text-accent transition-colors line-clamp-2 text-sm sm:text-base">{relatedJob.title}</h4>
                         </Link>
-                        <p className="text-sm text-muted-foreground mt-1">{relatedJob.company}</p>
-                        <div className="flex items-center justify-between mt-2">
-                          <span className="text-sm text-muted-foreground truncate mr-2">{relatedJob.location}</span>
+                        <p className="text-xs sm:text-sm text-muted-foreground mt-1 truncate">{relatedJob.company}</p>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2 mt-2">
+                          <span className="text-xs sm:text-sm text-muted-foreground truncate">{relatedJob.location}</span>
                           {salaryText && (
-                            <span className="text-sm font-medium text-accent">{salaryText}</span>
+                            <span className="text-xs sm:text-sm font-medium text-accent truncate">{salaryText}</span>
                           )}
                         </div>
                       </CardContent>
@@ -756,7 +756,7 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
               </div>
             )
           }
-        </section >
+        </section>
       </main >
 
       <Footer />
