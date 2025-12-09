@@ -14,19 +14,21 @@
  * Used for: Blog titles/descriptions, Job titles/descriptions, Deal titles/descriptions
  */
 
-// List of public Lingva instances for fallback (most reliable first)
+// List of public Lingva instances for fallback (most reliable first - updated Dec 2024)
 const LINGVA_INSTANCES = [
-  'https://lingva.thedaviddelta.com',
-  'https://lingva.ml',
+  'https://lingva.garudalinux.org',
   'https://translate.plausibility.cloud',
   'https://lingva.lunar.icu',
+  'https://lingva.pussthecat.org',
+  'https://translate.dr460nf1r3.org',
 ]
 
 // LibreTranslate instances as backup
 const LIBRE_INSTANCES = [
-  'https://libretranslate.de',
+  'https://libretranslate.com',
   'https://translate.argosopentech.com',
-  'https://translate.terraprint.co',
+  'https://translate.fedilab.app',
+  'https://lt.vern.cc',
 ]
 
 // In-memory cache for translations
@@ -157,7 +159,49 @@ async function translateWithLibre(
 }
 
 /**
- * Translate a single text using Lingva (FREE), with LibreTranslate fallback
+ * Translate text using MyMemory API (FREE - 5000 words/day)
+ * This is a very reliable free API
+ */
+async function translateWithMyMemory(
+  text: string,
+  targetLanguage: string,
+  sourceLanguage: string = 'en'
+): Promise<string | null> {
+  try {
+    const langPair = `${sourceLanguage}|${targetLanguage}`
+    const encodedText = encodeURIComponent(text.substring(0, 500)) // Max 500 chars per request
+    const url = `https://api.mymemory.translated.net/get?q=${encodedText}&langpair=${langPair}`
+    
+    const response = await fetch(url, {
+      signal: AbortSignal.timeout(15000),
+    })
+
+    if (!response.ok) {
+      console.warn(`MyMemory returned ${response.status}`)
+      return null
+    }
+
+    const data = await response.json()
+    
+    if (data.responseStatus === 200 && data.responseData?.translatedText) {
+      // MyMemory returns "MYMEMORY WARNING" for rate limits
+      const translation = data.responseData.translatedText
+      if (translation.includes('MYMEMORY WARNING') || translation.includes('PLEASE CONTACT')) {
+        console.warn('MyMemory rate limit reached')
+        return null
+      }
+      return translation
+    }
+    
+    return null
+  } catch (error) {
+    console.warn('MyMemory translation failed:', error)
+    return null
+  }
+}
+
+/**
+ * Translate a single text using MyMemory (most reliable), with Lingva and LibreTranslate fallbacks
  */
 export async function translateText(
   text: string,
@@ -181,8 +225,21 @@ export async function translateText(
   }
 
   try {
-    // Try Lingva first
-    let translation = await translateWithLingva(
+    // Try MyMemory first (most reliable free API)
+    let translation = await translateWithMyMemory(
+      text,
+      targetLanguage,
+      sourceLanguage || 'en'
+    )
+
+    if (translation) {
+      translationCache.set(cacheKey, translation)
+      return { success: true, translation, source: 'libre' } // Using 'libre' as generic
+    }
+
+    // Fallback to Lingva
+    console.log('MyMemory failed, trying Lingva fallback...')
+    translation = await translateWithLingva(
       text,
       targetLanguage,
       sourceLanguage || 'auto'

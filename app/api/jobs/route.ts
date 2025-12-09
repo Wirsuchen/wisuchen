@@ -7,7 +7,8 @@ import { searchAdzunaJobs } from '@/lib/api/adzuna'
 import { cacheWrap } from '@/lib/api/cache'
 import { withRateLimit } from '@/lib/utils/rate-limiter'
 import { sanitizeSnippet } from '@/lib/utils/text'
-import { getStoredTranslationsBatch, ContentType } from '@/lib/services/translation-service'
+import { getStoredTranslationsBatch, storeTranslation, ContentType } from '@/lib/services/translation-service'
+import { translateText } from '@/lib/services/lingva-translate'
 
 // Deduplicate external jobs by composite key: title + company + location (+ external_id when present)
 function normalizeText(v: unknown): string {
@@ -204,6 +205,41 @@ async function handler(request: NextRequest) {
         // Get content IDs for batch lookup
         const contentIds = combined.map(j => `job-${j.source || 'db'}-${j.id}`)
         const translations = await getStoredTranslationsBatch(contentIds, lang, 'job' as ContentType)
+        
+        // Find jobs that need translation (not in DB)
+        const jobsNeedingTranslation = combined.filter(job => {
+          const contentId = `job-${job.source || 'db'}-${job.id}`
+          return !translations.has(contentId)
+        })
+        
+        // Translate and store missing translations (async, don't block response)
+        if (jobsNeedingTranslation.length > 0) {
+          console.log(`[Jobs API] Translating ${jobsNeedingTranslation.length} jobs to ${lang}...`)
+          
+          // Translate in background (don't await to not block response)
+          (async () => {
+            for (const job of jobsNeedingTranslation.slice(0, 10)) { // Limit to 10 per request
+              try {
+                const contentId = `job-${job.source || 'db'}-${job.id}`
+                
+                // Translate title and description
+                const titleResult = await translateText(job.title || '', lang, 'en')
+                const descResult = await translateText((job.description || '').substring(0, 1000), lang, 'en')
+                
+                await storeTranslation(contentId, lang, 'job', {
+                  title: titleResult.translation || job.title,
+                  description: descResult.translation || job.description
+                })
+                
+                // Small delay to avoid rate limiting
+                await new Promise(r => setTimeout(r, 200))
+              } catch (err) {
+                console.error(`[Jobs API] Failed to translate job ${job.id}:`, err)
+              }
+            }
+            console.log(`[Jobs API] Background translation completed for ${lang}`)
+          })()
+        }
         
         // Apply translations, falling back to original if not found
         translatedJobs = combined.map(job => {

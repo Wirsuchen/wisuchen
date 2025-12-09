@@ -3,7 +3,74 @@ import { withRateLimit } from '@/lib/utils/rate-limiter'
 import { API_CONFIG, CACHE_CONFIG } from '@/lib/config/api-keys'
 import { cacheWrap } from '@/lib/api/cache'
 import { dealSyncService } from '@/lib/services/deal-sync'
-import { translationService, getStoredTranslationsBatch, ContentType } from '@/lib/services/translation-service'
+import { translationService, getStoredTranslationsBatch, storeTranslation, ContentType } from '@/lib/services/translation-service'
+import { translateText } from '@/lib/services/lingva-translate'
+
+/**
+ * Helper function to translate deals and store translations in database
+ */
+async function translateAndStoreDeals(deals: any[], locale: string): Promise<any[]> {
+  if (!locale || locale === 'en' || deals.length === 0) {
+    return deals
+  }
+
+  try {
+    // Get content IDs for batch lookup
+    const contentIds = deals.map(d => `deal-${d.source || 'api'}-${d.id}`)
+    const existingTranslations = await getStoredTranslationsBatch(contentIds, locale, 'deal' as ContentType)
+
+    // Find deals that need translation (not in DB)
+    const dealsNeedingTranslation = deals.filter(deal => {
+      const contentId = `deal-${deal.source || 'api'}-${deal.id}`
+      return !existingTranslations.has(contentId)
+    })
+
+    // Translate and store missing translations (async, don't block response)
+    if (dealsNeedingTranslation.length > 0) {
+      console.log(`[DEALS API] Translating ${dealsNeedingTranslation.length} deals to ${locale}...`)
+      
+      // Translate in background (don't await to not block response)
+      ;(async () => {
+        for (const deal of dealsNeedingTranslation.slice(0, 10)) { // Limit to 10 per request
+          try {
+            const contentId = `deal-${deal.source || 'api'}-${deal.id}`
+            
+            // Translate title and description
+            const titleResult = await translateText(deal.title || '', locale as 'de' | 'fr' | 'it', 'en')
+            const descResult = await translateText((deal.description || '').substring(0, 1000), locale as 'de' | 'fr' | 'it', 'en')
+            
+            await storeTranslation(contentId, locale, 'deal', {
+              title: titleResult.translation || deal.title,
+              description: descResult.translation || deal.description
+            })
+            
+            // Small delay to avoid rate limiting
+            await new Promise(r => setTimeout(r, 200))
+          } catch (err) {
+            console.error(`[DEALS API] Failed to translate deal ${deal.id}:`, err)
+          }
+        }
+        console.log(`[DEALS API] Background translation completed for ${locale}`)
+      })()
+    }
+
+    // Apply existing translations
+    return deals.map(deal => {
+      const translation = existingTranslations.get(`deal-${deal.source || 'api'}-${deal.id}`)
+      if (translation) {
+        return {
+          ...deal,
+          title: translation.title || deal.title,
+          description: translation.description || deal.description
+        }
+      }
+      return deal
+    })
+  } catch (error) {
+    console.error('[DEALS API] Translation error:', error)
+    return deals // Return original on error
+  }
+}
 
 /**
  * Deals API - Fetches from Supabase database first, falls back to RapidAPI
@@ -36,7 +103,7 @@ async function handler(request: NextRequest) {
         
         let dbDeals = dbResult.deals
         if (locale && locale !== 'en') {
-          dbDeals = await translationService.translateDeals(dbDeals, locale)
+          dbDeals = await translateAndStoreDeals(dbDeals, locale)
         }
 
         if (dbResult.deals.length > 0) {
