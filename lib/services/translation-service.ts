@@ -342,12 +342,16 @@ export async function applyTranslations<T extends { id: string }>(
   }
   
   // Get all translations in one query
-  const contentIds = items.map(item => `${type}-${item.id}`)
+  const contentIds = items.map(item => {
+    const source = (item as any).source || 'db'
+    return `${type}-${source}-${item.id}`
+  })
   const translations = await getStoredTranslationsBatch(contentIds, language, type)
   
   // Apply translations, falling back to original
   return items.map(item => {
-    const translation = translations.get(`${type}-${item.id}`)
+    const source = (item as any).source || 'db'
+    const translation = translations.get(`${type}-${source}-${item.id}`)
     if (!translation) {
       return item
     }
@@ -361,6 +365,86 @@ export async function applyTranslations<T extends { id: string }>(
     }
     
     return result
+  })
+}
+
+/**
+ * Apply translations to items, generating them if missing
+ */
+async function translateAndApply<T extends { id: string }>(
+  items: T[],
+  type: ContentType,
+  language: string,
+  fields: (keyof T & keyof TranslationFields)[]
+): Promise<T[]> {
+  if (language === 'en' || items.length === 0) {
+    return items
+  }
+
+  // 1. Get existing translations
+  const contentIds = items.map(item => {
+    const source = (item as any).source || 'db'
+    return `${type}-${source}-${item.id}`
+  })
+  
+  const storedTranslations = await getStoredTranslationsBatch(contentIds, language, type)
+  
+  // 2. Translate missing items
+  const itemsToTranslate: { index: number; contentId: string; item: T }[] = []
+  
+  items.forEach((item, index) => {
+    const contentId = contentIds[index]
+    if (!storedTranslations.has(contentId)) {
+      itemsToTranslate.push({ index, contentId, item })
+    }
+  })
+  
+  if (itemsToTranslate.length > 0) {
+    // Translate in parallel chunks to avoid overwhelming the API
+    const chunkSize = 5
+    for (let i = 0; i < itemsToTranslate.length; i += chunkSize) {
+      const chunk = itemsToTranslate.slice(i, i + chunkSize)
+      await Promise.all(chunk.map(async ({ contentId, item }) => {
+        const fieldsToTranslate: TranslationFields = {}
+        let hasContent = false
+        
+        fields.forEach(field => {
+          const value = (item as any)[field]
+          if (typeof value === 'string' && value.trim().length > 0) {
+            fieldsToTranslate[field] = value
+            hasContent = true
+          }
+        })
+        
+        if (hasContent) {
+          try {
+            const translated = await translateFields(fieldsToTranslate, language as SupportedLanguage)
+            await storeTranslation(contentId, language, type, translated)
+            storedTranslations.set(contentId, translated)
+          } catch (error) {
+            console.error(`Failed to translate ${contentId}:`, error)
+          }
+        }
+      }))
+    }
+  }
+  
+  // 3. Apply translations
+  return items.map((item, index) => {
+    const contentId = contentIds[index]
+    const translation = storedTranslations.get(contentId)
+    
+    if (!translation) return item
+    
+    const newItem = { ...item }
+    fields.forEach(field => {
+      const translatedValue = translation[field]
+      if (translatedValue) {
+        (newItem as any)[field] = translatedValue
+      }
+    })
+    
+    return newItem
   })
 }
 
@@ -379,17 +463,11 @@ export const translationService = {
   
   async translateJobs(jobs: any[], targetLanguage: string): Promise<any[]> {
     if (!targetLanguage || targetLanguage === 'en') return jobs
-    return applyTranslations(jobs, 'job', targetLanguage, [
-      { source: 'title' as any, target: 'title' as any },
-      { source: 'description' as any, target: 'description' as any }
-    ])
+    return translateAndApply(jobs, 'job', targetLanguage, ['title', 'description'])
   },
   
   async translateDeals(deals: any[], targetLanguage: string): Promise<any[]> {
     if (!targetLanguage || targetLanguage === 'en') return deals
-    return applyTranslations(deals, 'deal', targetLanguage, [
-      { source: 'title' as any, target: 'title' as any },
-      { source: 'description' as any, target: 'description' as any }
-    ])
+    return translateAndApply(deals, 'deal', targetLanguage, ['title', 'description'])
   }
 }
