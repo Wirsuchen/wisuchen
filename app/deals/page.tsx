@@ -15,10 +15,9 @@ import { filterDeals, sortDeals } from "@/lib/filters"
 import { formatEuro, formatEuroText } from "@/lib/utils"
 import { fetchWithCache } from "@/lib/utils/client-cache"
 import { toast } from "@/hooks/use-toast"
-import { useTranslation } from "@/contexts/i18n-context"
+import { useTranslation, useLocale } from "@/contexts/i18n-context"
 import { useAuth } from "@/contexts/auth-context"
 import { useRouter } from "next/navigation"
-import { useAutoTranslatedContent } from "@/contexts/dynamic-translation-context"
 
 
 export default function DealsPage() {
@@ -39,6 +38,7 @@ export default function DealsPage() {
     pages: 1,
   })
   const { t, tr } = useTranslation()
+  const locale = useLocale() // Get current language for database translations
   const { user } = useAuth()
   const router = useRouter()
 
@@ -58,16 +58,16 @@ export default function DealsPage() {
     }
   }
 
-  // Load deals from API
+  // Load deals from API - reloads when locale changes to get translated content
   useEffect(() => {
     const loadDeals = async () => {
       setLoading(true)
       try {
-        // Use cache with 1 hour TTL
+        // Use cache with 1 hour TTL - include locale in cache key
         const data = await fetchWithCache<any>(
-          '/api/deals?page=1&limit=50',
+          `/api/deals?page=1&limit=50&locale=${locale}`,
           undefined,
-          { page: 1, limit: 50 },
+          { page: 1, limit: 50, locale },
           60 * 60 * 1000
         )
         const mapped = (data.deals || []).map((d: any) => ({
@@ -118,7 +118,7 @@ export default function DealsPage() {
       }
     }
     loadDeals()
-  }, [])
+  }, [locale]) // Reload when locale changes to get translated content
 
   const filteredDeals = filterDeals(deals, {
     searchQuery,
@@ -129,22 +129,7 @@ export default function DealsPage() {
 
   const sortedDeals = sortDeals(filteredDeals, sortBy)
 
-  // Prepare content items for auto-translation (using stable ID-based comparison)
-  const contentItemsIdKey = useMemo(() => sortedDeals.map((d: any) => d.id).join(','), [sortedDeals])
-  const contentItems = useMemo(() => {
-    return sortedDeals.map((deal: any) => ({
-      id: `deal-${deal.id}`,
-      type: 'deal' as const,
-      fields: {
-        title: deal.title || '',
-        description: deal.description || '',
-      }
-    }))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [contentItemsIdKey, sortedDeals]) // Using contentItemsIdKey for stable comparison
-
-  // Register deals for auto-translation when locale changes
-  const { getTranslated, isTranslating } = useAutoTranslatedContent(contentItems)
+  // API returns translated content when locale is passed, no client-side translation needed
 
   const clearAll = () => {
     setSearchQuery("")
@@ -316,22 +301,16 @@ export default function DealsPage() {
               </div>
             ) : (
               <>
-                {isTranslating && (
-                  <div className="flex items-center justify-center gap-2 py-2 text-sm text-muted-foreground">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>{t('common.translating')}</span>
-                  </div>
-                )}
                 {viewMode === "grid" ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     {sortedDeals.map((deal) => (
-                      <DealCard key={deal.id} deal={deal} viewMode="grid" getTranslated={getTranslated} isTranslating={isTranslating} />
+                      <DealCard key={deal.id} deal={deal} viewMode="grid" />
                     ))}
                   </div>
                 ) : (
                   <div className="space-y-4">
                     {sortedDeals.map((deal) => (
-                      <DealCard key={deal.id} deal={deal} viewMode="list" getTranslated={getTranslated} isTranslating={isTranslating} />
+                      <DealCard key={deal.id} deal={deal} viewMode="list" />
                     ))}
                   </div>
                 )}
@@ -373,22 +352,17 @@ export default function DealsPage() {
 interface DealCardProps {
   deal: any
   viewMode: "grid" | "list"
-  getTranslated: (id: string, field: string, original: string) => string
-  isTranslating?: boolean
 }
 
 
-function DealCard({ deal, viewMode, getTranslated, isTranslating = false }: DealCardProps) {
+function DealCard({ deal, viewMode }: DealCardProps) {
   const { t, tr } = useTranslation()
   const { user } = useAuth()
   const router = useRouter()
 
-  // Generate content ID for this deal
-  const contentId = `deal-${deal.id}`
-
-  // Use auto-translated content (translation happens centrally from header language change)
-  const title = getTranslated(contentId, 'title', deal.title)
-  const description = getTranslated(contentId, 'description', deal.description || '')
+  // API returns translated content when locale is passed
+  const title = deal.title
+  const description = deal.description || ''
 
   const handleSave = async (e: React.MouseEvent) => {
     e.preventDefault()
@@ -471,14 +445,7 @@ function DealCard({ deal, viewMode, getTranslated, isTranslating = false }: Deal
             <div className="flex justify-between items-start gap-2">
               <Link href={`/deals/${deal.id}`} className="flex-1">
                 <h3 className="font-semibold hover:text-accent transition-colors line-clamp-2">
-                  {isTranslating ? (
-                    <span className="inline-flex items-center gap-2">
-                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                      <span className="animate-pulse">{title}</span>
-                    </span>
-                  ) : (
-                    title
-                  )}
+                  {title}
                 </h3>
               </Link>
             </div>
@@ -531,14 +498,7 @@ function DealCard({ deal, viewMode, getTranslated, isTranslating = false }: Deal
                 <div className="flex items-start justify-between gap-2">
                   <Link href={`/deals/${deal.id}`}>
                     <h3 className="text-lg font-semibold hover:text-accent transition-colors">
-                      {isTranslating ? (
-                        <span className="inline-flex items-center gap-2">
-                          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                          <span className="animate-pulse">{title}</span>
-                        </span>
-                      ) : (
-                        title
-                      )}
+                      {title}
                     </h3>
                   </Link>
                 </div>

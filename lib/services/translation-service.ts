@@ -2,11 +2,12 @@
  * Backend Translation Service with Supabase Storage
  * 
  * Stores translations in database for instant retrieval.
- * Uses Lingva (FREE) for translations with fallback to Gemini.
+ * Uses Gemini AI for translations with structured JSON output.
  */
 
 import { createClient } from '@/lib/supabase/server'
 import { translateText } from '@/lib/services/lingva-translate'
+import { translateToAllLanguages, MultiLanguageTranslation } from '@/lib/services/ai/gemini'
 
 export type SupportedLanguage = 'en' | 'de' | 'fr' | 'it'
 export type ContentType = 'job' | 'deal' | 'blog'
@@ -237,6 +238,66 @@ export async function translateBatchWithDelay(
         failed++
         completed++
       }
+    }
+  }
+  
+  return { success, failed }
+}
+
+/**
+ * Translate items to ALL languages using Gemini AI with structured output
+ * Optimized for 20 RPM rate limit (3500ms delay between calls)
+ * Each API call translates to EN/DE/FR/IT simultaneously
+ */
+export async function translateBatchWithGemini(
+  items: Array<{ id: string; title: string; description: string }>,
+  type: ContentType,
+  delayMs: number = 3500, // 20 RPM = 3 seconds + buffer
+  onProgress?: (completed: number, total: number) => void
+): Promise<{ success: number; failed: number }> {
+  let success = 0
+  let failed = 0
+  const total = items.length
+  
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i]
+    
+    try {
+      // Translate to all 4 languages in one API call
+      const result = await translateToAllLanguages({
+        title: item.title,
+        description: item.description?.substring(0, 1500) || '', // Limit description length
+        contentType: type,
+      })
+      
+      if (result.success && result.translations) {
+        // Store all 4 translations
+        const languages: (keyof MultiLanguageTranslation)[] = ['en', 'de', 'fr', 'it']
+        
+        for (const lang of languages) {
+          const translation = result.translations[lang]
+          await storeTranslation(item.id, lang, type, {
+            title: translation.title,
+            description: translation.description,
+          })
+        }
+        
+        success++
+        console.log(`✓ Translated ${i + 1}/${total}: ${item.title.substring(0, 40)}...`)
+      } else {
+        failed++
+        console.error(`✗ Failed ${i + 1}/${total}: ${result.error}`)
+      }
+    } catch (error) {
+      console.error(`✗ Error translating ${item.id}:`, error)
+      failed++
+    }
+    
+    onProgress?.(i + 1, total)
+    
+    // Delay to stay under 60 RPM rate limit
+    if (i < items.length - 1) {
+      await new Promise(resolve => setTimeout(resolve, delayMs))
     }
   }
   

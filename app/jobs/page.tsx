@@ -3,6 +3,7 @@
 /**
  * Jobs Page - Real Jobs from RapidAPI
  * Fetches live job data from multiple RapidAPI sources
+ * Uses database translations when locale is not English
  */
 
 import { useEffect, useState, useMemo } from 'react'
@@ -14,8 +15,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/contexts/auth-context'
 import Link from 'next/link'
-import { useTranslation } from '@/contexts/i18n-context'
-import { useAutoTranslatedContent } from '@/contexts/dynamic-translation-context'
+import { useTranslation, useLocale } from '@/contexts/i18n-context'
 
 
 const sanitizeJobDescription = (text: string) => {
@@ -109,6 +109,7 @@ export default function JobsPage() {
   const [userJobs, setUserJobs] = useState<UserPostedJob[]>([])
   const [loadingUserJobs, setLoadingUserJobs] = useState(false)
   const { t } = useTranslation()
+  const locale = useLocale() // Get current language for translations
 
   const { jobs, loading, error, search, refresh, pagination, meta } = useJobs()
 
@@ -121,43 +122,10 @@ export default function JobsPage() {
     return deduped
   }, [jobs])
 
-  // Prepare content items for auto-translation (using stable ID-based comparison)
-  // Include both API jobs and user-posted jobs
-  const apiJobsIdKey = useMemo(() => uniqueJobs.map(j => j.id).join(','), [uniqueJobs])
-  const userJobsIdKey = useMemo(() => userJobs.map(j => j.id).join(','), [userJobs])
-
-  const contentItems = useMemo(() => {
-    // API jobs content items
-    const apiJobItems = uniqueJobs.map(job => ({
-      id: `job-${job.source}-${job.id}`,
-      type: 'job' as const,
-      fields: {
-        title: job.title || '',
-        description: job.description || '',
-      }
-    }))
-
-    // User posted jobs content items
-    const userJobItems = userJobs.map(job => ({
-      id: `user-job-${job.id}`,
-      type: 'job' as const,
-      fields: {
-        title: job.title || '',
-        description: job.description || '',
-      }
-    }))
-
-    return [...apiJobItems, ...userJobItems]
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [apiJobsIdKey, userJobsIdKey]) // Using stable ID keys for comparison
-
-  // Register jobs for auto-translation when locale changes
-  const { getTranslated, isTranslating } = useAutoTranslatedContent(contentItems)
-
-  // Load jobs on mount
+  // Load jobs on mount and when locale changes (to get translated content)
   useEffect(() => {
     loadJobs()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [locale]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Load user's posted jobs if authenticated
   useEffect(() => {
@@ -208,7 +176,8 @@ export default function JobsPage() {
       // Don't specify sources to use all enabled sources
       limit: 500, // Request all available jobs (maximum limit)
       page: 1,
-      useCache: true
+      useCache: true,
+      locale: locale // Pass language for database translations
     })
   }
 
@@ -221,7 +190,8 @@ export default function JobsPage() {
       // Don't specify sources to use all enabled sources
       limit: 500, // Request all available jobs (maximum limit)
       page: 1,
-      useCache: false // Fresh results for searches
+      useCache: false, // Fresh results for searches
+      locale: locale // Pass language for database translations
     })
   }
 
@@ -233,7 +203,8 @@ export default function JobsPage() {
         employmentType: employmentType || undefined,
         // Don't specify sources to use all enabled sources
         limit: 500, // Request all available jobs (maximum limit)
-        page: pagination.page + 1
+        page: pagination.page + 1,
+        locale: locale // Pass language for database translations
       })
     }
   }
@@ -301,8 +272,6 @@ export default function JobsPage() {
                   <UserJobCard
                     key={job.id}
                     job={job}
-                    getTranslated={getTranslated}
-                    isTranslating={isTranslating}
                   />
                 ))}
               </div>
@@ -459,19 +428,11 @@ export default function JobsPage() {
         {/* Jobs List */}
         {uniqueJobs.length > 0 && (
           <>
-            {isTranslating && (
-              <div className="flex items-center justify-center gap-2 py-2 text-sm text-muted-foreground">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>{t('common.translating')}</span>
-              </div>
-            )}
             <div className="space-y-4">
               {uniqueJobs.map((job) => (
                 <JobCard
                   key={`${job.source}-${job.id}`}
                   job={job}
-                  getTranslated={getTranslated}
-                  isTranslating={isTranslating}
                 />
               ))}
             </div>
@@ -504,23 +465,18 @@ export default function JobsPage() {
 }
 
 /**
- * Job Card Component - Supports automatic translation when locale changes
+ * Job Card Component - Uses translated content from API
  */
 interface JobCardProps {
   job: Job
-  getTranslated: (id: string, field: string, original: string) => string
-  isTranslating?: boolean
 }
 
-function JobCard({ job, getTranslated, isTranslating = false }: JobCardProps) {
+function JobCard({ job }: JobCardProps) {
   const { t, tr } = useTranslation()
 
-  // Generate content ID for this job
-  const contentId = `job-${job.source}-${job.id}`
-
-  // Use auto-translated content (translation happens centrally from header language change)
-  const title = getTranslated(contentId, 'title', job.title)
-  const description = getTranslated(contentId, 'description', job.description || '')
+  // API returns translated content when locale is passed
+  const title = job.title
+  const description = job.description || ''
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -552,14 +508,7 @@ function JobCard({ job, getTranslated, isTranslating = false }: JobCardProps) {
               className="block flex-1"
             >
               <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 hover:text-blue-600">
-                {isTranslating ? (
-                  <span className="inline-flex items-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                    <span className="animate-pulse bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 bg-clip-text text-transparent">{title}</span>
-                  </span>
-                ) : (
-                  <span>{title}</span>
-                )}
+                <span>{title}</span>
               </h3>
             </a>
           </div>
@@ -663,23 +612,18 @@ function JobCard({ job, getTranslated, isTranslating = false }: JobCardProps) {
 }
 
 /**
- * User Posted Job Card Component - Connected to global translation
+ * User Posted Job Card Component - Uses translated content from API
  */
 interface UserJobCardProps {
   job: UserPostedJob
-  getTranslated: (id: string, field: string, original: string) => string
-  isTranslating?: boolean
 }
 
-function UserJobCard({ job, getTranslated, isTranslating = false }: UserJobCardProps) {
+function UserJobCard({ job }: UserJobCardProps) {
   const { t, tr } = useTranslation()
 
-  // Generate content ID for this user job
-  const contentId = `user-job-${job.id}`
-
-  // Use auto-translated content
-  const title = getTranslated(contentId, 'title', job.title)
-  const description = getTranslated(contentId, 'description', job.description || '')
+  // API returns translated content when locale is passed
+  const title = job.title
+  const description = job.description || ''
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return t('jobs.notPublished')
@@ -723,14 +667,7 @@ function UserJobCard({ job, getTranslated, isTranslating = false }: UserJobCardP
             className="block"
           >
             <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 hover:text-blue-600">
-              {isTranslating ? (
-                <span className="inline-flex items-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                  <span className="animate-pulse">{title}</span>
-                </span>
-              ) : (
-                <span>{title}</span>
-              )}
+              <span>{title}</span>
             </h3>
           </Link>
           <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-sm text-gray-600">

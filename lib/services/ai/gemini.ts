@@ -195,6 +195,131 @@ export async function translateContent(params: {
   }
 }
 
+// Translation model optimized for free tier (60 RPM)
+const TRANSLATION_MODEL = 'gemini-2.5-flash-lite'
+
+// JSON Schema for structured translation output
+const translationSchema = {
+  type: 'object',
+  properties: {
+    en: {
+      type: 'object',
+      properties: {
+        title: { type: 'string' },
+        description: { type: 'string' }
+      },
+      required: ['title', 'description']
+    },
+    de: {
+      type: 'object',
+      properties: {
+        title: { type: 'string' },
+        description: { type: 'string' }
+      },
+      required: ['title', 'description']
+    },
+    fr: {
+      type: 'object',
+      properties: {
+        title: { type: 'string' },
+        description: { type: 'string' }
+      },
+      required: ['title', 'description']
+    },
+    it: {
+      type: 'object',
+      properties: {
+        title: { type: 'string' },
+        description: { type: 'string' }
+      },
+      required: ['title', 'description']
+    }
+  },
+  required: ['en', 'de', 'fr', 'it']
+}
+
+export interface MultiLanguageTranslation {
+  en: { title: string; description: string }
+  de: { title: string; description: string }
+  fr: { title: string; description: string }
+  it: { title: string; description: string }
+}
+
+/**
+ * Translate title and description to all 4 languages in a single API call
+ * Uses Gemini structured output for guaranteed JSON format
+ * Includes automatic retry with exponential backoff for rate limits
+ */
+export async function translateToAllLanguages(params: {
+  title: string
+  description: string
+  contentType?: 'job' | 'deal' | 'blog'
+  maxRetries?: number
+}): Promise<{ success: boolean; translations?: MultiLanguageTranslation; error?: string }> {
+  const { title, description, contentType = 'job', maxRetries = 3 } = params
+
+  if (!title && !description) {
+    return { success: false, error: 'No content to translate' }
+  }
+
+  const contentLabel = contentType === 'job' ? 'job posting' : contentType === 'deal' ? 'product deal' : 'blog article'
+
+  const prompt = `Translate this ${contentLabel} to English, German, French, and Italian.
+Keep translations professional and accurate.
+
+Title: ${title || 'N/A'}
+Description: ${description || 'N/A'}`
+
+  let lastError: any = null
+  
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await ai.models.generateContent({
+        model: TRANSLATION_MODEL,
+        contents: prompt,
+        config: {
+          responseMimeType: 'application/json',
+          responseSchema: translationSchema,
+          temperature: 0.2,
+          maxOutputTokens: 2000,
+        },
+      })
+
+      const text = response.text || ''
+      const translations = JSON.parse(text) as MultiLanguageTranslation
+
+      return { success: true, translations }
+    } catch (error: any) {
+      lastError = error
+      
+      // Check if it's a rate limit error (429)
+      const errorMessage = error?.message || ''
+      const is429 = errorMessage.includes('429') || errorMessage.includes('RESOURCE_EXHAUSTED') || error?.status === 429
+      
+      if (is429 && attempt < maxRetries) {
+        // Parse retry delay from error message (e.g., "Please retry in 47.777734419s")
+        let waitSeconds = 60 // Default wait time
+        const retryMatch = errorMessage.match(/retry in (\d+\.?\d*)s/i)
+        if (retryMatch) {
+          waitSeconds = Math.ceil(parseFloat(retryMatch[1])) + 5 // Add 5 second buffer
+        }
+        
+        console.log(`⏳ Rate limited. Waiting ${waitSeconds}s before retry ${attempt + 1}/${maxRetries}...`)
+        await new Promise(resolve => setTimeout(resolve, waitSeconds * 1000))
+        continue
+      }
+      
+      console.error('Gemini translation error:', error)
+      break
+    }
+  }
+  
+  return {
+    success: false,
+    error: lastError?.message || 'Translation failed after retries',
+  }
+}
+
 /**
  * Generate SEO keywords for content
  */

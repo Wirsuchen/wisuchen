@@ -2,14 +2,13 @@
  * Admin Bulk Translate API
  * 
  * Translates all existing jobs, deals, and blog posts to all supported languages.
- * Uses small batches with delays to avoid rate limiting.
+ * Uses Gemini AI with structured output for reliable translations.
  */
 
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { 
-  translateBatchWithDelay, 
-  SupportedLanguage,
+  translateBatchWithGemini,
   ContentType 
 } from '@/lib/services/translation-service'
 
@@ -96,16 +95,13 @@ export async function POST(request: NextRequest) {
       if (allJobs.length > 0) {
         const items = allJobs.map(job => ({
           id: `job-${job.source}-${job.id}`,
-          fields: {
-            title: job.title,
-            description: job.description
-          }
+          title: job.title,
+          description: job.description
         }))
         
-        const result = await translateBatchWithDelay(
+        const result = await translateBatchWithGemini(
           items,
           'job' as ContentType,
-          ['de', 'fr', 'it'] as SupportedLanguage[],
           delayMs
         )
         
@@ -140,16 +136,13 @@ export async function POST(request: NextRequest) {
       if (allDeals.length > 0) {
         const items = allDeals.map(deal => ({
           id: `deal-${deal.source}-${deal.id}`,
-          fields: {
-            title: deal.title,
-            description: deal.description
-          }
+          title: deal.title,
+          description: deal.description
         }))
         
-        const result = await translateBatchWithDelay(
+        const result = await translateBatchWithGemini(
           items,
           'deal' as ContentType,
-          ['de', 'fr', 'it'] as SupportedLanguage[],
           delayMs
         )
         
@@ -170,17 +163,13 @@ export async function POST(request: NextRequest) {
       if (posts && posts.length > 0) {
         const items = posts.map(post => ({
           id: `blog-db-${post.id}`,
-          fields: {
-            title: post.title || '',
-            excerpt: post.excerpt || '',
-            content: (post.content || '').substring(0, 2000)
-          }
+          title: post.title || '',
+          description: (post.excerpt || post.content || '').substring(0, 2000)
         }))
         
-        const result = await translateBatchWithDelay(
+        const result = await translateBatchWithGemini(
           items,
           'blog' as ContentType,
-          ['de', 'fr', 'it'] as SupportedLanguage[],
           delayMs
         )
         
