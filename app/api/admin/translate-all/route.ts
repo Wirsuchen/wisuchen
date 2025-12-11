@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     } = body
     
     const supabase = await createClient()
-    const results: Record<string, { success: number; failed: number; total: number }> = {}
+    const results: Record<string, { success: number; failed: number; skipped: number; total: number }> = {}
     
     // Translate Jobs (both database and external API jobs)
     if (type === 'all' || type === 'job') {
@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
         
         results.jobs = { ...result, total: allJobs.length }
       } else {
-        results.jobs = { success: 0, failed: 0, total: 0 }
+        results.jobs = { success: 0, failed: 0, skipped: 0, total: 0 }
       }
     }
     
@@ -148,7 +148,7 @@ export async function POST(request: NextRequest) {
         
         results.deals = { ...result, total: allDeals.length }
       } else {
-        results.deals = { success: 0, failed: 0, total: 0 }
+        results.deals = { success: 0, failed: 0, skipped: 0, total: 0 }
       }
     }
     
@@ -175,7 +175,7 @@ export async function POST(request: NextRequest) {
         
         results.blogs = { ...result, total: posts.length }
       } else {
-        results.blogs = { success: 0, failed: 0, total: 0 }
+        results.blogs = { success: 0, failed: 0, skipped: 0, total: 0 }
       }
     }
     

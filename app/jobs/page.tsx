@@ -174,7 +174,7 @@ export default function JobsPage() {
   const loadJobs = () => {
     search({
       // Don't specify sources to use all enabled sources
-      limit: 500, // Request all available jobs (maximum limit)
+      limit: 20, // 20 jobs per page
       page: 1,
       useCache: true,
       locale: locale // Pass language for database translations
@@ -188,25 +188,24 @@ export default function JobsPage() {
       location: location || undefined,
       employmentType: employmentType || undefined,
       // Don't specify sources to use all enabled sources
-      limit: 500, // Request all available jobs (maximum limit)
+      limit: 20, // 20 jobs per page
       page: 1,
       useCache: false, // Fresh results for searches
       locale: locale // Pass language for database translations
     })
   }
 
-  const handleLoadMore = () => {
-    if (pagination) {
-      search({
-        query: searchQuery || undefined,
-        location: location || undefined,
-        employmentType: employmentType || undefined,
-        // Don't specify sources to use all enabled sources
-        limit: 500, // Request all available jobs (maximum limit)
-        page: pagination.page + 1,
-        locale: locale // Pass language for database translations
-      })
-    }
+  const handlePageChange = (newPage: number) => {
+    search({
+      query: searchQuery || undefined,
+      location: location || undefined,
+      employmentType: employmentType || undefined,
+      limit: 20,
+      page: newPage,
+      locale: locale
+    })
+    // Scroll to top of results
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleReset = () => {
@@ -437,23 +436,33 @@ export default function JobsPage() {
               ))}
             </div>
 
-            {/* Load More */}
-            {pagination && pagination.page < pagination.totalPages && (
-              <div className="text-center">
+            {/* Pagination Controls */}
+            {pagination && pagination.totalPages > 1 && (
+              <div className="flex items-center justify-center gap-4 py-8">
                 <Button
-                  onClick={handleLoadMore}
-                  disabled={loading}
-                  size="lg"
+                  onClick={() => {
+                    handlePageChange(pagination.page - 1)
+                  }}
+                  disabled={loading || pagination.page <= 1}
                   variant="outline"
+                  size="sm"
                 >
-                  {loading ? (
-                    <>
-                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                      {t('jobs.loadingMore')}
-                    </>
-                  ) : (
-                    `${t('common.loadMore')} (${pagination.total - pagination.page * pagination.limit} ${t('jobs.remaining')})`
-                  )}
+                  {t('common.previous')}
+                </Button>
+
+                <span className="text-sm font-medium text-gray-600">
+                  {t('common.page')} {pagination.page} {t('common.of')} {pagination.totalPages}
+                </span>
+
+                <Button
+                  onClick={() => {
+                    handlePageChange(pagination.page + 1)
+                  }}
+                  disabled={loading || pagination.page >= pagination.totalPages}
+                  variant="outline"
+                  size="sm"
+                >
+                  {t('common.next')}
                 </Button>
               </div>
             )}

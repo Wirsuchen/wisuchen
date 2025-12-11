@@ -248,21 +248,43 @@ export async function translateBatchWithDelay(
  * Translate items to ALL languages using Gemini AI with structured output
  * Optimized for 20 RPM rate limit (3500ms delay between calls)
  * Each API call translates to EN/DE/FR/IT simultaneously
+ * 
+ * SMART TRANSLATION: Checks if translations already exist and skips fully translated items
  */
 export async function translateBatchWithGemini(
   items: Array<{ id: string; title: string; description: string }>,
   type: ContentType,
   delayMs: number = 3500, // 20 RPM = 3 seconds + buffer
   onProgress?: (completed: number, total: number) => void
-): Promise<{ success: number; failed: number }> {
+): Promise<{ success: number; failed: number; skipped: number }> {
   let success = 0
   let failed = 0
+  let skipped = 0
   const total = items.length
+  const targetLanguages: SupportedLanguage[] = ['de', 'fr', 'it']
   
   for (let i = 0; i < items.length; i++) {
     const item = items[i]
     
     try {
+      // Check if all translations already exist for this item
+      let allTranslationsExist = true
+      for (const lang of targetLanguages) {
+        const existing = await getStoredTranslation(item.id, lang, type)
+        if (!existing || !existing.title) {
+          allTranslationsExist = false
+          break
+        }
+      }
+      
+      // Skip if already fully translated
+      if (allTranslationsExist) {
+        skipped++
+        console.log(`⏭ Skipped ${i + 1}/${total} (already translated): ${item.title.substring(0, 40)}...`)
+        onProgress?.(i + 1, total)
+        continue
+      }
+      
       // Translate to all 4 languages in one API call
       const result = await translateToAllLanguages({
         title: item.title,
@@ -288,20 +310,21 @@ export async function translateBatchWithGemini(
         failed++
         console.error(`✗ Failed ${i + 1}/${total}: ${result.error}`)
       }
+      
+      // Delay to stay under 60 RPM rate limit (only after actual API call)
+      if (i < items.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, delayMs))
+      }
     } catch (error) {
       console.error(`✗ Error translating ${item.id}:`, error)
       failed++
     }
     
     onProgress?.(i + 1, total)
-    
-    // Delay to stay under 60 RPM rate limit
-    if (i < items.length - 1) {
-      await new Promise(resolve => setTimeout(resolve, delayMs))
-    }
   }
   
-  return { success, failed }
+  console.log(`\n📊 Translation Summary: ${success} translated, ${skipped} skipped, ${failed} failed`)
+  return { success, failed, skipped }
 }
 
 /**

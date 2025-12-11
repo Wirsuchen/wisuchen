@@ -8,7 +8,7 @@ import { cacheWrap } from '@/lib/api/cache'
 import { withRateLimit } from '@/lib/utils/rate-limiter'
 import { sanitizeSnippet } from '@/lib/utils/text'
 import { getStoredTranslationsBatch, storeTranslation, ContentType } from '@/lib/services/translation-service'
-import { translateText } from '@/lib/services/lingva-translate'
+import { translateText, SupportedLanguage } from '@/lib/services/lingva-translate'
 
 // Deduplicate external jobs by composite key: title + company + location (+ external_id when present)
 function normalizeText(v: unknown): string {
@@ -55,7 +55,7 @@ async function handler(request: NextRequest) {
     const search = searchParams.get('search')
     const featured = searchParams.get('featured')
     const includeExternal = (searchParams.get('include_external') ?? 'true') === 'true'
-    const lang = searchParams.get('lang') || 'en' // Language parameter for translations
+    const lang = searchParams.get('lang') || searchParams.get('locale') || 'en' // Language parameter for translations
     
     const offset = (page - 1) * limit
 
@@ -67,71 +67,148 @@ async function handler(request: NextRequest) {
     const cachedResponse = await cacheWrap(cacheKey, CACHE_CONFIG.jobs.ttl, async () => {
 
     // Build query
-    let query = supabase
-      .from('offers')
-      .select(`
-        *,
-        company:companies(*),
-        category:categories(*)
-      `)
-      .eq('status', 'active')
-      .eq('type', 'job')
-      .not('published_at', 'is', null)
-      .lte('published_at', new Date().toISOString())
-      .or(`expires_at.is.null,expires_at.gte.${new Date().toISOString()}`)
-
-    // Apply filters
-    if (category) {
-      query = query.eq('category_id', category)
-    }
-    
-    if (location) {
-      query = query.ilike('location', `%${location}%`)
-    }
-    
-    if (type) {
-      query = query.eq('employment_type', type)
-    }
-    
-    if (remote === 'true') {
-      query = query.eq('is_remote', true)
-    }
-    
-    if (featured === 'true') {
-      query = query.eq('featured', true)
-    }
-    
-    if (search) {
-      query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%,skills.cs.{${search}}`)
-    }
-
-    // Apply pagination and ordering
-    query = query
-      .order('featured', { ascending: false })
-      .order('urgent', { ascending: false })
-      .order('published_at', { ascending: false })
-      .range(offset, offset + limit - 1)
-
-    const { data: jobs, error, count } = await query
-
-    if (error) {
-      console.error('Error fetching jobs:', error)
-      return NextResponse.json({ error: 'Failed to fetch jobs' }, { status: 500 })
-    }
-
     // Get total count for pagination (DB only)
-    const { count: totalCount } = await supabase
-      .from('offers')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'active')
-      .eq('type', 'job')
+    let totalCount = 0
+    let jobs: any[] = []
+
+    // Helper to build base query with filters
+    const buildQuery = (baseQuery: any) => {
+      let q = baseQuery
+        .eq('status', 'active')
+        .eq('type', 'job')
+        .not('published_at', 'is', null)
+        .lte('published_at', new Date().toISOString())
+        .or(`expires_at.is.null,expires_at.gte.${new Date().toISOString()}`)
+
+      if (category) q = q.eq('category_id', category)
+      if (location) q = q.ilike('location', `%${location}%`)
+      if (type) q = q.eq('employment_type', type)
+      if (remote === 'true') q = q.eq('is_remote', true)
+      if (featured === 'true') q = q.eq('featured', true)
+      if (search) q = q.or(`title.ilike.%${search}%,description.ilike.%${search}%,skills.cs.{${search}}`)
+      
+      return q
+    }
+
+    // Standard fetching for English or if prioritizing translation fails/is empty
+    const fetchStandard = async () => {
+      let query = supabase
+        .from('offers')
+        .select(`*, company:companies(*), category:categories(*)`)
+      
+      query = buildQuery(query)
+        .order('featured', { ascending: false })
+        .order('urgent', { ascending: false })
+        .order('published_at', { ascending: false })
+        .range(offset, offset + limit - 1)
+
+      const { data, count } = await query
+      
+      // Get exact count if needed
+      if (!count) {
+        const countQuery = buildQuery(supabase.from('offers').select('*', { count: 'exact', head: true }))
+        const { count: c } = await countQuery
+        totalCount = c || 0
+      } else {
+        totalCount = count
+      }
+      
+      return data || []
+    }
+
+    // Specialized fetching to prioritize translated jobs
+    if (lang !== 'en') {
+      try {
+        // 1. Get IDs of all translated jobs for this language
+        // We use type assertion since tables might not be fully typed in generated types
+        const { data: translations } = await (supabase as any)
+          .from('translations')
+          .select('content_id')
+          .eq('language', lang)
+          .eq('type', 'job')
+        
+        const translatedIds = (translations || [])
+          .map((t: any) => {
+            // Extract UUID from end of "job-source-uuid" string
+            // UUID is 36 chars long
+            if (!t.content_id || t.content_id.length < 36) return null
+            return t.content_id.slice(-36)
+          })
+          .filter(Boolean)
+
+        if (translatedIds.length === 0) {
+          jobs = await fetchStandard()
+        } else {
+          // 2. Count matching translated jobs (applying all filters)
+          const transQuery = buildQuery(supabase.from('offers').select('*', { count: 'exact', head: true }))
+            .in('id', translatedIds)
+          const { count: transCount } = await transQuery
+          const validTransCount = transCount || 0
+          
+          // 3. Count matching untranslated jobs
+          const untransQuery = buildQuery(supabase.from('offers').select('*', { count: 'exact', head: true }))
+            .not('id', 'in', translatedIds)
+          const { count: untransCount } = await untransQuery
+          const validUntransCount = untransCount || 0
+          
+          totalCount = validTransCount + validUntransCount
+          
+          // 4. Determine fetch ranges based on pagination
+          // We want to fetch [offset ... offset+limit] from the virtual combined list [Translated... Untranslated...]
+          
+          const start = offset
+          const end = offset + limit
+          
+          const transJobs: any[] = []
+          const untransJobs: any[] = []
+          
+          // Fetch from Translated partition if range overlaps
+          if (start < validTransCount) {
+            const transLimit = Math.min(limit, validTransCount - start)
+            let q = supabase.from('offers').select(`*, company:companies(*), category:categories(*)`)
+            q = buildQuery(q)
+              .in('id', translatedIds)
+              .order('featured', { ascending: false })
+              .order('published_at', { ascending: false })
+              .range(start, start + transLimit - 1)
+            
+            const { data } = await q
+            if (data) transJobs.push(...data)
+          }
+          
+          // Fetch from Untranslated partition if range overlaps
+          // Calculate how many slots are left or if we are purely in untranslated territory
+          const untransStart = Math.max(0, start - validTransCount)
+          const jobsNeeded = limit - transJobs.length
+          
+          if (jobsNeeded > 0 && untransStart < validUntransCount) {
+            let q = supabase.from('offers').select(`*, company:companies(*), category:categories(*)`)
+            q = buildQuery(q)
+              .not('id', 'in', translatedIds)
+              .order('featured', { ascending: false })
+              .order('published_at', { ascending: false })
+              .range(untransStart, untransStart + jobsNeeded - 1)
+            
+            const { data } = await q
+            if (data) untransJobs.push(...data)
+          }
+          
+          jobs = [...transJobs, ...untransJobs]
+        }
+      } catch (err) {
+        console.error('Error in translated sorting:', err)
+        jobs = await fetchStandard()
+      }
+    } else {
+      jobs = await fetchStandard()
+    }
 
     // Fetch external jobs from multiple sources (prioritized order)
     let externalJobs: any[] = []
     
     if (includeExternal) {
       const country = 'de' // Default to Germany for DACH region
-      const remainingSlots = Math.max(0, 20 - (jobs?.length ?? 0))
+      const remainingSlots = Math.max(0, limit - (jobs?.length ?? 0))
       
       // 1. Active Jobs DB (newest ATS jobs - highest priority)
       if (API_CONFIG.rapidApi.enabled && remainingSlots > 0) {
@@ -185,9 +262,9 @@ async function handler(request: NextRequest) {
       }
     }
 
-    // Merge with external (Active Jobs DB first, then Adzuna, then DB jobs)
+    // Merge with external (DB jobs first, then Active Jobs DB, then Adzuna)
     const dedupedExternal = dedupeExternalJobs(externalJobs)
-    const combinedRaw: any[] = [...dedupedExternal, ...(jobs || [])]
+    const combinedRaw: any[] = [...(jobs || []), ...dedupedExternal]
 
     // Sanitize snippets to prevent merged words from stripped tags (e.g., "in it" -> "init")
     const combined = combinedRaw.map((j) => {
@@ -204,7 +281,10 @@ async function handler(request: NextRequest) {
       try {
         // Get content IDs for batch lookup
         const contentIds = combined.map(j => `job-${j.source || 'db'}-${j.id}`)
+        console.log(`[Jobs API] Checking translations for lang=${lang}, count=${contentIds.length}. Sample ID: ${contentIds[0]}`)
+        
         const translations = await getStoredTranslationsBatch(contentIds, lang, 'job' as ContentType)
+        console.log(`[Jobs API] Found ${translations.size} translations`)
         
         // Find jobs that need translation (not in DB)
         const jobsNeedingTranslation = combined.filter(job => {
@@ -223,8 +303,8 @@ async function handler(request: NextRequest) {
                 const contentId = `job-${job.source || 'db'}-${job.id}`
                 
                 // Translate title and description
-                const titleResult = await translateText(job.title || '', lang, 'en')
-                const descResult = await translateText((job.description || '').substring(0, 1000), lang, 'en')
+                const titleResult = await translateText(job.title || '', lang as SupportedLanguage, 'en')
+                const descResult = await translateText((job.description || '').substring(0, 1000), lang as SupportedLanguage, 'en')
                 
                 await storeTranslation(contentId, lang, 'job', {
                   title: titleResult.translation || job.title,

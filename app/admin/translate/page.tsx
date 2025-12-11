@@ -37,9 +37,9 @@ interface TranslationResult {
     success: boolean
     message: string
     results: {
-        jobs?: { success: number; failed: number; total: number }
-        blogs?: { success: number; failed: number; total: number }
-        deals?: { success: number; failed: number; total: number; message?: string }
+        jobs?: { success: number; failed: number; skipped: number; total: number }
+        blogs?: { success: number; failed: number; skipped: number; total: number }
+        deals?: { success: number; failed: number; skipped: number; total: number; message?: string }
     }
 }
 
@@ -236,23 +236,59 @@ export default function AdminTranslatePage() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-3 gap-4">
                             {result.results.jobs && (
-                                <div>
+                                <div className="p-3 bg-white rounded-lg border">
                                     <p className="font-semibold">Jobs</p>
-                                    <p className="text-sm text-muted-foreground">
-                                        ✓ {result.results.jobs.success} success,
-                                        ✗ {result.results.jobs.failed} failed
+                                    <p className="text-sm text-green-600">
+                                        ✓ {result.results.jobs.success} translated
                                     </p>
+                                    {result.results.jobs.skipped > 0 && (
+                                        <p className="text-sm text-blue-600">
+                                            ⏭ {result.results.jobs.skipped} skipped (already done)
+                                        </p>
+                                    )}
+                                    {result.results.jobs.failed > 0 && (
+                                        <p className="text-sm text-red-600">
+                                            ✗ {result.results.jobs.failed} failed
+                                        </p>
+                                    )}
                                 </div>
                             )}
                             {result.results.blogs && (
-                                <div>
+                                <div className="p-3 bg-white rounded-lg border">
                                     <p className="font-semibold">Blog Posts</p>
-                                    <p className="text-sm text-muted-foreground">
-                                        ✓ {result.results.blogs.success} success,
-                                        ✗ {result.results.blogs.failed} failed
+                                    <p className="text-sm text-green-600">
+                                        ✓ {result.results.blogs.success} translated
                                     </p>
+                                    {result.results.blogs.skipped > 0 && (
+                                        <p className="text-sm text-blue-600">
+                                            ⏭ {result.results.blogs.skipped} skipped (already done)
+                                        </p>
+                                    )}
+                                    {result.results.blogs.failed > 0 && (
+                                        <p className="text-sm text-red-600">
+                                            ✗ {result.results.blogs.failed} failed
+                                        </p>
+                                    )}
+                                </div>
+                            )}
+                            {result.results.deals && (
+                                <div className="p-3 bg-white rounded-lg border">
+                                    <p className="font-semibold">Deals</p>
+                                    <p className="text-sm text-green-600">
+                                        ✓ {result.results.deals.success} translated
+                                    </p>
+                                    {result.results.deals.skipped > 0 && (
+                                        <p className="text-sm text-blue-600">
+                                            ⏭ {result.results.deals.skipped} skipped (already done)
+                                        </p>
+                                    )}
+                                    {result.results.deals.failed > 0 && (
+                                        <p className="text-sm text-red-600">
+                                            ✗ {result.results.deals.failed} failed
+                                        </p>
+                                    )}
                                 </div>
                             )}
                         </div>
