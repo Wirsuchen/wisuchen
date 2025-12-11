@@ -14,9 +14,8 @@ import { ShimmerButton } from "@/components/magicui/shimmer-button"
 import { DotPattern } from "@/components/magicui/dot-pattern"
 import { formatEuroText, formatEuro } from "@/lib/utils"
 import { fetchWithCache } from "@/lib/utils/client-cache"
-import { useTranslation } from "@/contexts/i18n-context"
-import { useState, useEffect, useMemo } from "react"
-import { useAutoTranslatedContent } from "@/contexts/dynamic-translation-context"
+import { useTranslation, useLocale } from "@/contexts/i18n-context"
+import { useState, useEffect } from "react"
 import type { Job } from "@/hooks/use-jobs"
 
 interface Deal {
@@ -88,41 +87,11 @@ function dedupeJobs(jobs: Job[]): Job[] {
 
 export default function HomePage() {
   const { t, tr } = useTranslation()
+  const locale = useLocale() // Get current locale for backend translations
   const [topDeals, setTopDeals] = useState<Deal[]>([])
   const [dealsLoading, setDealsLoading] = useState(true)
   const [topJobs, setTopJobs] = useState<Job[]>([])
   const [jobsLoading, setJobsLoading] = useState(true)
-
-  // Prepare content items for auto-translation (using stable ID-based comparison)
-  const jobIdsKey = topJobs.map(j => j.id).join(',')
-  const jobContentItems = useMemo(() => {
-    return topJobs.map(job => ({
-      id: `home-job-${job.id}`,
-      type: 'job' as const,
-      fields: {
-        title: job.title || '',
-        description: job.description || '',
-      }
-    }))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [jobIdsKey])
-
-  const dealIdsKey = topDeals.map(d => d.id).join(',')
-  const dealContentItems = useMemo(() => {
-    return topDeals.map(deal => ({
-      id: `home-deal-${deal.id}`,
-      type: 'deal' as const,
-      fields: {
-        title: deal.title || '',
-        description: deal.description || '',
-      }
-    }))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dealIdsKey])
-
-  // Register all content for auto-translation when locale changes
-  const allContentItems = useMemo(() => [...jobContentItems, ...dealContentItems], [jobContentItems, dealContentItems])
-  const { getTranslated, isTranslating } = useAutoTranslatedContent(allContentItems)
 
   // Real counts from APIs
   const [stats, setStats] = useState({
@@ -136,19 +105,21 @@ export default function HomePage() {
     fetchTopDeals()
     fetchTopJobs()
     fetchStats()
-  }, [])
+  }, [locale]) // Refetch when locale changes to get translated content
 
   const fetchTopDeals = async () => {
     try {
       setDealsLoading(true)
-      // Use cache with 1 hour TTL
+      // Use cache with 1 hour TTL, include locale for backend translations
+      // Backend will return translated content based on locale parameter
       const data = await fetchWithCache<any>(
-        '/api/deals?page=1&limit=6',
+        `/api/deals?page=1&limit=6&locale=${locale}`,
         undefined,
-        { page: 1, limit: 6 },
+        { page: 1, limit: 6, locale },
         60 * 60 * 1000
       )
       const deals: Deal[] = data?.deals || []
+      // Data is already translated by backend, use directly
       setTopDeals(deals.length > 0 ? deals.slice(0, 3) : [])
     } catch (error) {
       console.error('Error fetching deals:', error)
@@ -161,15 +132,17 @@ export default function HomePage() {
   const fetchTopJobs = async () => {
     try {
       setJobsLoading(true)
-      // Use cache with 1 hour TTL
+      // Use cache with 1 hour TTL, include locale for backend translations
+      // Backend will return translated content based on locale parameter
       const data = await fetchWithCache<any>(
-        '/api/v1/jobs/search?limit=6&useCache=true&countries=de,at,ch',
+        `/api/v1/jobs/search?limit=6&useCache=true&countries=de,at,ch&locale=${locale}&useDatabase=true`,
         undefined,
-        { limit: 6, countries: ['de', 'at', 'ch'] },
+        { limit: 6, countries: ['de', 'at', 'ch'], locale },
         60 * 60 * 1000
       )
       const jobs: Job[] = data?.data?.jobs || []
       const uniqueJobs = dedupeJobs(jobs)
+      // Data is already translated by backend, use directly
       setTopJobs(uniqueJobs.length > 0 ? uniqueJobs.slice(0, 4) : [])
     } catch (e) {
       console.error('Error fetching jobs:', e)
@@ -346,14 +319,6 @@ export default function HomePage() {
               </Button>
             </div>
 
-            {/* Translation Indicator */}
-            {isTranslating && (
-              <div className="flex items-center justify-center gap-2 py-2 text-sm text-muted-foreground mb-4">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>{t('common.translating')}</span>
-              </div>
-            )}
-
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {jobsLoading ? (
                 <div className="col-span-full flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-accent" /></div>
@@ -391,14 +356,7 @@ export default function HomePage() {
                         <div className="flex items-start justify-between">
                           <div>
                             <CardTitle className="text-lg">
-                              {isTranslating ? (
-                                <span className="inline-flex items-center gap-2">
-                                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                                  <span className="animate-pulse">{getTranslated(`home-job-${job.id}`, 'title', job.title)}</span>
-                                </span>
-                              ) : (
-                                getTranslated(`home-job-${job.id}`, 'title', job.title)
-                              )}
+                              {job.title}
                             </CardTitle>
                             <CardDescription>{job.company}</CardDescription>
                           </div>
@@ -466,14 +424,7 @@ export default function HomePage() {
                     <CardHeader>
                       <div className="flex items-start justify-between">
                         <CardTitle className="text-lg line-clamp-2">
-                          {isTranslating ? (
-                            <span className="inline-flex items-center gap-2">
-                              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                              <span className="animate-pulse">{getTranslated(`home-deal-${deal.id}`, 'title', deal.title)}</span>
-                            </span>
-                          ) : (
-                            getTranslated(`home-deal-${deal.id}`, 'title', deal.title)
-                          )}
+                          {deal.title}
                         </CardTitle>
                         <Badge className="bg-accent text-accent-foreground shrink-0">{tr('deals.percentOff', { percent: deal.discount })}</Badge>
                       </div>
