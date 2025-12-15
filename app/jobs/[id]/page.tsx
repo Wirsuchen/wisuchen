@@ -327,14 +327,14 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
       try {
         await navigator.clipboard.writeText(window.location.href)
         toast({
-          title: "Link copied",
-          description: "Job link copied to clipboard",
+          title: t('blog.linkCopiedTitle'),
+          description: t('blog.linkCopiedClipboard'),
         })
       } catch (error) {
         console.error('Error copying to clipboard:', error)
         toast({
-          title: "Error",
-          description: "Failed to copy link",
+          title: t('common.error'),
+          description: t('blog.shareErrorDescription'),
           variant: "destructive",
         })
       }

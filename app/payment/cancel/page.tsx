@@ -1,15 +1,24 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { cookies } from 'next/headers'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { PageLayout } from '@/components/layout/page-layout'
 import { XCircle, ArrowLeft, CreditCard, Home } from 'lucide-react'
 import Link from 'next/link'
+import { getTranslation } from '@/i18n/utils'
+import { Locale, defaultLocale, isValidLocale } from '@/i18n/config'
 
 export default async function PaymentCancelPage() {
   const supabase = await createClient()
-  
+
+  // Get locale from cookie
+  const cookieStore = await cookies()
+  const localeCookie = cookieStore.get('NEXT_LOCALE')?.value
+  const locale: Locale = localeCookie && isValidLocale(localeCookie) ? localeCookie as Locale : defaultLocale
+  const t = (key: string) => getTranslation(locale, key)
+
   // Check authentication
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) {
@@ -21,34 +30,33 @@ export default async function PaymentCancelPage() {
       <div className="max-w-2xl mx-auto space-y-6">
         <div className="text-center">
           <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h1 className="text-3xl font-bold text-red-600 mb-2">Payment Cancelled</h1>
+          <h1 className="text-3xl font-bold text-red-600 mb-2">{t('payment.cancel.title')}</h1>
           <p className="text-muted-foreground">
-            Your payment was cancelled. No charges were made to your account.
+            {t('payment.cancel.description')}
           </p>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>What happened?</CardTitle>
+            <CardTitle>{t('payment.cancel.whatHappened')}</CardTitle>
             <CardDescription>
-              You cancelled the payment process before it was completed.
+              {t('payment.cancel.whatHappenedDesc')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Alert>
               <AlertDescription>
-                Don't worry - no payment was processed and no charges were made to your account.
-                You can try again anytime or contact support if you experienced any issues.
+                {t('payment.cancel.noChargeAlert')}
               </AlertDescription>
             </Alert>
 
             <div className="space-y-3">
-              <h4 className="font-medium">Common reasons for payment cancellation:</h4>
+              <h4 className="font-medium">{t('payment.cancel.commonReasons')}</h4>
               <ul className="text-sm text-muted-foreground space-y-1 ml-4">
-                <li>• Clicked the "Cancel" button in PayPal</li>
-                <li>• Closed the PayPal window before completing payment</li>
-                <li>• Network connection issues during payment</li>
-                <li>• Changed your mind about the purchase</li>
+                <li>• {t('payment.cancel.reason1')}</li>
+                <li>• {t('payment.cancel.reason2')}</li>
+                <li>• {t('payment.cancel.reason3')}</li>
+                <li>• {t('payment.cancel.reason4')}</li>
               </ul>
             </div>
           </CardContent>
@@ -57,27 +65,27 @@ export default async function PaymentCancelPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center space-y-4">
-              <h3 className="text-lg font-semibold">What would you like to do?</h3>
-              
+              <h3 className="text-lg font-semibold">{t('payment.cancel.whatToDo')}</h3>
+
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Button asChild>
                   <Link href="/payment">
                     <CreditCard className="w-4 h-4 mr-2" />
-                    Try Payment Again
+                    {t('payment.cancel.tryAgain')}
                   </Link>
                 </Button>
-                
+
                 <Button variant="outline" asChild>
                   <Link href="/jobs">
                     <ArrowLeft className="w-4 h-4 mr-2" />
-                    Browse Jobs
+                    {t('payment.cancel.browseJobs')}
                   </Link>
                 </Button>
-                
+
                 <Button variant="outline" asChild>
                   <Link href="/">
                     <Home className="w-4 h-4 mr-2" />
-                    Back to Home
+                    {t('common.backToHome')}
                   </Link>
                 </Button>
               </div>
@@ -87,23 +95,23 @@ export default async function PaymentCancelPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Need Help?</CardTitle>
+            <CardTitle>{t('payment.cancel.needHelp')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3 text-sm">
-              <p>If you're experiencing issues with payments, here are some things you can try:</p>
+              <p>{t('payment.cancel.helpIntro')}</p>
               <ul className="space-y-1 ml-4 text-muted-foreground">
-                <li>• Make sure you have sufficient funds in your PayPal account</li>
-                <li>• Check that your payment method is valid and not expired</li>
-                <li>• Try using a different browser or device</li>
-                <li>• Disable browser extensions that might interfere with payments</li>
-                <li>• Contact our support team if the problem persists</li>
+                <li>• {t('payment.cancel.helpTip1')}</li>
+                <li>• {t('payment.cancel.helpTip2')}</li>
+                <li>• {t('payment.cancel.helpTip3')}</li>
+                <li>• {t('payment.cancel.helpTip4')}</li>
+                <li>• {t('payment.cancel.helpTip5')}</li>
               </ul>
-              
+
               <div className="pt-3 border-t">
-                <p className="font-medium">Still having trouble?</p>
+                <p className="font-medium">{t('payment.cancel.stillTrouble')}</p>
                 <p className="text-muted-foreground">
-                  Contact our support team at{' '}
+                  {t('payment.cancel.contactSupport')}{' '}
                   <a href="mailto:support@wirsuchen.com" className="text-primary hover:underline">
                     support@wirsuchen.com
                   </a>

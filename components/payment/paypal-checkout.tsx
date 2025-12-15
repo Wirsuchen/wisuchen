@@ -253,8 +253,8 @@ export function PayPalCheckout({ selectedPlan }: PayPalCheckoutProps) {
       console.error('Payment creation error:', error)
       setStep('failed')
       toast({
-        title: 'Payment Failed',
-        description: error instanceof Error ? error.message : 'Unknown error',
+        title: t('payment.paymentFailed'),
+        description: error instanceof Error ? error.message : t('common.unknownError', 'Unknown error'),
         variant: 'destructive'
       })
     } finally {
@@ -275,15 +275,15 @@ export function PayPalCheckout({ selectedPlan }: PayPalCheckoutProps) {
             clearInterval(pollInterval)
             setStep('completed')
             toast({
-              title: 'Payment Completed',
-              description: `Payment of €${(data.payment.amount / 100).toFixed(2)} was successful!`
+              title: t('payment.paymentCompleted'),
+              description: t('payment.paymentSuccessAmount', { amount: (data.payment.amount / 100).toFixed(2) })
             })
           } else if (data.payment.status === 'failed' || data.payment.status === 'cancelled') {
             clearInterval(pollInterval)
             setStep('failed')
             toast({
-              title: 'Payment Failed',
-              description: 'The payment was not completed successfully.',
+              title: t('payment.paymentFailed'),
+              description: t('payment.paymentNotCompleted', 'The payment was not completed successfully.'),
               variant: 'destructive'
             })
           }
@@ -319,8 +319,8 @@ export function PayPalCheckout({ selectedPlan }: PayPalCheckoutProps) {
         setStep('completed')
         setPaymentStatus({ payment: data })
         toast({
-          title: 'Payment Captured',
-          description: 'Your payment has been successfully processed!'
+          title: t('payment.paymentCaptured', 'Payment Captured'),
+          description: t('payment.paymentSuccessfullyProcessed', 'Your payment has been successfully processed!')
         })
       } else {
         throw new Error(data.error || 'Failed to capture payment')
@@ -328,8 +328,8 @@ export function PayPalCheckout({ selectedPlan }: PayPalCheckoutProps) {
     } catch (error) {
       console.error('Payment capture error:', error)
       toast({
-        title: 'Capture Failed',
-        description: error instanceof Error ? error.message : 'Unknown error',
+        title: t('payment.captureFailed', 'Capture Failed'),
+        description: error instanceof Error ? error.message : t('common.unknownError', 'Unknown error'),
         variant: 'destructive'
       })
     } finally {

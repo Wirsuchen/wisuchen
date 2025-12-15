@@ -35,7 +35,7 @@ export default function PostJobPage() {
   const [userJobCount, setUserJobCount] = useState<number | null>(null)
   const [loadingJobCount, setLoadingJobCount] = useState(false)
   const { toast } = useToast()
-  
+
   // Check if user has a paid plan (pro, professional, or business - covers legacy and new values)
   const isPaidUser = !!(user && (user.isSubscribed || ['pro', 'professional', 'business'].includes(user.plan || '')))
   const isFreeUser = user && !isPaidUser && user.role === 'job_seeker'
@@ -97,7 +97,7 @@ export default function PostJobPage() {
           try {
             const payload = JSON.parse(line.replace('data: ', ''))
             if (payload?.text) onChunk(payload.text)
-          } catch {}
+          } catch { }
         }
       }
     }
@@ -112,7 +112,7 @@ export default function PostJobPage() {
       })
       return
     }
-    
+
     try {
       setGenReqLoading(true)
       setFormData(prev => ({ ...prev, requirements: '' }))
@@ -148,7 +148,7 @@ export default function PostJobPage() {
       })
       return
     }
-    
+
     try {
       setGenBenLoading(true)
       setFormData(prev => ({ ...prev, benefits: '' }))
@@ -291,7 +291,7 @@ export default function PostJobPage() {
           // Generate a unique slug to avoid conflicts
           const baseSlug = formData.company.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
           const uniqueSlug = `${baseSlug}-${Date.now()}`
-          
+
           const createCompanyRes = await fetch('/api/companies', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -301,7 +301,7 @@ export default function PostJobPage() {
               is_active: true,
             }),
           })
-          
+
           let companyResponse
           try {
             const responseText = await createCompanyRes.text()
@@ -313,20 +313,20 @@ export default function PostJobPage() {
             console.error('Failed to parse company API response:', jsonError)
             throw new Error(`Invalid response from server. Status: ${createCompanyRes.status}. Please try again.`)
           }
-          
+
           // Handle successful creation (201), existing company (200), or error
           if (createCompanyRes.ok || createCompanyRes.status === 200 || createCompanyRes.status === 201) {
             // Handle both new company creation and existing company cases
             // API returns { company: { id, name, slug } } for new companies (status 201)
             // API returns { company: { id }, message: 'Company already exists' } for existing (status 200)
             company_id = companyResponse.company?.id || companyResponse.id
-            
+
             if (!company_id) {
               console.error('Company API response:', companyResponse)
               console.error('Response status:', createCompanyRes.status)
               throw new Error('Company created but no ID returned. Please try again.')
             }
-            
+
             // Success - company_id is now set
             console.log('Company created/found successfully:', { company_id, name: formData.company })
           } else {
@@ -334,12 +334,12 @@ export default function PostJobPage() {
             const errorMessage = companyResponse?.error || companyResponse?.message || `HTTP ${createCompanyRes.status}: Failed to create company`
             const errorDetails = companyResponse?.details || ''
             const errorCode = companyResponse?.code || ''
-            
+
             // Combine error message and details for better debugging
-            const fullErrorMessage = errorDetails 
+            const fullErrorMessage = errorDetails
               ? `${errorMessage}: ${errorDetails}${errorCode ? ` (Code: ${errorCode})` : ''}`
               : errorMessage
-            
+
             // Provide more specific error messages based on status
             if (createCompanyRes.status === 401) {
               throw new Error('You must be logged in to create a company. Please log in and try again.')
@@ -385,7 +385,7 @@ export default function PostJobPage() {
                   company_id = retryResponse.company.id
                 } else {
                   const retryErrorDetails = retryResponse?.details || ''
-                  const retryFullError = retryErrorDetails 
+                  const retryFullError = retryErrorDetails
                     ? `${retryResponse.error || errorMessage}: ${retryErrorDetails}`
                     : retryResponse.error || errorMessage
                   throw new Error(`Failed to create company: ${retryFullError}`)
@@ -401,19 +401,19 @@ export default function PostJobPage() {
           console.error('Error creating company:', error)
           // Re-throw if it's already our custom error
           if (error.message && (
-              error.message.startsWith('Failed to create company') || 
-              error.message.startsWith('You must be logged in') ||
-              error.message.startsWith('Invalid company data') ||
-              error.message.startsWith('Company created but no ID') ||
-              error.message.startsWith('Invalid response from server')
-            )) {
+            error.message.startsWith('Failed to create company') ||
+            error.message.startsWith('You must be logged in') ||
+            error.message.startsWith('Invalid company data') ||
+            error.message.startsWith('Company created but no ID') ||
+            error.message.startsWith('Invalid response from server')
+          )) {
             throw error
           }
           // Otherwise wrap in a more user-friendly error
           throw new Error(`Failed to create company: ${error.message || 'Unknown error occurred. Please try again.'}`)
         }
       }
-      
+
       // Ensure we have a company_id before proceeding
       if (!company_id) {
         throw new Error('Unable to get or create company. Please try again.')
@@ -518,9 +518,8 @@ export default function PostJobPage() {
               {[1, 2, 3].map((stepNumber) => (
                 <div key={stepNumber} className="flex items-center">
                   <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                      step >= stepNumber ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-                    }`}
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${step >= stepNumber ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                      }`}
                   >
                     {stepNumber}
                   </div>
@@ -537,19 +536,19 @@ export default function PostJobPage() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
-                <CardTitle>Job Details</CardTitle>
-                <CardDescription>Provide the basic information about your job posting</CardDescription>
+                    <CardTitle>{t('jobs.post.jobDetails')}</CardTitle>
+                    <CardDescription>{t('jobs.post.jobDetailsDesc')}</CardDescription>
                   </div>
                   {isFreeUser && userJobCount !== null && (
                     <Badge variant={userJobCount >= 5 ? "destructive" : "secondary"}>
-                      {userJobCount}/5 jobs used
+                      {t('jobs.post.jobsUsed', { count: userJobCount })}
                     </Badge>
                   )}
                 </div>
                 {isFreeUser && userJobCount !== null && userJobCount >= 5 && (
                   <div className="mt-2 p-3 bg-destructive/10 border border-destructive/20 rounded-md">
                     <p className="text-sm text-destructive font-medium">
-                      You've reached the limit of 5 jobs for free users. Upgrade to create more jobs.
+                      {t('jobs.post.limitReached')}
                     </p>
                   </div>
                 )}
@@ -557,19 +556,19 @@ export default function PostJobPage() {
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <Label htmlFor="title">Job Title *</Label>
+                    <Label htmlFor="title">{t('jobs.post.jobTitle')} *</Label>
                     <Input
                       id="title"
-                      placeholder="e.g. Senior Frontend Developer"
+                      placeholder={t('jobs.post.placeholders.jobTitle')}
                       value={formData.title}
                       onChange={(e) => handleInputChange("title", e.target.value)}
                     />
                   </div>
                   <div>
-                    <Label htmlFor="company">Company Name *</Label>
+                    <Label htmlFor="company">{t('jobs.post.companyName')} *</Label>
                     <Input
                       id="company"
-                      placeholder="e.g. TechCorp GmbH"
+                      placeholder={t('jobs.post.placeholders.companyName')}
                       value={formData.company}
                       onChange={(e) => handleInputChange("company", e.target.value)}
                     />
@@ -578,16 +577,16 @@ export default function PostJobPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
-                    <Label htmlFor="location">Location *</Label>
+                    <Label htmlFor="location">{t('jobs.post.location')} *</Label>
                     <Input
                       id="location"
-                      placeholder="e.g. Berlin, Germany"
+                      placeholder={t('jobs.post.placeholders.location')}
                       value={formData.location}
                       onChange={(e) => handleInputChange("location", e.target.value)}
                     />
                   </div>
                   <div>
-                    <Label htmlFor="category">Category *</Label>
+                    <Label htmlFor="category">{t('jobs.post.category')} *</Label>
                     <Select value={formData.category} onValueChange={(value) => handleInputChange("category", value)}>
                       <SelectTrigger>
                         <SelectValue placeholder={t('jobs.post.placeholders.selectCategory')} />
@@ -602,7 +601,7 @@ export default function PostJobPage() {
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="jobType">Job Type *</Label>
+                    <Label htmlFor="jobType">{t('jobs.post.jobType')} *</Label>
                     <Select value={formData.jobType} onValueChange={(value) => handleInputChange("jobType", value)}>
                       <SelectTrigger>
                         <SelectValue placeholder={t('jobs.post.placeholders.selectType')} />
@@ -620,7 +619,7 @@ export default function PostJobPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <Label htmlFor="salaryMin">Minimum Salary (€)</Label>
+                    <Label htmlFor="salaryMin">{t('jobs.post.salaryMin')}</Label>
                     <Input
                       id="salaryMin"
                       type="number"
@@ -630,7 +629,7 @@ export default function PostJobPage() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="salaryMax">Maximum Salary (€)</Label>
+                    <Label htmlFor="salaryMax">{t('jobs.post.salaryMax')}</Label>
                     <Input
                       id="salaryMax"
                       type="number"
@@ -642,13 +641,13 @@ export default function PostJobPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="logo">Company Logo</Label>
+                  <Label htmlFor="logo">{t('jobs.post.companyLogo')}</Label>
                   <div className="mt-2">
                     <label htmlFor="logo-upload" className="cursor-pointer">
                       <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center hover:border-muted-foreground/50 transition-colors">
                         <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
                         <p className="text-sm text-muted-foreground">
-                          {formData.logo ? formData.logo.name : "Click to upload logo (optional)"}
+                          {formData.logo ? formData.logo.name : t('jobs.post.uploadLogo')}
                         </p>
                       </div>
                     </label>
@@ -664,7 +663,7 @@ export default function PostJobPage() {
 
                 <div className="flex justify-end">
                   <Button onClick={handleNext} disabled={!formData.title || !formData.company || !formData.location}>
-                    Next Step
+                    {t('jobs.post.nextStep')}
                   </Button>
                 </div>
               </CardContent>
@@ -689,7 +688,7 @@ export default function PostJobPage() {
                         )}
                       </CardTitle>
                       <CardDescription>
-                        {isPaidUser 
+                        {isPaidUser
                           ? 'Let AI create a professional job description for you'
                           : 'Upgrade to Professional or Business plan to unlock AI-powered job description generation'
                         }
@@ -737,12 +736,12 @@ export default function PostJobPage() {
                   <CardContent>
                     <div className="text-center py-8 border-2 border-dashed border-muted rounded-lg">
                       <Lock className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                      <h3 className="text-lg font-semibold mb-2">AI Features Locked</h3>
+                      <h3 className="text-lg font-semibold mb-2">{t('jobs.post.aiLocked')}</h3>
                       <p className="text-sm text-muted-foreground mb-4">
-                        Upgrade to Professional or Business plan to unlock AI-powered job description generation
+                        {t('jobs.post.aiLockedDesc')}
                       </p>
                       <Button asChild>
-                        <Link href="/pricing">View Plans</Link>
+                        <Link href="/pricing">{t('jobs.post.viewPlans')}</Link>
                       </Button>
                     </div>
                   </CardContent>
@@ -754,31 +753,31 @@ export default function PostJobPage() {
                 <CardHeader>
                   <CardTitle>Job Description</CardTitle>
                   <CardDescription>
-                    {showAIGenerator 
-                      ? 'Or write your own job description manually' 
+                    {showAIGenerator
+                      ? 'Or write your own job description manually'
                       : 'Provide detailed information about the role and requirements'}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div>
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="description">Job Description *</Label>
+                      <Label htmlFor="description">{t('jobs.post.jobDescription')} *</Label>
                       <Button type="button" variant="outline" size="sm" onClick={() => setShowPreview(!showPreview)} className="bg-transparent">
-                        {showPreview ? 'Edit Description' : 'Preview'}
+                        {showPreview ? t('jobs.post.editDescription') : t('jobs.post.preview')}
                       </Button>
                     </div>
                     {!showPreview ? (
                       <>
                         <Textarea
                           id="description"
-                          placeholder="Describe the role, responsibilities, and what you're looking for..."
+                          placeholder={t('jobs.post.descPlaceholder')}
                           className="min-h-32"
                           value={formData.description}
                           onChange={(e) => handleInputChange("description", e.target.value)}
                         />
                         {formData.description && (
                           <p className="text-sm text-muted-foreground mt-2">
-                            {formData.description.length} characters
+                            {formData.description.length} {t('jobs.post.characters')}
                           </p>
                         )}
                       </>
@@ -791,56 +790,52 @@ export default function PostJobPage() {
 
                   <div>
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="requirements">Requirements</Label>
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={handleGenerateRequirements} 
-                        disabled={genReqLoading || !isPaidUser} 
+                      <Label htmlFor="requirements">{t('jobs.post.requirements')}</Label>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleGenerateRequirements}
+                        disabled={genReqLoading || !isPaidUser}
                         className="bg-transparent"
-                        title={!isPaidUser ? 'Upgrade to Professional or Business plan to use AI features' : ''}
+                        title={!isPaidUser ? t('jobs.post.ai.upgradeDescription') : ''}
                       >
                         {genReqLoading ? (
-                          <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Generating…</>
+                          <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t('jobs.post.generating')}</>
                         ) : (
-                          <><Sparkles className="h-4 w-4 mr-2" />AI Generate {!isPaidUser && <Lock className="h-3 w-3 ml-1" />}</>
+                          <><Sparkles className="h-4 w-4 mr-2" />{t('jobs.post.aiGenerate')} {!isPaidUser && <Lock className="h-3 w-3 ml-1" />}</>
                         )}
                       </Button>
                     </div>
                     <Textarea
                       id="requirements"
-                      placeholder="List the required skills, experience, and qualifications..."
-                      className="min-h-24"
-                      value={formData.requirements}
+                      placeholder={t('jobs.post.reqPlaceholder')}
                       onChange={(e) => handleInputChange("requirements", e.target.value)}
                     />
                   </div>
 
                   <div>
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="benefits">Benefits & Perks</Label>
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={handleGenerateBenefits} 
-                        disabled={genBenLoading || !isPaidUser} 
+                      <Label htmlFor="benefits">{t('jobs.post.benefits')}</Label>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleGenerateBenefits}
+                        disabled={genBenLoading || !isPaidUser}
                         className="bg-transparent"
-                        title={!isPaidUser ? 'Upgrade to Professional or Business plan to use AI features' : ''}
+                        title={!isPaidUser ? t('jobs.post.ai.upgradeDescription') : ''}
                       >
                         {genBenLoading ? (
-                          <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Generating…</>
+                          <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t('jobs.post.generating')}</>
                         ) : (
-                          <><Sparkles className="h-4 w-4 mr-2" />AI Generate {!isPaidUser && <Lock className="h-3 w-3 ml-1" />}</>
+                          <><Sparkles className="h-4 w-4 mr-2" />{t('jobs.post.aiGenerate')} {!isPaidUser && <Lock className="h-3 w-3 ml-1" />}</>
                         )}
                       </Button>
                     </div>
                     <Textarea
                       id="benefits"
-                      placeholder="Describe the benefits, perks, and what makes your company great..."
-                      className="min-h-24"
-                      value={formData.benefits}
+                      placeholder={t('jobs.post.benefitsPlaceholder')}
                       onChange={(e) => handleInputChange("benefits", e.target.value)}
                     />
                   </div>
@@ -852,17 +847,17 @@ export default function PostJobPage() {
                       onCheckedChange={(checked) => handleInputChange("featured", checked as boolean)}
                     />
                     <Label htmlFor="featured" className="text-sm">
-                      Make this a featured job (+€10)
+                      {t('jobs.post.featuredJob')}
                     </Label>
-                    <Badge variant="secondary">Recommended</Badge>
+                    <Badge variant="secondary">{t('jobs.post.recommended')}</Badge>
                   </div>
 
                   <div className="flex justify-between">
                     <Button variant="outline" onClick={handleBack} className="bg-transparent">
-                      Back
+                      {t('jobs.post.back')}
                     </Button>
                     <Button onClick={handleNext} disabled={!formData.description}>
-                      {requiresPayment ? 'Preview & Pay' : 'Preview & Post'}
+                      {requiresPayment ? t('jobs.post.previewPay') : t('jobs.post.previewPost')}
                     </Button>
                   </div>
                 </CardContent>
@@ -878,9 +873,9 @@ export default function PostJobPage() {
                   <CardHeader>
                     <div className="flex items-center">
                       <Eye className="h-5 w-5 mr-2" />
-                      <CardTitle>Job Preview</CardTitle>
+                      <CardTitle>{t('jobs.post.jobPreview')}</CardTitle>
                     </div>
-                    <CardDescription>This is how your job posting will appear to candidates</CardDescription>
+                    <CardDescription>{t('jobs.post.jobPreviewDesc')}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="border rounded-lg p-6">
@@ -910,7 +905,7 @@ export default function PostJobPage() {
                           </div>
                           <div className="flex items-center space-x-2 mt-3">
                             <Badge>{formData.category}</Badge>
-                            {formData.featured && <Badge className="bg-accent text-accent-foreground">Featured</Badge>}
+                            {formData.featured && <Badge className="bg-accent text-accent-foreground">{t('jobs.post.featured')}</Badge>}
                           </div>
                           <div
                             className="text-sm mt-3 prose prose-sm max-w-none"
@@ -925,75 +920,75 @@ export default function PostJobPage() {
 
               {/* Payment - Only show if payment is required */}
               {requiresPayment && (
-              <div>
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <CreditCard className="h-5 w-5 mr-2" />
-                      Payment
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span>Job Posting (30 days)</span>
-                        <span>€5.00</span>
-                      </div>
-                      {formData.featured && (
+                <div>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center">
+                        <CreditCard className="h-5 w-5 mr-2" />
+                        {t('jobs.post.payment')}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
                         <div className="flex justify-between">
-                          <span>Featured Listing</span>
-                          <span>€10.00</span>
+                          <span>{t('jobs.post.jobPosting30Days')}</span>
+                          <span>€5.00</span>
                         </div>
-                      )}
-                      <div className="border-t pt-2 flex justify-between font-semibold">
-                        <span>Total</span>
-                        <span>€{formData.featured ? "15.00" : "5.00"}</span>
+                        {formData.featured && (
+                          <div className="flex justify-between">
+                            <span>{t('jobs.post.featuredListing')}</span>
+                            <span>€10.00</span>
+                          </div>
+                        )}
+                        <div className="border-t pt-2 flex justify-between font-semibold">
+                          <span>{t('jobs.post.total')}</span>
+                          <span>€{formData.featured ? "15.00" : "5.00"}</span>
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="space-y-3">
-                      <div>
-                        <Label htmlFor="cardNumber">Card Number</Label>
-                        <Input id="cardNumber" placeholder="1234 5678 9012 3456" />
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-3">
                         <div>
-                          <Label htmlFor="expiry">Expiry</Label>
-                          <Input id="expiry" placeholder="MM/YY" />
+                          <Label htmlFor="cardNumber">{t('jobs.post.cardNumber')}</Label>
+                          <Input id="cardNumber" placeholder="1234 5678 9012 3456" />
                         </div>
-                        <div>
-                          <Label htmlFor="cvv">CVV</Label>
-                          <Input id="cvv" placeholder="123" />
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <Label htmlFor="expiry">{t('jobs.post.expiry')}</Label>
+                            <Input id="expiry" placeholder="MM/YY" />
+                          </div>
+                          <div>
+                            <Label htmlFor="cvv">{t('jobs.post.cvv')}</Label>
+                            <Input id="cvv" placeholder="123" />
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="flex flex-col space-y-2">
-                        <Button 
-                          onClick={handleSubmit} 
+                      <div className="flex flex-col space-y-2">
+                        <Button
+                          onClick={handleSubmit}
                           className="w-full"
                           disabled={submitting}
                         >
                           {submitting ? (
                             <>
                               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                              Creating Job...
+                              {t('jobs.post.creatingJob')}
                             </>
                           ) : (
-                            'Pay & Publish Job'
+                            t('jobs.post.payPublish')
                           )}
-                      </Button>
-                      <Button variant="outline" onClick={handleBack} className="w-full bg-transparent">
-                        Back to Edit
-                      </Button>
-                    </div>
+                        </Button>
+                        <Button variant="outline" onClick={handleBack} className="w-full bg-transparent">
+                          {t('jobs.post.backToEdit')}
+                        </Button>
+                      </div>
 
-                    <p className="text-xs text-muted-foreground text-center">
-                      Your job will be live immediately after payment confirmation
-                    </p>
-                  </CardContent>
-                </Card>
-              </div>
+                      <p className="text-xs text-muted-foreground text-center">
+                        {t('jobs.post.liveImmediately')}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
               )}
 
               {/* Post Button - Show when free jobs are available or user is paid */}
@@ -1002,29 +997,29 @@ export default function PostJobPage() {
                   {hasFreeJobsRemaining && userJobCount !== null && (
                     <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                       <p className="text-sm text-blue-900">
-                        <strong>Free Job Posting Available!</strong> You have {5 - userJobCount} free job{5 - userJobCount > 1 ? 's' : ''} remaining.
+                        <strong>{t('jobs.post.freePosting')}</strong> {t('jobs.post.freePostingDesc', { remaining: 5 - userJobCount })}
                       </p>
                     </div>
                   )}
-                  <Button 
-                    onClick={handleSubmit} 
+                  <Button
+                    onClick={handleSubmit}
                     className="w-full"
                     disabled={submitting}
                   >
                     {submitting ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Posting Job...
+                        {t('jobs.post.postingJob')}
                       </>
                     ) : (
-                      'Post Job'
+                      t('jobs.post.postJob')
                     )}
                   </Button>
                   <Button variant="outline" onClick={handleBack} className="w-full bg-transparent">
-                    Back to Edit
+                    {t('jobs.post.backToEdit')}
                   </Button>
                   <p className="text-xs text-muted-foreground text-center">
-                    Your job will be live immediately after posting
+                    {t('jobs.post.liveAfterPosting')}
                   </p>
                 </div>
               )}
