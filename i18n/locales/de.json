@@ -47,7 +47,14 @@
     "alreadyInSourceLanguage": "Inhalt ist bereits in der Quellsprache",
     "translateAll": "Alle übersetzen",
     "batchTranslationSuccess": "Alle Elemente erfolgreich übersetzt",
-    "translating": "Übersetze..."
+    "translating": "Übersetze...",
+    "found": "gefunden",
+    "filtered": "Gefiltert",
+    "showing": "Zeige",
+    "to": "bis",
+    "of": "von",
+    "results": "Ergebnisse",
+    "page": "Seite"
   },
   "nav": {
     "home": "Startseite",
@@ -288,6 +295,7 @@
     "loadingFromSources": "Abrufen aus mehreren Quellen (Adzuna, RapidAPI)",
     "resetSearch": "Suche zurücksetzen",
     "loadingMore": "Weitere werden geladen...",
+    "loadMoreJobs": "Weitere Jobs laden",
     "remaining": "verbleibend",
     "dataSources": "Datenquellen",
     "totalJobs": "Gesamtzahl Jobs",

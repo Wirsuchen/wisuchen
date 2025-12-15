@@ -8,10 +8,10 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Skeleton } from '@/components/ui/skeleton'
-import { 
-  ChevronLeft, 
-  ChevronRight, 
-  Loader2, 
+import {
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
   AlertCircle,
   Filter,
   SortAsc,
@@ -39,8 +39,8 @@ interface JobsResponse {
   }
 }
 
-export function JobList({ 
-  initialJobs = [], 
+export function JobList({
+  initialJobs = [],
   initialCategories = [],
   showSearch = true,
   limit = 20,
@@ -109,28 +109,28 @@ export function JobList({
       })
 
       const response = await fetch(`/api/jobs?${params.toString()}`)
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
 
       const data: JobsResponse = await response.json()
-      
+
       setJobs(data.jobs || [])
       setPagination(data.pagination || { page: 1, limit, total: 0, pages: 0 })
 
       if (data.jobs.length === 0 && Object.keys(searchFilters).length > 0) {
         toast({
-          title: 'No jobs found',
-          description: 'Try adjusting your search filters to find more jobs.',
+          title: t('jobs.noJobsFound'),
+          description: t('jobs.tryAdjustingFilters'),
         })
       }
     } catch (error) {
       console.error('Error fetching jobs:', error)
       setError(error instanceof Error ? error.message : 'Failed to load jobs')
       toast({
-        title: 'Error loading jobs',
-        description: 'Please try again later.',
+        title: t('jobs.errorLoading'),
+        description: t('notifications.tryAgainLater'),
         variant: 'destructive'
       })
     } finally {
@@ -147,7 +147,7 @@ export function JobList({
     if (newPage >= 1 && newPage <= pagination.pages) {
       setPagination(prev => ({ ...prev, page: newPage }))
       fetchJobs(newPage, filters)
-      
+
       // Scroll to top of job list
       document.getElementById('job-list-top')?.scrollIntoView({ behavior: 'smooth' })
     }
@@ -188,9 +188,9 @@ export function JobList({
   return (
     <div className="space-y-6">
       <div id="job-list-top" />
-      
+
       {showSearch && (
-        <JobSearch 
+        <JobSearch
           categories={categories}
           onFiltersChange={handleFiltersChange}
         />
@@ -202,17 +202,17 @@ export function JobList({
           <h2 className="text-xl font-semibold">
             {pagination.total > 0 ? (
               <>
-                {pagination.total.toLocaleString()} Job{pagination.total !== 1 ? 's' : ''} Found
+                {pagination.total.toLocaleString()} {t('nav.jobs')} {t('common.found')}
               </>
             ) : (
-              'Jobs'
+              t('nav.jobs')
             )}
           </h2>
-          
+
           {Object.keys(filters).length > 0 && (
             <Badge variant="secondary" className="flex items-center gap-1">
               <Filter className="w-3 h-3" />
-              Filtered
+              {t('common.filtered')}
             </Badge>
           )}
         </div>
@@ -235,8 +235,8 @@ export function JobList({
               >
                 {label}
                 {sortBy === key && (
-                  sortOrder === 'asc' ? 
-                    <SortAsc className="w-3 h-3" /> : 
+                  sortOrder === 'asc' ?
+                    <SortAsc className="w-3 h-3" /> :
                     <SortDesc className="w-3 h-3" />
                 )}
               </Button>
@@ -251,13 +251,13 @@ export function JobList({
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
             {error}
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               className="ml-2"
               onClick={() => fetchJobs(pagination.page, filters)}
             >
-              Try Again
+              {t('common.tryAgain')}
             </Button>
           </AlertDescription>
         </Alert>
@@ -287,9 +287,9 @@ export function JobList({
           ) : (
             <div className="space-y-4">
               {jobs.map((job) => (
-                <JobCard 
-                  key={job.id} 
-                  job={job} 
+                <JobCard
+                  key={job.id}
+                  job={job}
                   variant={variant}
                   showCompany={true}
                 />
@@ -301,9 +301,9 @@ export function JobList({
           {pagination.pages > 1 && (
             <div className="flex items-center justify-between">
               <div className="text-sm text-muted-foreground">
-                Showing {((pagination.page - 1) * pagination.limit) + 1} to{' '}
-                {Math.min(pagination.page * pagination.limit, pagination.total)} of{' '}
-                {pagination.total} results
+                {t('common.showing')} {((pagination.page - 1) * pagination.limit) + 1} {t('common.to')}{' '}
+                {Math.min(pagination.page * pagination.limit, pagination.total)} {t('common.of')}{' '}
+                {pagination.total} {t('common.results')}
               </div>
 
               <div className="flex items-center gap-2">
@@ -314,7 +314,7 @@ export function JobList({
                   disabled={pagination.page <= 1 || isLoading}
                 >
                   <ChevronLeft className="w-4 h-4" />
-                  Previous
+                  {t('common.previous')}
                 </Button>
 
                 <div className="flex items-center gap-1">
@@ -351,7 +351,7 @@ export function JobList({
                   onClick={() => handlePageChange(pagination.page + 1)}
                   disabled={pagination.page >= pagination.pages || isLoading}
                 >
-                  Next
+                  {t('common.next')}
                   <ChevronRight className="w-4 h-4" />
                 </Button>
               </div>
@@ -371,10 +371,10 @@ export function JobList({
             {isLoading ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Loading...
+                {t('common.loading')}
               </>
             ) : (
-              'Load More Jobs'
+              t('jobs.loadMoreJobs')
             )}
           </Button>
         </div>

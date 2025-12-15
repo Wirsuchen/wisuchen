@@ -9,7 +9,7 @@
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",
-    "edit": "Edit", 
+    "edit": "Edit",
     "create": "Create",
     "update": "Update",
     "search": "Search",
@@ -60,7 +60,14 @@
     "alreadyInSourceLanguage": "Content is already in the source language",
     "translateAll": "Translate All",
     "batchTranslationSuccess": "All items translated successfully",
-    "translating": "Translating..."
+    "translating": "Translating...",
+    "found": "found",
+    "filtered": "Filtered",
+    "showing": "Showing",
+    "to": "to",
+    "of": "of",
+    "results": "results",
+    "page": "Page"
   },
   "nav": {
     "home": "Home",
@@ -300,6 +307,7 @@
     "loadingFromSources": "Fetching from multiple sources (Adzuna, RapidAPI)",
     "resetSearch": "Reset Search",
     "loadingMore": "Loading more...",
+    "loadMoreJobs": "Load More Jobs",
     "remaining": "remaining",
     "dataSources": "Data Sources",
     "totalJobs": "Total Jobs",

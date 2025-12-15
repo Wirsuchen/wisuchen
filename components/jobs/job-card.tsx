@@ -46,11 +46,13 @@ export function JobCard({ job, variant = 'default', showCompany = true }: JobCar
       }).format(amount)
     }
 
+    const periodLabel = period === 'yearly' ? t('jobs.perYear') : period === 'monthly' ? t('jobs.perMonth') : t('jobs.perHour')
+
     if (min && max) {
-      return `${formatAmount(min)} - ${formatAmount(max)} ${period === 'yearly' ? '/Jahr' : period === 'monthly' ? '/Monat' : '/Stunde'}`
+      return `${formatAmount(min)} - ${formatAmount(max)} ${periodLabel}`
     }
 
-    return `Ab ${formatAmount(min || max!)} ${period === 'yearly' ? '/Jahr' : period === 'monthly' ? '/Monat' : '/Stunde'}`
+    return `${t('jobs.salaryFrom')} ${formatAmount(min || max!)} ${periodLabel}`
   }
 
   const normalizeKey = (value: string) =>
@@ -253,7 +255,7 @@ export function JobCard({ job, variant = 'default', showCompany = true }: JobCar
             ))}
             {job.skills.length > 5 && (
               <Badge variant="secondary" className="text-xs">
-                +{job.skills.length - 5} more
+                +{job.skills.length - 5} {t('common.more')}
               </Badge>
             )}
           </div>
@@ -265,12 +267,12 @@ export function JobCard({ job, variant = 'default', showCompany = true }: JobCar
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-1">
               <Eye className="w-4 h-4" />
-              <span>{job.views_count || 0} views</span>
+              <span>{job.views_count || 0} {t('jobs.views')}</span>
             </div>
             {job.applications_count > 0 && (
               <div className="flex items-center gap-1">
                 <Users className="w-4 h-4" />
-                <span>{job.applications_count} applications</span>
+                <span>{job.applications_count} {t('admin.analytics.applications')}</span>
               </div>
             )}
           </div>

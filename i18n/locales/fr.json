@@ -46,7 +46,14 @@
     "alreadyInSourceLanguage": "Le contenu est déjà dans la langue source",
     "translateAll": "Tout traduire",
     "batchTranslationSuccess": "Tous les éléments ont été traduits avec succès",
-    "translating": "Traduction en cours..."
+    "translating": "Traduction en cours...",
+    "found": "trouvé(s)",
+    "filtered": "Filtré",
+    "showing": "Affichage de",
+    "to": "à",
+    "of": "sur",
+    "results": "résultats",
+    "page": "Page"
   },
   "nav": {
     "home": "Accueil",
@@ -272,6 +279,7 @@
     "loadingFromSources": "Récupération depuis plusieurs sources (Adzuna, RapidAPI)",
     "resetSearch": "Réinitialiser la recherche",
     "loadingMore": "Chargement en cours...",
+    "loadMoreJobs": "Charger plus d'emplois",
     "remaining": "restants",
     "dataSources": "Sources de données",
     "totalJobs": "Nombre total d'offres",

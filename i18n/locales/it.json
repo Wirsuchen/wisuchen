@@ -46,7 +46,14 @@
     "alreadyInSourceLanguage": "Il contenuto è già nella lingua di origine",
     "translateAll": "Traduci tutto",
     "batchTranslationSuccess": "Tutti gli elementi sono stati tradotti con successo",
-    "translating": "Traduzione in corso..."
+    "translating": "Traduzione in corso...",
+    "found": "trovati",
+    "filtered": "Filtrato",
+    "showing": "Visualizzazione di",
+    "to": "a",
+    "of": "di",
+    "results": "risultati",
+    "page": "Pagina"
   },
   "nav": {
     "home": "Home",
@@ -273,6 +280,7 @@
     "loadingFromSources": "Recupero da più fonti (Adzuna, RapidAPI)",
     "resetSearch": "Reimposta ricerca",
     "loadingMore": "Caricamento in corso...",
+    "loadMoreJobs": "Carica più lavori",
     "remaining": "rimanenti",
     "dataSources": "Sorgenti dati",
     "totalJobs": "Totale lavori",
