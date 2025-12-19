@@ -2410,5 +2410,42 @@
       "stillTrouble": "Still having trouble?",
       "contactSupport": "Contact our support team at"
     }
+  },
+  "moderator": {
+    "panel": {
+      "title": "Moderator Panel",
+      "description": "Manage content approvals and user reports."
+    },
+    "tabs": {
+      "approval": "Content Approval",
+      "reports": "Reports",
+      "overview": "Overview"
+    },
+    "approval": {
+      "title": "Pending Content",
+      "description": "Review and approve pending jobs and blog posts.",
+      "jobs": "Jobs",
+      "posts": "Blog Posts",
+      "itemTitle": "Title",
+      "author": "Author",
+      "date": "Date",
+      "status": "Status",
+      "actions": "Actions",
+      "noItems": "No pending items found."
+    },
+    "reports": {
+      "title": "User Reports",
+      "description": "Review and resolve user reports.",
+      "target": "Target",
+      "reason": "Reason",
+      "reporter": "Reporter",
+      "status": "Status",
+      "actions": "Actions",
+      "noReports": "No active reports.",
+      "resolve": "Resolve",
+      "resolved": "Report resolved."
+    },
+    "approved": "Item approved.",
+    "rejected": "Item rejected."
   }
 }
