@@ -178,7 +178,7 @@ export default function JobsPage() {
     if (user) {
       loadUserJobs()
     }
-  }, [user]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [user, locale]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadUserJobs = async () => {
     try {
@@ -193,11 +193,11 @@ export default function JobsPage() {
       }
       const data = await res.json()
 
-      // Fetch full job details for each job
+      // Fetch full job details for each job (with locale for translations)
       const jobsWithDetails = await Promise.all(
         (data.ads || []).map(async (ad: any) => {
           try {
-            const jobRes = await fetch(`/api/jobs/${ad.id}`)
+            const jobRes = await fetch(`/api/jobs/${ad.id}?locale=${locale}`)
             if (jobRes.ok) {
               const jobData = await jobRes.json()
               return jobData.job || jobData
