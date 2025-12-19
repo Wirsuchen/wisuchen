@@ -7,6 +7,7 @@
  */
 
 import { useEffect, useState, useMemo } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { useJobs, type Job } from '@/hooks/use-jobs'
 import { PageLayout } from '@/components/layout/page-layout'
 import { Loader2, Search, MapPin, Briefcase, DollarSign, ExternalLink, Filter, RefreshCw, TrendingUp, Edit } from 'lucide-react'
@@ -101,10 +102,15 @@ interface UserPostedJob {
 }
 
 export default function JobsPage() {
-  const [searchQuery, setSearchQuery] = useState('')
-  const [location, setLocation] = useState('')
+  const searchParams = useSearchParams()
+  const urlLocation = searchParams.get('location') || ''
+  const urlQuery = searchParams.get('q') || searchParams.get('query') || ''
+  
+  const [searchQuery, setSearchQuery] = useState(urlQuery)
+  const [location, setLocation] = useState(urlLocation)
   const [employmentType, setEmploymentType] = useState<string>('')
   const [showFilters, setShowFilters] = useState(false)
+  const [initialLoadDone, setInitialLoadDone] = useState(false)
   const { user } = useAuth()
   const [userJobs, setUserJobs] = useState<UserPostedJob[]>([])
   const [loadingUserJobs, setLoadingUserJobs] = useState(false)
@@ -123,9 +129,49 @@ export default function JobsPage() {
   }, [jobs])
 
   // Load jobs on mount and when locale changes (to get translated content)
+  // Also apply URL parameters on initial load
   useEffect(() => {
-    loadJobs()
+    if (!initialLoadDone) {
+      // First load - use URL params if available
+      if (urlLocation || urlQuery) {
+        search({
+          query: urlQuery || undefined,
+          location: urlLocation || undefined,
+          limit: 20,
+          page: 1,
+          useCache: true,
+          locale: locale
+        })
+      } else {
+        loadJobs()
+      }
+      setInitialLoadDone(true)
+    } else {
+      // Subsequent loads (locale change)
+      loadJobs()
+    }
   }, [locale]) // eslint-disable-line react-hooks/exhaustive-deps
+  
+  // Update state when URL params change
+  useEffect(() => {
+    if (urlLocation !== location) {
+      setLocation(urlLocation)
+    }
+    if (urlQuery !== searchQuery) {
+      setSearchQuery(urlQuery)
+    }
+    // Trigger search if URL params changed after initial load
+    if (initialLoadDone && (urlLocation || urlQuery)) {
+      search({
+        query: urlQuery || undefined,
+        location: urlLocation || undefined,
+        limit: 20,
+        page: 1,
+        useCache: true,
+        locale: locale
+      })
+    }
+  }, [urlLocation, urlQuery]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Load user's posted jobs if authenticated
   useEffect(() => {
@@ -245,8 +291,8 @@ export default function JobsPage() {
           )}
         </div>
 
-        {/* My Posted Jobs Section */}
-        {user && (
+        {/* My Posted Jobs Section - Only show if user has posted jobs */}
+        {user && userJobs.length > 0 && (
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg shadow-md p-4 sm:p-6 border-2 border-blue-200">
             <div className="mb-4">
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2">
@@ -259,11 +305,6 @@ export default function JobsPage() {
             {loadingUserJobs ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
-              </div>
-            ) : userJobs.length === 0 ? (
-              <div className="text-center py-8 bg-white rounded-lg border border-blue-100">
-                <Briefcase className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                <p className="text-gray-600">{t('jobs.noUserJobs')}</p>
               </div>
             ) : (
               <div className="space-y-3">
