@@ -82,48 +82,76 @@ export async function GET(
       page_url: request.url,
     })
 
-    // Apply translation if locale is not English
+    // Apply translation if locale is different from original content
+    // Support all 4 languages: en, de, fr, it
     let translatedJob = job
-    if (locale !== "en" && ["de", "fr", "it"].includes(locale)) {
+    const supportedLocales = ["en", "de", "fr", "it"]
+    
+    if (supportedLocales.includes(locale)) {
       try {
         const source = job.source || "db"
         const contentId = `job-${source}-${id}`
 
-        // Try to get stored translation
+        // Try to get stored translation for requested locale
         let translation = await getStoredTranslation(
           contentId,
           locale,
           "job" as ContentType
         )
 
-        // If no translation exists, create one NOW (wait for it)
+        // If no translation exists for this locale, create one
         if (!translation) {
           try {
-            const titleResult = await translateText(
-              job.title || "",
-              locale as SupportedLanguage,
-              "en"
-            )
-            const descResult = await translateText(
-              (job.description || "").substring(0, 2000),
-              locale as SupportedLanguage,
-              "en"
-            )
+            // Detect source language from job content (simple heuristic)
+            // If job has German chars or common German words, assume German source
+            const titleText = job.title || ""
+            const descText = job.description || ""
+            const combinedText = (titleText + " " + descText).toLowerCase()
+            
+            // Simple language detection
+            let sourceLanguage: SupportedLanguage = "en"
+            const germanIndicators = ["und", "für", "mit", "bei", "wir", "sie", "der", "die", "das", "ist", "ä", "ö", "ü", "ß"]
+            const frenchIndicators = ["pour", "avec", "dans", "nous", "vous", "les", "des", "une", "est", "sont", "é", "è", "ê", "ç"]
+            const italianIndicators = ["per", "con", "che", "sono", "della", "nella", "questo", "questa", "è", "ò", "ù"]
+            
+            const hasGerman = germanIndicators.some(ind => combinedText.includes(ind))
+            const hasFrench = frenchIndicators.some(ind => combinedText.includes(ind))
+            const hasItalian = italianIndicators.some(ind => combinedText.includes(ind))
+            
+            if (hasGerman && !hasFrench && !hasItalian) sourceLanguage = "de"
+            else if (hasFrench && !hasGerman && !hasItalian) sourceLanguage = "fr"
+            else if (hasItalian && !hasGerman && !hasFrench) sourceLanguage = "it"
+            
+            // Only translate if target locale is different from detected source
+            if (locale !== sourceLanguage) {
+              console.log(`[Jobs API] Translating job ${id} from ${sourceLanguage} to ${locale}...`)
+              
+              const titleResult = await translateText(
+                titleText,
+                locale as SupportedLanguage,
+                sourceLanguage
+              )
+              const descResult = await translateText(
+                descText.substring(0, 2000),
+                locale as SupportedLanguage,
+                sourceLanguage
+              )
 
-            const newTranslation = {
-              title: titleResult.translation || job.title,
-              description: descResult.translation || job.description,
-            }
+              const newTranslation = {
+                title: titleResult.translation || job.title,
+                description: descResult.translation || job.description,
+              }
 
-            // Store for future use
-            await storeTranslation(contentId, locale, "job", newTranslation)
-            console.log(`[Jobs API] Translated job ${id} to ${locale}`)
+              // Store for future use
+              await storeTranslation(contentId, locale, "job", newTranslation)
+              console.log(`[Jobs API] ✓ Translated job ${id} to ${locale}`)
 
-            // Apply the new translation
-            translatedJob = {
-              ...job,
-              title: newTranslation.title,
-              description: newTranslation.description,
+              // Apply the new translation
+              translatedJob = {
+                ...job,
+                title: newTranslation.title,
+                description: newTranslation.description,
+              }
             }
           } catch (err) {
             console.error(`[Jobs API] Failed to translate job ${id}:`, err)
