@@ -16,10 +16,12 @@ import { Sparkles, Save, Eye, Languages } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { useTranslation } from '@/contexts/i18n-context'
 
 export default function CreateBlogPage() {
   const router = useRouter()
   const { toast } = useToast()
+  const { t } = useTranslation()
   const [showAI, setShowAI] = useState(true)
   const [language, setLanguage] = useState<'de' | 'en' | 'fr' | 'it'>('en')
   const [formData, setFormData] = useState({
@@ -40,8 +42,8 @@ export default function CreateBlogPage() {
     setFormData((prev) => ({ ...prev, content }))
     setShowAI(false)
     toast({
-      title: '✨ Content Generated!',
-      description: 'AI has created your blog article',
+      title: '✨ ' + t('admin.blogCreate.contentGenerated'),
+      description: t('admin.blogCreate.aiCreatedArticle'),
     })
   }
 
@@ -51,7 +53,7 @@ export default function CreateBlogPage() {
     const file = e.target.files?.[0]
     if (!file) return
     if (!file.type.startsWith('image/')) {
-      toast({ title: 'Invalid file', description: 'Please select an image file', variant: 'destructive' })
+      toast({ title: t('admin.blogCreate.invalidFile'), description: t('admin.blogCreate.selectImageFile'), variant: 'destructive' })
       return
     }
     setUploadingImage(true)
@@ -96,9 +98,9 @@ export default function CreateBlogPage() {
       })
 
       setFeaturedImageUrl(publicUrl)
-      toast({ title: 'Image uploaded', description: 'Featured image is set.' })
+      toast({ title: t('admin.blogCreate.imageUploaded'), description: t('admin.blogCreate.featuredImageSet') })
     } catch (err: any) {
-      toast({ title: 'Upload failed', description: err?.message || 'Could not upload image', variant: 'destructive' })
+      toast({ title: t('admin.blogCreate.uploadFailed'), description: err?.message || t('admin.blogCreate.couldNotUploadImage'), variant: 'destructive' })
     } finally {
       setUploadingImage(false)
       if (fileInputRef.current) fileInputRef.current.value = ''
@@ -109,8 +111,8 @@ export default function CreateBlogPage() {
     setFormData((prev) => ({ ...prev, content: translation }))
     setLanguage(targetLang)
     toast({
-      title: `Translated to ${targetLang.toUpperCase()}`,
-      description: 'Content has been translated',
+      title: t('admin.blogCreate.translatedTo', { lang: targetLang.toUpperCase() }),
+      description: t('admin.blogCreate.contentTranslated'),
     })
   }
 
@@ -148,19 +150,19 @@ export default function CreateBlogPage() {
         }),
       })
       if (!res.ok) {
-        const { error } = await res.json().catch(() => ({ error: 'Failed to save' }))
-        throw new Error(error || 'Failed to save')
+        const { error } = await res.json().catch(() => ({ error: t('admin.blogCreate.failedToSave') }))
+        throw new Error(error || t('admin.blogCreate.failedToSave'))
       }
       const data = await res.json()
       toast({
-        title: status === 'draft' ? 'Draft Saved' : 'Published!',
-        description: `Post ${status} with slug: ${data.slug}`,
+        title: status === 'draft' ? t('admin.blogCreate.draftSaved') : t('admin.blogCreate.published'),
+        description: t('admin.blogCreate.postSavedWithSlug', { status, slug: data.slug }),
       })
       setTimeout(() => {
         router.push('/admin')
       }, 1200)
     } catch (e: any) {
-      toast({ title: 'Save failed', description: e?.message || 'Unable to save post', variant: 'destructive' })
+      toast({ title: t('admin.blogCreate.saveFailed'), description: e?.message || t('admin.blogCreate.unableToSavePost'), variant: 'destructive' })
     }
   }
 
@@ -169,12 +171,12 @@ export default function CreateBlogPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">Create Blog Article</h1>
-            <p className="text-muted-foreground">Use AI to generate content or write manually</p>
+            <h1 className="text-3xl font-bold">{t('admin.blogCreate.title')}</h1>
+            <p className="text-muted-foreground">{t('admin.blogCreate.subtitle')}</p>
           </div>
           <Button variant="outline" onClick={() => setShowAI(!showAI)}>
             <Sparkles className="h-4 w-4 mr-2" />
-            {showAI ? 'Hide AI' : 'Show AI Generator'}
+            {showAI ? t('admin.blogCreate.hideAI') : t('admin.blogCreate.showAIGenerator')}
           </Button>
         </div>
 
@@ -186,67 +188,67 @@ export default function CreateBlogPage() {
         {/* Manual Editor */}
         <Card>
           <CardHeader>
-            <CardTitle>Blog Content</CardTitle>
+            <CardTitle>{t('admin.blogCreate.blogContent')}</CardTitle>
             <CardDescription>
-              Write or edit your blog article {formData.content && `(Language: ${language.toUpperCase()})`}
+              {t('admin.blogCreate.writeOrEdit')} {formData.content && `(${t('admin.blogCreate.language')}: ${language.toUpperCase()})`}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Title */}
             <div className="space-y-2">
-              <Label htmlFor="title">Title *</Label>
+              <Label htmlFor="title">{t('admin.blogCreate.titleLabel')} *</Label>
               <Input
                 id="title"
                 value={formData.title}
                 onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
-                placeholder="e.g., Top 10 Interview Tips for 2025"
+                placeholder={t('admin.blogCreate.titlePlaceholder')}
               />
             </div>
 
             {/* Category */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="category">Category</Label>
+                <Label htmlFor="category">{t('admin.blogCreate.category')}</Label>
                 <Select value={formData.category} onValueChange={(value) => setFormData((prev) => ({ ...prev, category: value }))}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="job-tips">Job Tips</SelectItem>
-                    <SelectItem value="recruiting">Recruiting</SelectItem>
-                    <SelectItem value="market-insights">Market Insights</SelectItem>
-                    <SelectItem value="career-advice">Career Advice</SelectItem>
-                    <SelectItem value="deals">Deals & Savings</SelectItem>
+                    <SelectItem value="job-tips">{t('admin.blogCreate.categories.jobTips')}</SelectItem>
+                    <SelectItem value="recruiting">{t('admin.blogCreate.categories.recruiting')}</SelectItem>
+                    <SelectItem value="market-insights">{t('admin.blogCreate.categories.marketInsights')}</SelectItem>
+                    <SelectItem value="career-advice">{t('admin.blogCreate.categories.careerAdvice')}</SelectItem>
+                    <SelectItem value="deals">{t('admin.blogCreate.categories.deals')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="author">Author</Label>
+                <Label htmlFor="author">{t('admin.blogCreate.author')}</Label>
                 <Input
                   id="author"
                   value={formData.author}
                   onChange={(e) => setFormData((prev) => ({ ...prev, author: e.target.value }))}
-                  placeholder="Author name"
+                  placeholder={t('admin.blogCreate.authorPlaceholder')}
                 />
               </div>
             </div>
 
             {/* Excerpt */}
             <div className="space-y-2">
-              <Label htmlFor="excerpt">Excerpt / Summary</Label>
+              <Label htmlFor="excerpt">{t('admin.blogCreate.excerpt')}</Label>
               <Textarea
                 id="excerpt"
                 value={formData.excerpt}
                 onChange={(e) => setFormData((prev) => ({ ...prev, excerpt: e.target.value }))}
-                placeholder="Brief summary of the article..."
+                placeholder={t('admin.blogCreate.excerptPlaceholder')}
                 rows={3}
               />
             </div>
 
             {/* Featured Image */}
             <div className="space-y-2">
-              <Label>Featured Image</Label>
+              <Label>{t('admin.blogCreate.featuredImage')}</Label>
               {featuredImageUrl ? (
                 <div className="space-y-2">
                   <div className="w-full h-48 border rounded-md overflow-hidden bg-muted">
@@ -254,7 +256,7 @@ export default function CreateBlogPage() {
                   </div>
                   <div className="flex gap-2">
                     <Button variant="outline" type="button" onClick={onPickImage} disabled={uploadingImage}>
-                      {uploadingImage ? 'Uploading...' : 'Change Image'}
+                      {uploadingImage ? t('admin.blogCreate.uploading') : t('admin.blogCreate.changeImage')}
                     </Button>
                     <Button
                       variant="ghost"
@@ -262,17 +264,17 @@ export default function CreateBlogPage() {
                       onClick={() => setFeaturedImageUrl('')}
                       disabled={uploadingImage}
                     >
-                      Remove
+                      {t('admin.blogCreate.remove')}
                     </Button>
                   </div>
                 </div>
               ) : (
                 <div className="flex items-center gap-3">
                   <Button variant="outline" type="button" onClick={onPickImage} disabled={uploadingImage}>
-                    {uploadingImage ? 'Uploading...' : 'Upload Featured Image'}
+                    {uploadingImage ? t('admin.blogCreate.uploading') : t('admin.blogCreate.uploadFeaturedImage')}
                   </Button>
                   <p className="text-sm text-muted-foreground">
-                    <span className="font-medium text-green-600">Info: 1080 x 1080 px ?</span> PNG, JPG up to ~5MB
+                    <span className="font-medium text-green-600">{t('admin.blogCreate.imageInfo')}</span> {t('admin.blogCreate.imageFormats')}
                   </p>
                 </div>
               )}
@@ -288,7 +290,7 @@ export default function CreateBlogPage() {
             {/* Content with Translation */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="content">Article Content *</Label>
+                <Label htmlFor="content">{t('admin.blogCreate.articleContent')} *</Label>
                 {formData.content && (
                   <TranslateButton
                     content={formData.content}
@@ -301,23 +303,23 @@ export default function CreateBlogPage() {
               <RichTextEditor
                 value={formData.content}
                 onChange={(html) => setFormData((prev) => ({ ...prev, content: html }))}
-                placeholder="Write your article content here..."
+                placeholder={t('admin.blogCreate.articleContentPlaceholder')}
               />
               {formData.content && (
                 <p className="text-sm text-muted-foreground">
-                  {formData.content.replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(Boolean).length} words, {formData.content.replace(/<[^>]+>/g, '').length} characters
+                  {formData.content.replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(Boolean).length} {t('admin.blogCreate.words')}, {formData.content.replace(/<[^>]+>/g, '').length} {t('admin.blogCreate.characters')}
                 </p>
               )}
             </div>
 
             {/* Tags */}
             <div className="space-y-2">
-              <Label htmlFor="tags">Tags (comma-separated)</Label>
+              <Label htmlFor="tags">{t('admin.blogCreate.tags')}</Label>
               <Input
                 id="tags"
                 value={formData.tags}
                 onChange={(e) => setFormData((prev) => ({ ...prev, tags: e.target.value }))}
-                placeholder="job search, career tips, remote work"
+                placeholder={t('admin.blogCreate.tagsPlaceholder')}
               />
             </div>
           </CardContent>
@@ -336,12 +338,12 @@ export default function CreateBlogPage() {
         {(formData.metaDescription || formData.keywords.length > 0) && (
           <Card>
             <CardHeader>
-              <CardTitle>SEO Metadata</CardTitle>
+              <CardTitle>{t('admin.blogCreate.seoMetadata')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {formData.metaDescription && (
                 <div className="space-y-2">
-                  <Label>Meta Description</Label>
+                  <Label>{t('admin.blogCreate.metaDescription')}</Label>
                   <Textarea
                     value={formData.metaDescription}
                     onChange={(e) => setFormData((prev) => ({ ...prev, metaDescription: e.target.value }))}
@@ -351,7 +353,7 @@ export default function CreateBlogPage() {
               )}
               {formData.keywords.length > 0 && (
                 <div className="space-y-2">
-                  <Label>SEO Keywords</Label>
+                  <Label>{t('admin.blogCreate.seoKeywords')}</Label>
                   <Input
                     value={formData.keywords.join(', ')}
                     onChange={(e) => setFormData((prev) => ({ ...prev, keywords: e.target.value.split(',').map(k => k.trim()) }))}
@@ -368,11 +370,11 @@ export default function CreateBlogPage() {
             <div className="flex gap-4 justify-end">
               <Button variant="outline" onClick={() => handleSave('draft')}>
                 <Save className="h-4 w-4 mr-2" />
-                Save Draft
+                {t('admin.blogCreate.saveDraft')}
               </Button>
               <Button onClick={() => handleSave('published')}>
                 <Eye className="h-4 w-4 mr-2" />
-                Publish
+                {t('admin.blogCreate.publish')}
               </Button>
             </div>
           </CardContent>
