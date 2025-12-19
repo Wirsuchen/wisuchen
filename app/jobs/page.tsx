@@ -105,7 +105,7 @@ export default function JobsPage() {
   const searchParams = useSearchParams()
   const urlLocation = searchParams.get('location') || ''
   const urlQuery = searchParams.get('q') || searchParams.get('query') || ''
-  
+
   const [searchQuery, setSearchQuery] = useState(urlQuery)
   const [location, setLocation] = useState(urlLocation)
   const [employmentType, setEmploymentType] = useState<string>('')
@@ -151,7 +151,7 @@ export default function JobsPage() {
       loadJobs()
     }
   }, [locale]) // eslint-disable-line react-hooks/exhaustive-deps
-  
+
   // Update state when URL params change
   useEffect(() => {
     if (urlLocation !== location) {
