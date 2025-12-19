@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Loader2, Languages, RefreshCw, CheckCircle, XCircle, ChevronDown, ChevronUp } from 'lucide-react'
 import { useAuth } from '@/contexts/auth-context'
+import { useTranslation } from '@/contexts/i18n-context'
 
 interface ContentItem {
     id: string
@@ -45,6 +46,7 @@ interface TranslationResult {
 
 export default function AdminTranslatePage() {
     const { user, loading: authLoading } = useAuth()
+    const { t } = useTranslation()
 
     const [status, setStatus] = useState<TranslationStatus | null>(null)
     const [loading, setLoading] = useState(false)
@@ -145,7 +147,7 @@ export default function AdminTranslatePage() {
                     <div className="flex items-center gap-3">
                         <span className="font-semibold">{title}</span>
                         <Badge variant={allTranslated ? "default" : "secondary"} className={allTranslated ? "bg-green-500" : ""}>
-                            {translatedCount}/{items.length} translated
+                            {translatedCount}/{items.length} {t('admin.translate.translated')}
                         </Badge>
                     </div>
                     {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -156,7 +158,7 @@ export default function AdminTranslatePage() {
                         <table className="w-full text-sm">
                             <thead className="bg-gray-50 sticky top-0">
                                 <tr>
-                                    <th className="text-left p-2 w-2/3">Title</th>
+                                    <th className="text-left p-2 w-2/3">{t('admin.translate.titleColumn')}</th>
                                     <th className="text-center p-2">DE</th>
                                     <th className="text-center p-2">FR</th>
                                     <th className="text-center p-2">IT</th>
@@ -166,7 +168,7 @@ export default function AdminTranslatePage() {
                                 {items.map((item, idx) => (
                                     <tr key={item.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                                         <td className="p-2 truncate max-w-xs" title={item.title}>
-                                            {item.title || '(No title)'}
+                                            {item.title || t('admin.translate.noTitle')}
                                             <span className="text-xs text-muted-foreground ml-2">({item.source})</span>
                                         </td>
                                         <td className="text-center p-2">
@@ -213,10 +215,10 @@ export default function AdminTranslatePage() {
             <div className="mb-8">
                 <h1 className="text-3xl font-bold flex items-center gap-3">
                     <Languages className="h-8 w-8 text-blue-600" />
-                    Translation Manager
+                    {t('admin.translate.title')}
                 </h1>
                 <p className="text-muted-foreground mt-2">
-                    Bulk translate all content to German, French, and Italian
+                    {t('admin.translate.description')}
                 </p>
             </div>
 
@@ -232,61 +234,61 @@ export default function AdminTranslatePage() {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-green-700">
                             <CheckCircle className="h-5 w-5" />
-                            Translation Complete
+                            {t('admin.translate.complete')}
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="grid grid-cols-3 gap-4">
                             {result.results.jobs && (
                                 <div className="p-3 bg-white rounded-lg border">
-                                    <p className="font-semibold">Jobs</p>
+                                    <p className="font-semibold">{t('admin.translate.jobs')}</p>
                                     <p className="text-sm text-green-600">
-                                        ✓ {result.results.jobs.success} translated
+                                        ✓ {result.results.jobs.success} {t('admin.translate.translated')}
                                     </p>
                                     {result.results.jobs.skipped > 0 && (
                                         <p className="text-sm text-blue-600">
-                                            ⏭ {result.results.jobs.skipped} skipped (already done)
+                                            ⏭ {result.results.jobs.skipped} {t('admin.translate.skipped')}
                                         </p>
                                     )}
                                     {result.results.jobs.failed > 0 && (
                                         <p className="text-sm text-red-600">
-                                            ✗ {result.results.jobs.failed} failed
+                                            ✗ {result.results.jobs.failed} {t('admin.translate.failed')}
                                         </p>
                                     )}
                                 </div>
                             )}
                             {result.results.blogs && (
                                 <div className="p-3 bg-white rounded-lg border">
-                                    <p className="font-semibold">Blog Posts</p>
+                                    <p className="font-semibold">{t('admin.translate.blogPosts')}</p>
                                     <p className="text-sm text-green-600">
-                                        ✓ {result.results.blogs.success} translated
+                                        ✓ {result.results.blogs.success} {t('admin.translate.translated')}
                                     </p>
                                     {result.results.blogs.skipped > 0 && (
                                         <p className="text-sm text-blue-600">
-                                            ⏭ {result.results.blogs.skipped} skipped (already done)
+                                            ⏭ {result.results.blogs.skipped} {t('admin.translate.skipped')}
                                         </p>
                                     )}
                                     {result.results.blogs.failed > 0 && (
                                         <p className="text-sm text-red-600">
-                                            ✗ {result.results.blogs.failed} failed
+                                            ✗ {result.results.blogs.failed} {t('admin.translate.failed')}
                                         </p>
                                     )}
                                 </div>
                             )}
                             {result.results.deals && (
                                 <div className="p-3 bg-white rounded-lg border">
-                                    <p className="font-semibold">Deals</p>
+                                    <p className="font-semibold">{t('admin.translate.deals')}</p>
                                     <p className="text-sm text-green-600">
-                                        ✓ {result.results.deals.success} translated
+                                        ✓ {result.results.deals.success} {t('admin.translate.translated')}
                                     </p>
                                     {result.results.deals.skipped > 0 && (
                                         <p className="text-sm text-blue-600">
-                                            ⏭ {result.results.deals.skipped} skipped (already done)
+                                            ⏭ {result.results.deals.skipped} {t('admin.translate.skipped')}
                                         </p>
                                     )}
                                     {result.results.deals.failed > 0 && (
                                         <p className="text-sm text-red-600">
-                                            ✗ {result.results.deals.failed} failed
+                                            ✗ {result.results.deals.failed} {t('admin.translate.failed')}
                                         </p>
                                     )}
                                 </div>
@@ -300,13 +302,13 @@ export default function AdminTranslatePage() {
             <Card className="mb-6">
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div>
-                        <CardTitle>Translation Status</CardTitle>
-                        <CardDescription>Current translation coverage</CardDescription>
+                        <CardTitle>{t('admin.translate.status')}</CardTitle>
+                        <CardDescription>{t('admin.translate.statusDesc')}</CardDescription>
                     </div>
                     <div className="flex gap-2">
                         <Button variant="outline" size="sm" onClick={() => loadStatus(true)} disabled={loading}>
                             <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-                            Load Details
+                            {t('admin.translate.loadDetails')}
                         </Button>
                     </div>
                 </CardHeader>
@@ -320,23 +322,23 @@ export default function AdminTranslatePage() {
                             {/* Content Counts */}
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="p-4 bg-gray-50 rounded-lg">
-                                    <p className="text-sm text-muted-foreground">Jobs to Translate</p>
+                                    <p className="text-sm text-muted-foreground">{t('admin.translate.jobsToTranslate')}</p>
                                     <p className="text-2xl font-bold">{status.content.jobs}</p>
                                 </div>
                                 <div className="p-4 bg-gray-50 rounded-lg">
-                                    <p className="text-sm text-muted-foreground">Blog Posts to Translate</p>
+                                    <p className="text-sm text-muted-foreground">{t('admin.translate.blogsToTranslate')}</p>
                                     <p className="text-2xl font-bold">{status.content.blogs}</p>
                                 </div>
                             </div>
 
                             {/* Translation Progress Summary */}
                             <div>
-                                <p className="font-semibold mb-3">Translation Progress</p>
+                                <p className="font-semibold mb-3">{t('admin.translate.progress')}</p>
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-sm">
                                         <thead>
                                             <tr className="border-b">
-                                                <th className="text-left py-2">Type</th>
+                                                <th className="text-left py-2">{t('admin.translate.type')}</th>
                                                 {status.languages.map(lang => (
                                                     <th key={lang} className="text-center py-2">
                                                         <Badge variant="outline">{lang.toUpperCase()}</Badge>
@@ -362,14 +364,14 @@ export default function AdminTranslatePage() {
 
                             {/* Languages */}
                             <div className="flex items-center gap-2">
-                                <span className="text-sm text-muted-foreground">Target Languages:</span>
+                                <span className="text-sm text-muted-foreground">{t('admin.translate.targetLanguages')}:</span>
                                 {status.languages.map(lang => (
                                     <Badge key={lang} variant="secondary">{lang.toUpperCase()}</Badge>
                                 ))}
                             </div>
                         </div>
                     ) : (
-                        <p className="text-muted-foreground">No data available</p>
+                        <p className="text-muted-foreground">{t('admin.translate.noData')}</p>
                     )}
                 </CardContent>
             </Card>
@@ -378,23 +380,23 @@ export default function AdminTranslatePage() {
             {showDetails && status?.details && (
                 <Card className="mb-6">
                     <CardHeader>
-                        <CardTitle>Content Translation Details</CardTitle>
+                        <CardTitle>{t('admin.translate.detailsTitle')}</CardTitle>
                         <CardDescription>
-                            View translation status for each content item
+                            {t('admin.translate.detailsDesc')}
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        {renderContentList(status.details.blogs, 'Blog Posts', 'blogs')}
-                        {renderContentList(status.details.userJobs, 'User Posted Jobs', 'userJobs')}
-                        {renderContentList(status.details.externalJobs, 'External Jobs (from APIs)', 'externalJobs')}
-                        {renderContentList(status.details.deals, 'Deals', 'deals')}
+                        {renderContentList(status.details.blogs, t('admin.translate.blogPosts'), 'blogs')}
+                        {renderContentList(status.details.userJobs, t('admin.translate.userPostedJobs'), 'userJobs')}
+                        {renderContentList(status.details.externalJobs, t('admin.translate.externalJobs'), 'externalJobs')}
+                        {renderContentList(status.details.deals, t('admin.translate.deals'), 'deals')}
 
                         {!status.details.blogs?.length &&
                             !status.details.userJobs?.length &&
                             !status.details.externalJobs?.length &&
                             !status.details.deals?.length && (
                                 <p className="text-muted-foreground text-center py-4">
-                                    No content found. Click "Load Details" to fetch current jobs and deals.
+                                    {t('admin.translate.noContentFound')}
                                 </p>
                             )}
                     </CardContent>
@@ -404,9 +406,9 @@ export default function AdminTranslatePage() {
             {/* Actions Card */}
             <Card>
                 <CardHeader>
-                    <CardTitle>Trigger Translation</CardTitle>
+                    <CardTitle>{t('admin.translate.triggerTitle')}</CardTitle>
                     <CardDescription>
-                        Translate content to all languages (de, fr, it). Uses 500ms delay between items.
+                        {t('admin.translate.triggerDesc')}
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -419,12 +421,12 @@ export default function AdminTranslatePage() {
                             {translating ? (
                                 <>
                                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                    Translating...
+                                    {t('admin.translate.translating')}
                                 </>
                             ) : (
                                 <>
                                     <Languages className="h-4 w-4 mr-2" />
-                                    Translate All
+                                    {t('admin.translate.translateAll')}
                                 </>
                             )}
                         </Button>
@@ -434,7 +436,7 @@ export default function AdminTranslatePage() {
                             onClick={() => triggerTranslation('job')}
                             disabled={translating}
                         >
-                            Translate Jobs Only
+                            {t('admin.translate.translateJobsOnly')}
                         </Button>
 
                         <Button
@@ -442,7 +444,7 @@ export default function AdminTranslatePage() {
                             onClick={() => triggerTranslation('blog')}
                             disabled={translating}
                         >
-                            Translate Blogs Only
+                            {t('admin.translate.translateBlogsOnly')}
                         </Button>
 
                         <Button
@@ -450,7 +452,7 @@ export default function AdminTranslatePage() {
                             onClick={() => triggerTranslation('deal')}
                             disabled={translating}
                         >
-                            Translate Deals Only
+                            {t('admin.translate.translateDealsOnly')}
                         </Button>
                     </div>
 
@@ -458,7 +460,7 @@ export default function AdminTranslatePage() {
                         <div className="mt-4 p-4 bg-blue-50 rounded-lg">
                             <p className="text-sm text-blue-700">
                                 <Loader2 className="inline h-4 w-4 mr-2 animate-spin" />
-                                Translation in progress... Translating external API jobs, deals, and database content. This may take several minutes.
+                                {t('admin.translate.inProgress')}
                             </p>
                         </div>
                     )}

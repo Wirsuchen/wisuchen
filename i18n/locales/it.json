@@ -39,6 +39,7 @@
     "refresh": "Aggiorna",
     "translate": "Traduci",
     "changeLanguage": "Cambia lingua",
+    "unknown": "Sconosciuto",
     "info": "Info",
     "translationSuccess": "Contenuto tradotto con successo",
     "translationError": "Traduzione non riuscita. Riprova.",
@@ -1214,11 +1215,64 @@
       "salaryInfo": "Info Stipendio",
       "companyDetails": "Dettagli Azienda"
     },
+    "invoices": {
+      "title": "Fatture",
+      "create": "Crea Fattura",
+      "allInvoices": "Tutte le Fatture",
+      "invoiceNumber": "Fattura N.",
+      "date": "Data",
+      "recipient": "Destinatario",
+      "amount": "Importo",
+      "status": "Stato",
+      "actions": "Azioni",
+      "noInvoices": "Nessuna fattura trovata. Creane una per iniziare.",
+      "statuses": {
+        "paid": "Pagata",
+        "sent": "Inviata",
+        "overdue": "Scaduta",
+        "draft": "Bozza"
+      }
+    },
     "billing": {
       "title": "Fatturazione & Fatture",
       "description": "Crea e gestisci fatture (UI in arrivo)",
       "notWired": "L'interfaccia di creazione fatture non è ancora collegata in questo progetto. Se vuoi, posso aggiungere una pagina fatture e route API per creare e elencare fatture.",
       "createInvoice": "Crea Fattura (in arrivo)"
+    },
+    "translate": {
+      "title": "Gestore Traduzioni",
+      "description": "Traduci tutti i contenuti in tedesco, francese e italiano",
+      "complete": "Traduzione completata",
+      "jobs": "Lavori",
+      "blogPosts": "Post del blog",
+      "deals": "Offerte",
+      "translated": "tradotto",
+      "skipped": "saltato (già fatto)",
+      "failed": "fallito",
+      "status": "Stato traduzione",
+      "statusDesc": "Copertura attuale delle traduzioni",
+      "loadDetails": "Carica dettagli",
+      "jobsToTranslate": "Lavori da tradurre",
+      "blogsToTranslate": "Post del blog da tradurre",
+      "progress": "Progresso traduzione",
+      "type": "Tipo",
+      "targetLanguages": "Lingue di destinazione",
+      "noData": "Nessun dato disponibile",
+      "detailsTitle": "Dettagli traduzione contenuti",
+      "detailsDesc": "Visualizza lo stato di traduzione per ogni contenuto",
+      "userPostedJobs": "Lavori pubblicati dall'utente",
+      "externalJobs": "Lavori esterni (dalle API)",
+      "noContentFound": "Nessun contenuto trovato. Clicca su \"Carica dettagli\" per recuperare lavori e offerte attuali.",
+      "triggerTitle": "Avvia traduzione",
+      "triggerDesc": "Traduci i contenuti in tutte le lingue (de, fr, it). Ritardo di 500ms tra gli elementi.",
+      "translating": "Traduzione in corso...",
+      "translateAll": "Traduci tutto",
+      "translateJobsOnly": "Traduci solo lavori",
+      "translateBlogsOnly": "Traduci solo blog",
+      "translateDealsOnly": "Traduci solo offerte",
+      "inProgress": "Traduzione in corso... Traduzione di lavori API esterni, offerte e contenuti del database. Potrebbe richiedere alcuni minuti.",
+      "titleColumn": "Titolo",
+      "noTitle": "(Nessun titolo)"
     },
     "testing": {
       "title": "Playground Test API",
@@ -1358,7 +1412,15 @@
       "joined": "Iscritto",
       "updateSuccess": "Ruolo utente aggiornato con successo",
       "updateFailed": "Impossibile aggiornare il ruolo utente",
-      "noUsersFound": "Nessun utente trovato"
+      "noUsersFound": "Nessun utente trovato",
+      "statusPro": "Pro",
+      "statusFree": "Gratuito",
+      "roles": {
+        "user": "Utente",
+        "admin": "Admin",
+        "supervisor": "Supervisor",
+        "moderator": "Moderatore"
+      }
     },
     "config": {
       "title": "Configurazione di sistema",
@@ -1369,6 +1431,9 @@
       "supportEmail": "Email di supporto",
       "apiKeysTitle": "Chiavi API",
       "apiKeysDesc": "Gestisci integrazioni di servizi esterni.",
+      "stripeKey": "Chiave pubblica Stripe",
+      "openaiKey": "Chiave API OpenAI",
+      "paypalClientId": "ID client PayPal",
       "saveSuccess": "Configurazione salvata con successo"
     },
     "stats": {
@@ -1379,7 +1444,8 @@
       "revenue": "Entrate",
       "thisMonth": "questo mese",
       "impressions": "Impressioni",
-      "clicks": "Click"
+      "clicks": "Click",
+      "failedToLoad": "Impossibile caricare le statistiche"
     },
     "logs": {
       "title": "Log di sistema",
@@ -1387,7 +1453,15 @@
       "action": "Azione",
       "user": "Utente",
       "timestamp": "Timestamp",
-      "status": "Stato"
+      "status": "Stato",
+      "statusSuccess": "Successo",
+      "statusFailed": "Fallito",
+      "actions": {
+        "userLogin": "Login utente",
+        "updateSettings": "Aggiorna impostazioni",
+        "deleteJob": "Elimina lavoro",
+        "failedLogin": "Login fallito"
+      }
     },
     "escalation": {
       "title": "Escalation dei conflitti",
@@ -1398,7 +1472,16 @@
       "status": "Stato",
       "actions": "Azioni",
       "approve": "Approva",
-      "reject": "Rifiuta"
+      "reject": "Rifiuta",
+      "statusPending": "In sospeso",
+      "types": {
+        "jobOffer": "Offerta di lavoro",
+        "userProfile": "Profilo utente"
+      },
+      "reasons": {
+        "spam": "Segnalato come spam",
+        "inappropriate": "Contenuto inappropriato"
+      }
     },
     "moderator": {
       "panel": {
