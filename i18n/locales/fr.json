@@ -1370,7 +1370,15 @@
       "joined": "Rejoint",
       "updateSuccess": "Rôle utilisateur mis à jour avec succès",
       "updateFailed": "Échec de la mise à jour du rôle utilisateur",
-      "noUsersFound": "Aucun utilisateur trouvé"
+      "noUsersFound": "Aucun utilisateur trouvé",
+      "statusPro": "Pro",
+      "statusFree": "Gratuit",
+      "roles": {
+        "user": "Utilisateur",
+        "admin": "Admin",
+        "supervisor": "Superviseur",
+        "moderator": "Modérateur"
+      }
     },
     "config": {
       "title": "Configuration du système",
@@ -1381,6 +1389,9 @@
       "supportEmail": "E-mail de support",
       "apiKeysTitle": "Clés API",
       "apiKeysDesc": "Gérer les intégrations de services externes.",
+      "stripeKey": "Clé publique Stripe",
+      "openaiKey": "Clé API OpenAI",
+      "paypalClientId": "ID client PayPal",
       "saveSuccess": "Configuration enregistrée avec succès"
     },
     "stats": {
@@ -1391,7 +1402,8 @@
       "revenue": "Revenus",
       "thisMonth": "ce mois-ci",
       "impressions": "Impressions",
-      "clicks": "Clics"
+      "clicks": "Clics",
+      "failedToLoad": "Échec du chargement des statistiques"
     },
     "logs": {
       "title": "Journaux système",
@@ -1399,7 +1411,15 @@
       "action": "Action",
       "user": "Utilisateur",
       "timestamp": "Horodatage",
-      "status": "Statut"
+      "status": "Statut",
+      "statusSuccess": "Succès",
+      "statusFailed": "Échec",
+      "actions": {
+        "userLogin": "Connexion utilisateur",
+        "updateSettings": "Mise à jour des paramètres",
+        "deleteJob": "Supprimer emploi",
+        "failedLogin": "Connexion échouée"
+      }
     },
     "escalation": {
       "title": "Escalade de conflit",
@@ -1410,7 +1430,16 @@
       "status": "Statut",
       "actions": "Actions",
       "approve": "Approuver",
-      "reject": "Rejeter"
+      "reject": "Rejeter",
+      "statusPending": "En attente",
+      "types": {
+        "jobOffer": "Offre d'emploi",
+        "userProfile": "Profil utilisateur"
+      },
+      "reasons": {
+        "spam": "Signalé comme spam",
+        "inappropriate": "Contenu inapproprié"
+      }
     },
     "moderator": {
       "panel": {
@@ -1731,5 +1760,42 @@
       "stillTrouble": "Vous avez toujours des problèmes ?",
       "contactSupport": "Contactez notre équipe de support à"
     }
+  },
+  "moderator": {
+    "panel": {
+      "title": "Panneau Modérateur",
+      "description": "Gérer les approbations de contenu et les signalements."
+    },
+    "tabs": {
+      "approval": "Approbation du contenu",
+      "reports": "Signalements",
+      "overview": "Aperçu"
+    },
+    "approval": {
+      "title": "Contenu en attente",
+      "description": "Examiner et approuver les offres d'emploi et articles en attente.",
+      "jobs": "Emplois",
+      "posts": "Articles",
+      "itemTitle": "Titre",
+      "author": "Auteur",
+      "date": "Date",
+      "status": "Statut",
+      "actions": "Actions",
+      "noItems": "Aucun élément en attente."
+    },
+    "reports": {
+      "title": "Signalements utilisateurs",
+      "description": "Examiner et résoudre les signalements.",
+      "target": "Cible",
+      "reason": "Raison",
+      "reporter": "Signaleur",
+      "status": "Statut",
+      "actions": "Actions",
+      "noReports": "Aucun signalement actif.",
+      "resolve": "Résoudre",
+      "resolved": "Signalement résolu."
+    },
+    "approved": "Élément approuvé.",
+    "rejected": "Élément rejeté."
   }
 }

@@ -2089,7 +2089,15 @@
       "joined": "Joined",
       "updateSuccess": "User role updated successfully",
       "updateFailed": "Failed to update user role",
-      "noUsersFound": "No users found"
+      "noUsersFound": "No users found",
+      "statusPro": "Pro",
+      "statusFree": "Free",
+      "roles": {
+        "user": "User",
+        "admin": "Admin",
+        "supervisor": "Supervisor",
+        "moderator": "Moderator"
+      }
     },
     "config": {
       "title": "System Configuration",
@@ -2100,6 +2108,9 @@
       "supportEmail": "Support Email",
       "apiKeysTitle": "API Keys",
       "apiKeysDesc": "Manage external service integrations.",
+      "stripeKey": "Stripe Public Key",
+      "openaiKey": "OpenAI API Key",
+      "paypalClientId": "PayPal Client ID",
       "saveSuccess": "Configuration saved successfully"
     },
     "stats": {
@@ -2110,7 +2121,8 @@
       "revenue": "Revenue",
       "thisMonth": "this month",
       "impressions": "Impressions",
-      "clicks": "Clicks"
+      "clicks": "Clicks",
+      "failedToLoad": "Failed to load stats"
     },
     "logs": {
       "title": "System Logs",
@@ -2118,7 +2130,15 @@
       "action": "Action",
       "user": "User",
       "timestamp": "Timestamp",
-      "status": "Status"
+      "status": "Status",
+      "statusSuccess": "Success",
+      "statusFailed": "Failed",
+      "actions": {
+        "userLogin": "User Login",
+        "updateSettings": "Update Settings",
+        "deleteJob": "Delete Job",
+        "failedLogin": "Failed Login"
+      }
     },
     "escalation": {
       "title": "Conflict Escalation",
@@ -2129,7 +2149,16 @@
       "status": "Status",
       "actions": "Actions",
       "approve": "Approve",
-      "reject": "Reject"
+      "reject": "Reject",
+      "statusPending": "Pending",
+      "types": {
+        "jobOffer": "Job Offer",
+        "userProfile": "User Profile"
+      },
+      "reasons": {
+        "spam": "Reported as spam",
+        "inappropriate": "Inappropriate content"
+      }
     },
     "moderator": {
       "panel": {

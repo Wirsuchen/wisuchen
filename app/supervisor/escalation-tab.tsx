@@ -16,8 +16,8 @@ export function EscalationTab() {
     const { t } = useTranslation()
 
     const items = [
-        { id: 1, type: "Job Offer", title: "Senior React Developer", reason: "Reported as spam", status: "Pending" },
-        { id: 2, type: "User Profile", title: "John Doe", reason: "Inappropriate content", status: "Pending" },
+        { id: 1, type: t('supervisor.escalation.types.jobOffer'), title: "Senior React Developer", reason: t('supervisor.escalation.reasons.spam'), status: t('supervisor.escalation.statusPending') },
+        { id: 2, type: t('supervisor.escalation.types.userProfile'), title: "John Doe", reason: t('supervisor.escalation.reasons.inappropriate'), status: t('supervisor.escalation.statusPending') },
     ]
 
     return (

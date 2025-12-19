@@ -1674,5 +1674,42 @@
       "stillTrouble": "Hai ancora problemi?",
       "contactSupport": "Contatta il nostro team di supporto a"
     }
+  },
+  "moderator": {
+    "panel": {
+      "title": "Pannello Moderatore",
+      "description": "Gestisci approvazioni contenuti e segnalazioni utenti."
+    },
+    "tabs": {
+      "approval": "Approvazione contenuti",
+      "reports": "Segnalazioni",
+      "overview": "Panoramica"
+    },
+    "approval": {
+      "title": "Contenuti in attesa",
+      "description": "Rivedi e approva offerte di lavoro e post in attesa.",
+      "jobs": "Lavori",
+      "posts": "Post del blog",
+      "itemTitle": "Titolo",
+      "author": "Autore",
+      "date": "Data",
+      "status": "Stato",
+      "actions": "Azioni",
+      "noItems": "Nessun elemento in attesa."
+    },
+    "reports": {
+      "title": "Segnalazioni utenti",
+      "description": "Rivedi e risolvi le segnalazioni.",
+      "target": "Obiettivo",
+      "reason": "Motivo",
+      "reporter": "Segnalatore",
+      "status": "Stato",
+      "actions": "Azioni",
+      "noReports": "Nessuna segnalazione attiva.",
+      "resolve": "Risolvi",
+      "resolved": "Segnalazione risolta."
+    },
+    "approved": "Elemento approvato.",
+    "rejected": "Elemento rifiutato."
   }
 }

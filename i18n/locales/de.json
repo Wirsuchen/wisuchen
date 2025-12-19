@@ -2064,7 +2064,15 @@
       "joined": "Beigetreten",
       "updateSuccess": "Benutzerrolle erfolgreich aktualisiert",
       "updateFailed": "Fehler beim Aktualisieren der Benutzerrolle",
-      "noUsersFound": "Keine Benutzer gefunden"
+      "noUsersFound": "Keine Benutzer gefunden",
+      "statusPro": "Pro",
+      "statusFree": "Kostenlos",
+      "roles": {
+        "user": "Benutzer",
+        "admin": "Admin",
+        "supervisor": "Supervisor",
+        "moderator": "Moderator"
+      }
     },
     "config": {
       "title": "Systemkonfiguration",
@@ -2075,6 +2083,9 @@
       "supportEmail": "Support-E-Mail",
       "apiKeysTitle": "API-Schlüssel",
       "apiKeysDesc": "Verwalten Sie externe Service-Integrationen.",
+      "stripeKey": "Stripe Public Key",
+      "openaiKey": "OpenAI API Key",
+      "paypalClientId": "PayPal Client ID",
       "saveSuccess": "Konfiguration erfolgreich gespeichert"
     },
     "stats": {
@@ -2085,7 +2096,8 @@
       "revenue": "Umsatz",
       "thisMonth": "diesen Monat",
       "impressions": "Impressionen",
-      "clicks": "Klicks"
+      "clicks": "Klicks",
+      "failedToLoad": "Statistiken konnten nicht geladen werden"
     },
     "logs": {
       "title": "Systemprotokolle",
@@ -2093,7 +2105,15 @@
       "action": "Aktion",
       "user": "Benutzer",
       "timestamp": "Zeitstempel",
-      "status": "Status"
+      "status": "Status",
+      "statusSuccess": "Erfolgreich",
+      "statusFailed": "Fehlgeschlagen",
+      "actions": {
+        "userLogin": "Benutzer-Login",
+        "updateSettings": "Einstellungen aktualisieren",
+        "deleteJob": "Job löschen",
+        "failedLogin": "Fehlgeschlagene Anmeldung"
+      }
     },
     "escalation": {
       "title": "Konflikteskalation",
@@ -2104,7 +2124,16 @@
       "status": "Status",
       "actions": "Aktionen",
       "approve": "Genehmigen",
-      "reject": "Ablehnen"
+      "reject": "Ablehnen",
+      "statusPending": "Ausstehend",
+      "types": {
+        "jobOffer": "Stellenangebot",
+        "userProfile": "Benutzerprofil"
+      },
+      "reasons": {
+        "spam": "Als Spam gemeldet",
+        "inappropriate": "Unangemessener Inhalt"
+      }
     },
     "moderator": {
       "panel": {
@@ -2385,5 +2414,42 @@
       "stillTrouble": "Haben Sie immer noch Probleme?",
       "contactSupport": "Kontaktieren Sie unser Support-Team unter"
     }
+  },
+  "moderator": {
+    "panel": {
+      "title": "Moderator-Panel",
+      "description": "Inhaltsfreigaben und Benutzerberichte verwalten."
+    },
+    "tabs": {
+      "approval": "Inhaltsfreigabe",
+      "reports": "Berichte",
+      "overview": "Übersicht"
+    },
+    "approval": {
+      "title": "Ausstehende Inhalte",
+      "description": "Ausstehende Jobs und Blog-Beiträge prüfen und freigeben.",
+      "jobs": "Jobs",
+      "posts": "Blog-Beiträge",
+      "itemTitle": "Titel",
+      "author": "Autor",
+      "date": "Datum",
+      "status": "Status",
+      "actions": "Aktionen",
+      "noItems": "Keine ausstehenden Elemente gefunden."
+    },
+    "reports": {
+      "title": "Benutzerberichte",
+      "description": "Benutzerberichte prüfen und lösen.",
+      "target": "Ziel",
+      "reason": "Grund",
+      "reporter": "Meldender",
+      "status": "Status",
+      "actions": "Aktionen",
+      "noReports": "Keine aktiven Berichte.",
+      "resolve": "Lösen",
+      "resolved": "Bericht gelöst."
+    },
+    "approved": "Element freigegeben.",
+    "rejected": "Element abgelehnt."
   }
 }

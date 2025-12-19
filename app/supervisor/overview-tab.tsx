@@ -33,8 +33,8 @@ export function OverviewTab() {
             .finally(() => setLoading(false))
     }, [])
 
-    if (loading) return <div>Loading stats...</div>
-    if (!stats) return <div>Failed to load stats</div>
+    if (loading) return <div>{t('common.loading')}</div>
+    if (!stats) return <div>{t('supervisor.stats.failedToLoad')}</div>
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

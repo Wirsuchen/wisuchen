@@ -142,21 +142,21 @@ export function UserManagementTab() {
                                                     <SelectValue />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="user">User</SelectItem>
-                                                    <SelectItem value="admin">Admin</SelectItem>
-                                                    <SelectItem value="supervisor">Supervisor</SelectItem>
-                                                    <SelectItem value="moderator">Moderator</SelectItem>
+                                                    <SelectItem value="user">{t('supervisor.users.roles.user')}</SelectItem>
+                                                    <SelectItem value="admin">{t('supervisor.users.roles.admin')}</SelectItem>
+                                                    <SelectItem value="supervisor">{t('supervisor.users.roles.supervisor')}</SelectItem>
+                                                    <SelectItem value="moderator">{t('supervisor.users.roles.moderator')}</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </TableCell>
                                         <TableCell>
                                             {user.is_subscribed ? (
                                                 <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-green-100 text-green-800">
-                                                    Pro
+                                                    {t('supervisor.users.statusPro')}
                                                 </span>
                                             ) : (
                                                 <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-gray-100 text-gray-800">
-                                                    Free
+                                                    {t('supervisor.users.statusFree')}
                                                 </span>
                                             )}
                                         </TableCell>

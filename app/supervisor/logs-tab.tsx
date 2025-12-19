@@ -15,10 +15,10 @@ export function LogsTab() {
     const { t } = useTranslation()
 
     const logs = [
-        { id: 1, action: "User Login", user: "admin@talentplus.com", timestamp: "2023-10-27 10:30:00", status: "Success" },
-        { id: 2, action: "Update Settings", user: "supervisor@talentplus.com", timestamp: "2023-10-27 11:15:00", status: "Success" },
-        { id: 3, action: "Delete Job", user: "admin@talentplus.com", timestamp: "2023-10-27 12:00:00", status: "Success" },
-        { id: 4, action: "Failed Login", user: "unknown@ip.addr", timestamp: "2023-10-27 12:45:00", status: "Failed" },
+        { id: 1, action: t('supervisor.logs.actions.userLogin'), user: "admin@talentplus.com", timestamp: "2023-10-27 10:30:00", status: "success" },
+        { id: 2, action: t('supervisor.logs.actions.updateSettings'), user: "supervisor@talentplus.com", timestamp: "2023-10-27 11:15:00", status: "success" },
+        { id: 3, action: t('supervisor.logs.actions.deleteJob'), user: "admin@talentplus.com", timestamp: "2023-10-27 12:00:00", status: "success" },
+        { id: 4, action: t('supervisor.logs.actions.failedLogin'), user: "unknown@ip.addr", timestamp: "2023-10-27 12:45:00", status: "failed" },
     ]
 
     return (
@@ -44,8 +44,8 @@ export function LogsTab() {
                                 <TableCell>{log.user}</TableCell>
                                 <TableCell>{log.timestamp}</TableCell>
                                 <TableCell>
-                                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${log.status === 'Success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                                        {log.status}
+                                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${log.status === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                        {log.status === 'success' ? t('supervisor.logs.statusSuccess') : t('supervisor.logs.statusFailed')}
                                     </span>
                                 </TableCell>
                             </TableRow>

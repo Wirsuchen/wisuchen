@@ -65,7 +65,7 @@ export function ConfigTab() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="stripeKey">Stripe Public Key</Label>
+                        <Label htmlFor="stripeKey">{t('supervisor.config.stripeKey')}</Label>
                         <Input
                             id="stripeKey"
                             type="password"
@@ -74,7 +74,7 @@ export function ConfigTab() {
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="openaiKey">OpenAI API Key</Label>
+                        <Label htmlFor="openaiKey">{t('supervisor.config.openaiKey')}</Label>
                         <Input
                             id="openaiKey"
                             type="password"
@@ -83,7 +83,7 @@ export function ConfigTab() {
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="paypalClientId">PayPal Client ID</Label>
+                        <Label htmlFor="paypalClientId">{t('supervisor.config.paypalClientId')}</Label>
                         <Input
                             id="paypalClientId"
                             type="password"
