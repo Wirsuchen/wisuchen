@@ -96,31 +96,38 @@ export async function GET(
           "job" as ContentType
         )
 
-        // If no translation exists, create one in background and return original for now
+        // If no translation exists, create one NOW (wait for it)
         if (!translation) {
-          // Translate in background (don't block response)
-          ;(async () => {
-            try {
-              const titleResult = await translateText(
-                job.title || "",
-                locale as SupportedLanguage,
-                "en"
-              )
-              const descResult = await translateText(
-                (job.description || "").substring(0, 2000),
-                locale as SupportedLanguage,
-                "en"
-              )
+          try {
+            const titleResult = await translateText(
+              job.title || "",
+              locale as SupportedLanguage,
+              "en"
+            )
+            const descResult = await translateText(
+              (job.description || "").substring(0, 2000),
+              locale as SupportedLanguage,
+              "en"
+            )
 
-              await storeTranslation(contentId, locale, "job", {
-                title: titleResult.translation || job.title,
-                description: descResult.translation || job.description,
-              })
-              console.log(`[Jobs API] Translated job ${id} to ${locale}`)
-            } catch (err) {
-              console.error(`[Jobs API] Failed to translate job ${id}:`, err)
+            const newTranslation = {
+              title: titleResult.translation || job.title,
+              description: descResult.translation || job.description,
             }
-          })()
+
+            // Store for future use
+            await storeTranslation(contentId, locale, "job", newTranslation)
+            console.log(`[Jobs API] Translated job ${id} to ${locale}`)
+
+            // Apply the new translation
+            translatedJob = {
+              ...job,
+              title: newTranslation.title,
+              description: newTranslation.description,
+            }
+          } catch (err) {
+            console.error(`[Jobs API] Failed to translate job ${id}:`, err)
+          }
         } else {
           // Apply existing translation
           translatedJob = {
