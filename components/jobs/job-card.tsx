@@ -143,14 +143,14 @@ export function JobCard({ job, variant = 'default', showCompany = true }: JobCar
   }
 
   return (
-    <Card className={`hover:shadow-lg transition-all duration-200 ${job.featured ? 'ring-2 ring-yellow-200' : ''}`}>
+    <Card className={`transition-all duration-200 border-gray-200 hover:border-gray-300 shadow-none hover:bg-gray-50/50 ${job.featured ? 'bg-yellow-50/30 border-yellow-200 hover:border-yellow-300' : ''}`}>
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             {showCompany && job.company && (
-              <Avatar className="w-12 h-12">
+              <Avatar className="w-10 h-10 border border-gray-100">
                 <AvatarImage src={job.company.logo_url || ''} alt={job.company.name} />
-                <AvatarFallback>
+                <AvatarFallback className="bg-gray-50 text-gray-600 text-xs">
                   {job.company.name.substring(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
@@ -158,13 +158,13 @@ export function JobCard({ job, variant = 'default', showCompany = true }: JobCar
             <div>
               <div className="flex items-center gap-2 mb-1">
                 {job.featured && (
-                  <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+                  <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-0 text-[10px] px-1.5 h-5">
                     <Star className="w-3 h-3 mr-1" />
                     {t('jobs.badges.featured')}
                   </Badge>
                 )}
                 {job.urgent && (
-                  <Badge variant="destructive">
+                  <Badge variant="destructive" className="text-[10px] px-1.5 h-5">
                     <Zap className="w-3 h-3 mr-1" />
                     {t('jobs.badges.urgent')}
                   </Badge>
@@ -172,17 +172,17 @@ export function JobCard({ job, variant = 'default', showCompany = true }: JobCar
               </div>
 
               <Link href={isExternal && (job as any).application_url ? (job as any).application_url : `/jobs/${job.id}`}>
-                <h3 className="font-semibold text-xl hover:text-primary transition-colors">
+                <h3 className="font-semibold text-lg text-gray-900 hover:text-gray-700 transition-colors">
                   {job.title}
                 </h3>
               </Link>
 
               {showCompany && job.company && (
-                <div className="flex items-center gap-2 mt-1 text-muted-foreground">
-                  <Building className="w-4 h-4" />
-                  <span>{job.company.name}</span>
+                <div className="flex items-center gap-2 mt-0.5 text-gray-500">
+                  <Building className="w-3.5 h-3.5" />
+                  <span className="text-sm">{job.company.name}</span>
                   {job.company.is_verified && (
-                    <Badge variant="outline" className="text-xs">
+                    <Badge variant="outline" className="text-[10px] h-4 px-1 border-gray-200 text-gray-500 font-normal">
                       {t('jobs.badges.verified')}
                     </Badge>
                   )}
@@ -193,92 +193,92 @@ export function JobCard({ job, variant = 'default', showCompany = true }: JobCar
 
           <div className="text-right">
             {formatSalary(job.salary_min, job.salary_max, job.salary_currency || 'EUR', job.salary_period || 'yearly') && (
-              <div className="font-bold text-lg text-primary">
+              <div className="font-medium text-gray-900">
                 {formatSalary(job.salary_min, job.salary_max, job.salary_currency || 'EUR', job.salary_period || 'yearly')}
               </div>
             )}
-            <div className="text-sm text-muted-foreground">
+            <div className="text-xs text-gray-400 mt-1">
               {job.published_at && formatDistanceToNow(new Date(job.published_at), { addSuffix: true })}
             </div>
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="pt-0">
+      <CardContent className="pt-0 pb-4">
         {job.short_description && (
-          <p className="text-muted-foreground mb-4 line-clamp-2">
+          <p className="text-gray-600 mb-4 line-clamp-2 text-sm leading-relaxed">
             {job.short_description}
           </p>
         )}
 
         <div className="flex flex-wrap gap-2 mb-4">
           {job.location && (
-            <Badge variant="outline" className="flex items-center gap-1">
-              <MapPin className="w-3 h-3" />
+            <Badge variant="outline" className="flex items-center gap-1 font-normal text-gray-600 border-gray-200">
+              <MapPin className="w-3 h-3 text-gray-400" />
               {job.location}
             </Badge>
           )}
 
           {job.employment_type && (
-            <Badge variant="outline" className="flex items-center gap-1">
-              <Clock className="w-3 h-3" />
+            <Badge variant="outline" className="flex items-center gap-1 font-normal text-gray-600 border-gray-200">
+              <Clock className="w-3 h-3 text-gray-400" />
               {getEmploymentTypeLabel(job.employment_type)}
             </Badge>
           )}
 
           {job.experience_level && (
-            <Badge variant="outline" className="flex items-center gap-1">
-              <Users className="w-3 h-3" />
+            <Badge variant="outline" className="flex items-center gap-1 font-normal text-gray-600 border-gray-200">
+              <Users className="w-3 h-3 text-gray-400" />
               {getExperienceLevelLabel(job.experience_level)}
             </Badge>
           )}
 
           {job.is_remote && (
-            <Badge variant="outline" className="bg-green-50 text-green-700">
+            <Badge variant="outline" className="bg-green-50/50 text-green-700 border-green-200 font-normal">
               {t('jobs.badges.remote')}
             </Badge>
           )}
 
           {job.is_hybrid && (
-            <Badge variant="outline" className="bg-blue-50 text-blue-700">
+            <Badge variant="outline" className="bg-blue-50/50 text-blue-700 border-blue-200 font-normal">
               {t('jobs.badges.hybrid')}
             </Badge>
           )}
         </div>
 
         {job.skills && job.skills.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-4">
+          <div className="flex flex-wrap gap-1.5">
             {job.skills.slice(0, 5).map((skill, index) => (
-              <Badge key={index} variant="secondary" className="text-xs">
+              <Badge key={index} variant="secondary" className="text-xs font-normal bg-gray-100 text-gray-600 hover:bg-gray-200 border-0">
                 {skill}
               </Badge>
             ))}
             {job.skills.length > 5 && (
-              <Badge variant="secondary" className="text-xs">
-                +{job.skills.length - 5} {t('common.more')}
+              <Badge variant="secondary" className="text-xs font-normal bg-gray-100 text-gray-600 hover:bg-gray-200 border-0">
+                +{job.skills.length - 5}
               </Badge>
             )}
           </div>
         )}
       </CardContent>
 
-      <CardFooter className="pt-0">
-        <div className="flex items-center justify-between w-full">
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+      <CardFooter className="pt-0 pb-4">
+        <div className="flex items-center justify-between w-full pt-4 border-t border-gray-100">
+          <div className="flex items-center gap-4 text-xs text-gray-500">
             <div className="flex items-center gap-1">
-              <Eye className="w-4 h-4" />
-              <span>{job.views_count || 0} {t('jobs.views')}</span>
+              <Eye className="w-3.5 h-3.5" />
+              <span>{job.views_count || 0}</span>
             </div>
             {job.applications_count > 0 && (
               <div className="flex items-center gap-1">
-                <Users className="w-4 h-4" />
-                <span>{job.applications_count} {t('admin.analytics.applications')}</span>
+                <Users className="w-3.5 h-3.5" />
+                <span>{job.applications_count}</span>
               </div>
             )}
           </div>
 
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" asChild>
+            <Button variant="ghost" size="sm" asChild className="h-8 text-gray-600 hover:text-gray-900">
               <Link href={isExternal && (job as any).application_url ? (job as any).application_url : `/jobs/${job.id}`}>
                 {isExternal ? t('jobs.buttons.viewJob') : t('jobs.buttons.viewDetails')}
               </Link>
@@ -286,6 +286,7 @@ export function JobCard({ job, variant = 'default', showCompany = true }: JobCar
             <Button
               variant="outline"
               size="sm"
+              className="h-8 border-gray-200"
               onClick={async (e) => {
                 e.preventDefault()
                 e.stopPropagation()
@@ -346,10 +347,10 @@ export function JobCard({ job, variant = 'default', showCompany = true }: JobCar
             </Button>
 
             {job.application_url && (
-              <Button size="sm" asChild>
+              <Button size="sm" asChild className="h-8 bg-gray-900 hover:bg-gray-800 text-white shadow-none">
                 <Link href={job.application_url} target="_blank" rel="noopener noreferrer">
                   {t('jobs.buttons.applyNow')}
-                  <ExternalLink className="w-4 h-4 ml-1" />
+                  <ExternalLink className="w-3 h-3 ml-1" />
                 </Link>
               </Button>
             )}
