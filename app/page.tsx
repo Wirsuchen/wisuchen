@@ -148,15 +148,15 @@ export default function HomePage() {
       // Use cache with 1 hour TTL, include locale for backend translations
       // Backend will return translated content based on locale parameter
       const data = await fetchWithCache<any>(
-        `/api/v1/jobs/search?limit=6&useCache=true&countries=de,at,ch&locale=${locale}&useDatabase=true`,
+        `/api/v1/jobs/search?limit=9&useCache=true&countries=de,at,ch&locale=${locale}&useDatabase=true`,
         undefined,
-        { limit: 6, countries: ['de', 'at', 'ch'], locale },
+        { limit: 9, countries: ['de', 'at', 'ch'], locale },
         60 * 60 * 1000
       )
       const jobs: Job[] = data?.data?.jobs || []
       const uniqueJobs = dedupeJobs(jobs)
       // Data is already translated by backend, use directly
-      setTopJobs(uniqueJobs.length > 0 ? uniqueJobs.slice(0, 4) : [])
+      setTopJobs(uniqueJobs.length > 0 ? uniqueJobs.slice(0, 6) : [])
     } catch (e) {
       console.error('Error fetching jobs:', e)
       setTopJobs([])
@@ -339,7 +339,7 @@ export default function HomePage() {
               </Button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr">
               {jobsLoading ? (
                 <div className="col-span-full flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-accent" /></div>
               ) : topJobs.length > 0 ? (
@@ -371,31 +371,35 @@ export default function HomePage() {
                   }
 
                   return (
-                    <Card key={key} className="hover:shadow-lg transition-shadow">
-                      <CardHeader>
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <CardTitle className="text-lg">
+                    <Card key={key} className="flex flex-col hover:shadow-lg transition-shadow h-full">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1 min-w-0">
+                            <CardTitle className="text-lg font-semibold line-clamp-2" title={job.title}>
                               {job.title}
                             </CardTitle>
-                            <CardDescription>{job.company}</CardDescription>
+                            <CardDescription className="truncate mt-1" title={job.company}>
+                              {job.company}
+                            </CardDescription>
                           </div>
                         </div>
                       </CardHeader>
-                      <CardContent>
-                        <div className="space-y-2">
+                      <CardContent className="flex-1 flex flex-col justify-between gap-4">
+                        <div className="space-y-3">
                           <div className="flex items-center text-sm text-muted-foreground">
-                            <MapPin className="h-4 w-4 mr-2 text-red-500" />
-                            {job.location}
+                            <MapPin className="h-4 w-4 mr-2 text-red-500 shrink-0" />
+                            <span className="truncate" title={job.location}>{job.location}</span>
                           </div>
-                          <div className="flex items-center justify-between">
-                            {salaryText && <span className="font-semibold text-accent">{salaryText}</span>}
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            {salaryText ? (
+                              <span className="font-semibold text-accent text-sm truncate max-w-[60%]" title={salaryText}>{salaryText}</span>
+                            ) : <span></span>}
                             {jobTypeLabel && (
-                              <Badge variant="outline" className="capitalize">{jobTypeLabel}</Badge>
+                              <Badge variant="outline" className="capitalize shrink-0 text-xs font-normal">{jobTypeLabel}</Badge>
                             )}
                           </div>
                         </div>
-                        <Button className="w-full mt-4 bg-transparent" variant="outline" asChild>
+                        <Button className="w-full bg-transparent mt-auto" variant="outline" asChild>
                           <Link href={`/jobs/${encodeURIComponent(job.externalId || job.id)}?source=${encodeURIComponent(job.source)}`} onClick={handleOpen}>
                             {t('home.viewDetails')}
                           </Link>
