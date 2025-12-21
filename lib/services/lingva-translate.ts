@@ -1,34 +1,34 @@
 /**
  * Lingva Translate Service - 100% FREE Translation
- * 
+ *
  * Lingva is a free, open-source alternative frontend to Google Translate.
  * It provides Google-quality translations with NO API key and NO limits.
- * 
+ *
  * Public Instances (updated for better reliability):
  * - https://lingva.ml (default)
  * - https://translate.plausibility.cloud
  * - https://lingva.garuber.eu
- * 
+ *
  * Fallback: LibreTranslate instances
- * 
+ *
  * Used for: Blog titles/descriptions, Job titles/descriptions, Deal titles/descriptions
  */
 
 // List of public Lingva instances for fallback (most reliable first - updated Dec 2024)
 const LINGVA_INSTANCES = [
-  'https://lingva.garudalinux.org',
-  'https://translate.plausibility.cloud',
-  'https://lingva.lunar.icu',
-  'https://lingva.pussthecat.org',
-  'https://translate.dr460nf1r3.org',
+  "https://lingva.garudalinux.org",
+  "https://translate.plausibility.cloud",
+  "https://lingva.lunar.icu",
+  "https://lingva.pussthecat.org",
+  "https://translate.dr460nf1r3.org",
 ]
 
 // LibreTranslate instances as backup
 const LIBRE_INSTANCES = [
-  'https://libretranslate.com',
-  'https://translate.argosopentech.com',
-  'https://translate.fedilab.app',
-  'https://lt.vern.cc',
+  "https://libretranslate.com",
+  "https://translate.argosopentech.com",
+  "https://translate.fedilab.app",
+  "https://lt.vern.cc",
 ]
 
 // In-memory cache for translations
@@ -39,20 +39,20 @@ function hashText(text: string): string {
   let hash = 0
   for (let i = 0; i < text.length; i++) {
     const char = text.charCodeAt(i)
-    hash = ((hash << 5) - hash) + char
+    hash = (hash << 5) - hash + char
     hash = hash & hash
   }
   return hash.toString(36)
 }
 
-export type SupportedLanguage = 'en' | 'de' | 'fr' | 'it'
+export type SupportedLanguage = "en" | "de" | "fr" | "it"
 
 export interface TranslationResult {
   success: boolean
   translation?: string
   error?: string
   fromCache?: boolean
-  source?: 'lingva' | 'libre' | 'fallback'
+  source?: "lingva" | "libre" | "fallback"
 }
 
 export interface BatchTranslationResult {
@@ -67,7 +67,7 @@ export interface BatchTranslationResult {
 async function translateWithLingva(
   text: string,
   targetLanguage: string,
-  sourceLanguage: string = 'auto',
+  sourceLanguage: string = "auto",
   instanceIndex: number = 0
 ): Promise<string | null> {
   if (instanceIndex >= LINGVA_INSTANCES.length) {
@@ -75,38 +75,55 @@ async function translateWithLingva(
   }
 
   const instance = LINGVA_INSTANCES[instanceIndex]
-  
+
   try {
     const encodedText = encodeURIComponent(text)
     const url = `${instance}/api/v1/${sourceLanguage}/${targetLanguage}/${encodedText}`
-    
+
     const response = await fetch(url, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Accept': 'application/json',
-        'User-Agent': 'Mozilla/5.0 (compatible; WIRsuchen/1.0)',
+        Accept: "application/json",
+        "User-Agent": "Mozilla/5.0 (compatible; WIRsuchen/1.0)",
       },
       // Increase timeout for serverless environment
       signal: AbortSignal.timeout(15000), // 15 second timeout
     })
 
     if (!response.ok) {
-      console.warn(`Lingva instance ${instance} returned ${response.status}, trying next...`)
-      return translateWithLingva(text, targetLanguage, sourceLanguage, instanceIndex + 1)
+      console.warn(
+        `Lingva instance ${instance} returned ${response.status}, trying next...`
+      )
+      return translateWithLingva(
+        text,
+        targetLanguage,
+        sourceLanguage,
+        instanceIndex + 1
+      )
     }
 
     const data = await response.json()
-    
+
     if (data.translation) {
       return data.translation
     }
-    
+
     // Try next instance if no translation
-    return translateWithLingva(text, targetLanguage, sourceLanguage, instanceIndex + 1)
+    return translateWithLingva(
+      text,
+      targetLanguage,
+      sourceLanguage,
+      instanceIndex + 1
+    )
   } catch (error) {
     console.warn(`Lingva instance ${instance} failed:`, error)
     // Try next instance
-    return translateWithLingva(text, targetLanguage, sourceLanguage, instanceIndex + 1)
+    return translateWithLingva(
+      text,
+      targetLanguage,
+      sourceLanguage,
+      instanceIndex + 1
+    )
   }
 }
 
@@ -116,7 +133,7 @@ async function translateWithLingva(
 async function translateWithLibre(
   text: string,
   targetLanguage: string,
-  sourceLanguage: string = 'en',
+  sourceLanguage: string = "en",
   instanceIndex: number = 0
 ): Promise<string | null> {
   if (instanceIndex >= LIBRE_INSTANCES.length) {
@@ -124,37 +141,54 @@ async function translateWithLibre(
   }
 
   const instance = LIBRE_INSTANCES[instanceIndex]
-  
+
   try {
     const response = await fetch(`${instance}/translate`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         q: text,
-        source: sourceLanguage === 'auto' ? 'en' : sourceLanguage,
+        source: sourceLanguage === "auto" ? "en" : sourceLanguage,
         target: targetLanguage,
-        format: 'text',
+        format: "text",
       }),
       signal: AbortSignal.timeout(15000),
     })
 
     if (!response.ok) {
-      console.warn(`LibreTranslate instance ${instance} returned ${response.status}, trying next...`)
-      return translateWithLibre(text, targetLanguage, sourceLanguage, instanceIndex + 1)
+      console.warn(
+        `LibreTranslate instance ${instance} returned ${response.status}, trying next...`
+      )
+      return translateWithLibre(
+        text,
+        targetLanguage,
+        sourceLanguage,
+        instanceIndex + 1
+      )
     }
 
     const data = await response.json()
-    
+
     if (data.translatedText) {
       return data.translatedText
     }
-    
-    return translateWithLibre(text, targetLanguage, sourceLanguage, instanceIndex + 1)
+
+    return translateWithLibre(
+      text,
+      targetLanguage,
+      sourceLanguage,
+      instanceIndex + 1
+    )
   } catch (error) {
     console.warn(`LibreTranslate instance ${instance} failed:`, error)
-    return translateWithLibre(text, targetLanguage, sourceLanguage, instanceIndex + 1)
+    return translateWithLibre(
+      text,
+      targetLanguage,
+      sourceLanguage,
+      instanceIndex + 1
+    )
   }
 }
 
@@ -165,13 +199,13 @@ async function translateWithLibre(
 async function translateWithMyMemory(
   text: string,
   targetLanguage: string,
-  sourceLanguage: string = 'en'
+  sourceLanguage: string = "en"
 ): Promise<string | null> {
   try {
     const langPair = `${sourceLanguage}|${targetLanguage}`
     const encodedText = encodeURIComponent(text.substring(0, 500)) // Max 500 chars per request
     const url = `https://api.mymemory.translated.net/get?q=${encodedText}&langpair=${langPair}`
-    
+
     const response = await fetch(url, {
       signal: AbortSignal.timeout(15000),
     })
@@ -182,20 +216,23 @@ async function translateWithMyMemory(
     }
 
     const data = await response.json()
-    
+
     if (data.responseStatus === 200 && data.responseData?.translatedText) {
       // MyMemory returns "MYMEMORY WARNING" for rate limits
       const translation = data.responseData.translatedText
-      if (translation.includes('MYMEMORY WARNING') || translation.includes('PLEASE CONTACT')) {
-        console.warn('MyMemory rate limit reached')
+      if (
+        translation.includes("MYMEMORY WARNING") ||
+        translation.includes("PLEASE CONTACT")
+      ) {
+        console.warn("MyMemory rate limit reached")
         return null
       }
       return translation
     }
-    
+
     return null
   } catch (error) {
-    console.warn('MyMemory translation failed:', error)
+    console.warn("MyMemory translation failed:", error)
     return null
   }
 }
@@ -203,25 +240,76 @@ async function translateWithMyMemory(
 /**
  * Translate a single text using MyMemory (most reliable), with Lingva and LibreTranslate fallbacks
  */
+// Monitoring stats (in-memory)
+const monitoringStats = {
+  totalCalls: 0,
+  successfulCalls: 0,
+  failedCalls: 0,
+  rateLimitedCalls: 0,
+  recentCalls: [] as Array<{
+    timestamp: string
+    source: string
+    target: string
+    status: "success" | "error" | "rate_limited"
+    error?: string
+    duration_ms?: number
+  }>,
+}
+
+// Export monitoring stats for external access
+export function getMonitoringStats() {
+  return {
+    ...monitoringStats,
+    recentCalls: monitoringStats.recentCalls.slice(0, 50), // Last 50 calls
+  }
+}
+
+export function logApiCall(log: {
+  timestamp: string
+  source: string
+  target: string
+  status: "success" | "error" | "rate_limited"
+  error?: string
+  duration_ms?: number
+}) {
+  monitoringStats.totalCalls++
+  if (log.status === "success") monitoringStats.successfulCalls++
+  else if (log.status === "rate_limited") monitoringStats.rateLimitedCalls++
+  else monitoringStats.failedCalls++
+
+  monitoringStats.recentCalls.unshift(log)
+  if (monitoringStats.recentCalls.length > 100) {
+    monitoringStats.recentCalls.pop()
+  }
+}
+
 export async function translateText(
   text: string,
   targetLanguage: SupportedLanguage,
   sourceLanguage?: SupportedLanguage
 ): Promise<TranslationResult> {
+  const startTime = Date.now()
+  const source = sourceLanguage || "auto"
+
   if (!text || text.trim().length === 0) {
-    return { success: true, translation: text }
+    return {success: true, translation: text}
   }
 
   // Don't translate if source and target are the same
   if (sourceLanguage === targetLanguage) {
-    return { success: true, translation: text }
+    return {success: true, translation: text}
   }
 
   // Check cache first
   const cacheKey = `${hashText(text)}:${targetLanguage}`
   const cached = translationCache.get(cacheKey)
   if (cached) {
-    return { success: true, translation: cached, fromCache: true, source: 'lingva' }
+    return {
+      success: true,
+      translation: cached,
+      fromCache: true,
+      source: "lingva",
+    }
   }
 
   try {
@@ -229,55 +317,98 @@ export async function translateText(
     let translation = await translateWithMyMemory(
       text,
       targetLanguage,
-      sourceLanguage || 'en'
+      sourceLanguage || "en"
     )
 
     if (translation) {
       translationCache.set(cacheKey, translation)
-      return { success: true, translation, source: 'libre' } // Using 'libre' as generic
+      logApiCall({
+        timestamp: new Date().toISOString(),
+        source,
+        target: targetLanguage,
+        status: "success",
+        duration_ms: Date.now() - startTime,
+      })
+      return {success: true, translation, source: "libre"} // Using 'libre' as generic
     }
 
     // Fallback to Lingva
-    console.log('MyMemory failed, trying Lingva fallback...')
+    console.log("MyMemory failed, trying Lingva fallback...")
     translation = await translateWithLingva(
       text,
       targetLanguage,
-      sourceLanguage || 'auto'
+      sourceLanguage || "auto"
     )
 
     if (translation) {
       // Cache the result
       translationCache.set(cacheKey, translation)
-      return { success: true, translation, source: 'lingva' }
+      logApiCall({
+        timestamp: new Date().toISOString(),
+        source,
+        target: targetLanguage,
+        status: "success",
+        duration_ms: Date.now() - startTime,
+      })
+      return {success: true, translation, source: "lingva"}
     }
 
     // Fallback to LibreTranslate
-    console.log('Lingva failed, trying LibreTranslate fallback...')
+    console.log("Lingva failed, trying LibreTranslate fallback...")
     translation = await translateWithLibre(
       text,
       targetLanguage,
-      sourceLanguage || 'en'
+      sourceLanguage || "en"
     )
 
     if (translation) {
       translationCache.set(cacheKey, translation)
-      return { success: true, translation, source: 'libre' }
+      logApiCall({
+        timestamp: new Date().toISOString(),
+        source,
+        target: targetLanguage,
+        status: "success",
+        duration_ms: Date.now() - startTime,
+      })
+      return {success: true, translation, source: "libre"}
     }
 
     // If all fail, return original text as fallback
-    console.warn('All translation services failed, returning original text')
+    console.warn("All translation services failed, returning original text")
+    logApiCall({
+      timestamp: new Date().toISOString(),
+      source,
+      target: targetLanguage,
+      status: "error",
+      error: "All services failed",
+      duration_ms: Date.now() - startTime,
+    })
     return {
       success: true,
       translation: text,
-      source: 'fallback'
+      source: "fallback",
     }
   } catch (error: any) {
-    console.error('Translation error:', error)
+    console.error("Translation error:", error)
+
+    // Check if it's a rate limit error
+    const isRateLimited =
+      error.message?.includes("429") || error.message?.includes("rate limit")
+
+    logApiCall({
+      timestamp: new Date().toISOString(),
+      source,
+      target: targetLanguage,
+      status: isRateLimited ? "rate_limited" : "error",
+      error: error.message,
+      duration_ms: Date.now() - startTime,
+    })
+
     // Return original text on error instead of failing
     return {
       success: true,
       translation: text,
-      source: 'fallback'
+      source: "fallback",
     }
   }
 }
@@ -291,7 +422,7 @@ export async function translateBatch(
   sourceLanguage?: SupportedLanguage
 ): Promise<BatchTranslationResult> {
   if (!texts || texts.length === 0) {
-    return { success: true, translations: [] }
+    return {success: true, translations: []}
   }
 
   try {
@@ -300,21 +431,23 @@ export async function translateBatch(
       texts.map(text => translateText(text, targetLanguage, sourceLanguage))
     )
 
-    const translations = results.map((r, index) => 
-      r.success ? (r.translation || texts[index]) : texts[index]
+    const translations = results.map((r, index) =>
+      r.success ? r.translation || texts[index] : texts[index]
     )
 
     const failedCount = results.filter(r => !r.success).length
     if (failedCount > 0) {
-      console.warn(`${failedCount}/${texts.length} translations failed, using original text`)
+      console.warn(
+        `${failedCount}/${texts.length} translations failed, using original text`
+      )
     }
 
-    return { success: true, translations }
+    return {success: true, translations}
   } catch (error: any) {
-    console.error('Batch translation error:', error)
+    console.error("Batch translation error:", error)
     return {
       success: false,
-      error: error.message || 'Batch translation failed'
+      error: error.message || "Batch translation failed",
     }
   }
 }
@@ -327,15 +460,15 @@ export async function translateJob(
   description: string,
   targetLanguage: SupportedLanguage,
   sourceLanguage?: SupportedLanguage
-): Promise<{ title: string; description: string }> {
+): Promise<{title: string; description: string}> {
   const [titleResult, descResult] = await Promise.all([
     translateText(title, targetLanguage, sourceLanguage),
-    translateText(description, targetLanguage, sourceLanguage)
+    translateText(description, targetLanguage, sourceLanguage),
   ])
 
   return {
     title: titleResult.translation || title,
-    description: descResult.translation || description
+    description: descResult.translation || description,
   }
 }
 
@@ -347,15 +480,15 @@ export async function translateDeal(
   description: string,
   targetLanguage: SupportedLanguage,
   sourceLanguage?: SupportedLanguage
-): Promise<{ title: string; description: string }> {
+): Promise<{title: string; description: string}> {
   const [titleResult, descResult] = await Promise.all([
     translateText(title, targetLanguage, sourceLanguage),
-    translateText(description, targetLanguage, sourceLanguage)
+    translateText(description, targetLanguage, sourceLanguage),
   ])
 
   return {
     title: titleResult.translation || title,
-    description: descResult.translation || description
+    description: descResult.translation || description,
   }
 }
 
@@ -368,31 +501,38 @@ export async function translateBlog(
   content: string,
   targetLanguage: SupportedLanguage,
   sourceLanguage?: SupportedLanguage
-): Promise<{ title: string; description: string; content: string }> {
+): Promise<{title: string; description: string; content: string}> {
   const [titleResult, descResult, contentResult] = await Promise.all([
     translateText(title, targetLanguage, sourceLanguage),
     translateText(description, targetLanguage, sourceLanguage),
-    translateText(content, targetLanguage, sourceLanguage)
+    translateText(content, targetLanguage, sourceLanguage),
   ])
 
   return {
     title: titleResult.translation || title,
     description: descResult.translation || description,
-    content: contentResult.translation || content
+    content: contentResult.translation || content,
   }
 }
 
 /**
  * Check if translation services are available
  */
-export async function checkLingvaHealth(): Promise<{ lingva: boolean; libre: boolean; available: boolean }> {
-  const results = { lingva: false, libre: false, available: false }
-  
+export async function checkLingvaHealth(): Promise<{
+  lingva: boolean
+  libre: boolean
+  available: boolean
+}> {
+  const results = {lingva: false, libre: false, available: false}
+
   // Test Lingva
   try {
-    const lingvaResponse = await fetch(`${LINGVA_INSTANCES[0]}/api/v1/en/de/hello`, {
-      signal: AbortSignal.timeout(5000)
-    })
+    const lingvaResponse = await fetch(
+      `${LINGVA_INSTANCES[0]}/api/v1/en/de/hello`,
+      {
+        signal: AbortSignal.timeout(5000),
+      }
+    )
     results.lingva = lingvaResponse.ok
   } catch {
     results.lingva = false
@@ -401,10 +541,10 @@ export async function checkLingvaHealth(): Promise<{ lingva: boolean; libre: boo
   // Test LibreTranslate
   try {
     const libreResponse = await fetch(`${LIBRE_INSTANCES[0]}/translate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ q: 'hello', source: 'en', target: 'de' }),
-      signal: AbortSignal.timeout(5000)
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({q: "hello", source: "en", target: "de"}),
+      signal: AbortSignal.timeout(5000),
     })
     results.libre = libreResponse.ok
   } catch {
@@ -425,9 +565,9 @@ export function clearCache(): void {
 /**
  * Get cache stats
  */
-export function getCacheStats(): { size: number; keys: string[] } {
+export function getCacheStats(): {size: number; keys: string[]} {
   return {
     size: translationCache.size,
-    keys: Array.from(translationCache.keys())
+    keys: Array.from(translationCache.keys()),
   }
 }

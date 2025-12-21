@@ -10,6 +10,7 @@ import {sanitizeSnippet} from "@/lib/utils/text"
 import {
   getStoredTranslationsBatch,
   storeTranslation,
+  autoTranslateToAllLanguages,
   ContentType,
 } from "@/lib/services/translation-service"
 import {translateText, SupportedLanguage} from "@/lib/services/lingva-translate"
@@ -339,45 +340,44 @@ async function handler(request: NextRequest) {
             if (jobsNeedingTranslation.length > 0) {
               console.log(
                 `[Jobs API] Translating ${jobsNeedingTranslation.length} jobs to ${lang}...`
-              )(
-                // Translate in background (don't await to not block response)
-                async () => {
-                  for (const job of jobsNeedingTranslation.slice(0, 10)) {
-                    // Limit to 10 per request
-                    try {
-                      const contentId = `job-${job.source || "db"}-${job.id}`
+              )
+              // Translate in background (don't await to not block response)
+              ;(async () => {
+                for (const job of jobsNeedingTranslation.slice(0, 10)) {
+                  // Limit to 10 per request
+                  try {
+                    const contentId = `job-${job.source || "db"}-${job.id}`
 
-                      // Translate title and description
-                      const titleResult = await translateText(
-                        job.title || "",
-                        lang as SupportedLanguage,
-                        "en"
-                      )
-                      const descResult = await translateText(
-                        (job.description || "").substring(0, 1000),
-                        lang as SupportedLanguage,
-                        "en"
-                      )
+                    // Translate title and description
+                    const titleResult = await translateText(
+                      job.title || "",
+                      lang as SupportedLanguage,
+                      "en"
+                    )
+                    const descResult = await translateText(
+                      (job.description || "").substring(0, 1000),
+                      lang as SupportedLanguage,
+                      "en"
+                    )
 
-                      await storeTranslation(contentId, lang, "job", {
-                        title: titleResult.translation || job.title,
-                        description: descResult.translation || job.description,
-                      })
+                    await storeTranslation(contentId, lang, "job", {
+                      title: titleResult.translation || job.title,
+                      description: descResult.translation || job.description,
+                    })
 
-                      // Small delay to avoid rate limiting
-                      await new Promise(r => setTimeout(r, 200))
-                    } catch (err) {
-                      console.error(
-                        `[Jobs API] Failed to translate job ${job.id}:`,
-                        err
-                      )
-                    }
+                    // Small delay to avoid rate limiting
+                    await new Promise(r => setTimeout(r, 200))
+                  } catch (err) {
+                    console.error(
+                      `[Jobs API] Failed to translate job ${job.id}:`,
+                      err
+                    )
                   }
-                  console.log(
-                    `[Jobs API] Background translation completed for ${lang}`
-                  )
                 }
-              )()
+                console.log(
+                  `[Jobs API] Background translation completed for ${lang}`
+                )
+              })()
             }
 
             // Apply translations, falling back to original if not found
@@ -461,12 +461,17 @@ export async function POST(request: NextRequest) {
     // Get user profile to check permissions and plan
     const {data: profile} = await supabase
       .from("profiles")
-      .select("id, role, plan, is_subscribed")
+      .select("id, role")
       .eq("user_id", user.id)
       .single()
 
     if (!profile) {
       return NextResponse.json({error: "Profile not found"}, {status: 404})
+    }
+
+    // Type guard for profile
+    if (!profile.id || !profile.role) {
+      return NextResponse.json({error: "Invalid profile data"}, {status: 500})
     }
 
     // Check if user has permission to create jobs
@@ -486,11 +491,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check job limit for free users (job_seeker role with free plan)
-    const isPaidUser =
-      profile.is_subscribed ||
-      ["pro", "professional", "business"].includes(profile.plan || "")
-    const isFreeUser = profile.role === "job_seeker" && !isPaidUser
+    // Check job limit for free users (job_seeker role)
+    const isFreeUser = profile.role === "job_seeker"
 
     if (isFreeUser) {
       // Count existing jobs created by this user
@@ -535,6 +537,7 @@ export async function POST(request: NextRequest) {
 
     const jobData: OfferInsert = {
       ...body,
+      description: body.description || undefined,
       slug: `${slug}-${Date.now()}`, // Ensure uniqueness
       type: "job",
       created_by: profile.id,
@@ -569,43 +572,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({error: "Failed to create job"}, {status: 500})
     }
 
-    // Generate translations for all target languages in background
-    // This ensures translations are ready when users view the job in other languages
+    // Auto-translate to ALL 4 languages in background
+    // This ensures translations are ready when users view the job in any language
     if (job && job.id) {
-      const targetLanguages: SupportedLanguage[] = ["de", "fr", "it"]
-      const contentId = `job-db-${job.id}`
+      const contentId = `job-${job.id}`
 
       // Run translations in background (don't block response)
-      ;(async () => {
-        for (const lang of targetLanguages) {
-          try {
-            const titleResult = await translateText(job.title || "", lang, "en")
-            const descResult = await translateText(
-              (job.description || "").substring(0, 2000),
-              lang,
-              "en"
-            )
-
-            await storeTranslation(contentId, lang, "job", {
-              title: titleResult.translation || job.title,
-              description: descResult.translation || job.description,
-            })
-
+      autoTranslateToAllLanguages(contentId, "job", {
+        title: job.title || "",
+        description: job.description || "",
+      })
+        .then(result => {
+          if (result.success) {
             console.log(
-              `[Jobs API] Created ${lang} translation for new job ${job.id}`
-            )
-
-            // Small delay between translations to avoid rate limiting
-            await new Promise(r => setTimeout(r, 300))
-          } catch (err) {
-            console.error(
-              `[Jobs API] Failed to create ${lang} translation for job ${job.id}:`,
-              err
+              `[Jobs API] ✓ Auto-translated job ${job.id} from ${result.sourceLanguage} to ${result.translatedLanguages.length} languages`
             )
           }
-        }
-        console.log(`[Jobs API] All translations created for job ${job.id}`)
-      })()
+        })
+        .catch(err => {
+          console.error(
+            `[Jobs API] Auto-translation failed for job ${job.id}:`,
+            err
+          )
+        })
     }
 
     return NextResponse.json({job}, {status: 201})

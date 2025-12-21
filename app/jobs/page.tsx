@@ -6,7 +6,7 @@
  * Uses database translations when locale is not English
  */
 
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useJobs, type Job } from '@/hooks/use-jobs'
 import { PageLayout } from '@/components/layout/page-layout'
@@ -173,14 +173,8 @@ export default function JobsPage() {
     }
   }, [urlLocation, urlQuery]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Load user's posted jobs if authenticated
-  useEffect(() => {
-    if (user) {
-      loadUserJobs()
-    }
-  }, [user, locale]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  const loadUserJobs = async () => {
+  // Load user's posted jobs with translations based on locale
+  const loadUserJobs = useCallback(async () => {
     try {
       setLoadingUserJobs(true)
       const res = await fetch('/api/user/ads?limit=50')
@@ -215,7 +209,15 @@ export default function JobsPage() {
     } finally {
       setLoadingUserJobs(false)
     }
-  }
+  }, [locale])
+
+  // Load user's posted jobs if authenticated
+  // Use user?.id instead of user object to prevent refetch on token refresh
+  useEffect(() => {
+    if (user?.id) {
+      loadUserJobs()
+    }
+  }, [user?.id, loadUserJobs]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadJobs = () => {
     search({

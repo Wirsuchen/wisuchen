@@ -63,14 +63,14 @@ export async function GET(
     // Increment view count
     await supabase
       .from("offers")
-      .update({views_count: (job.views_count || 0) + 1})
+      .update({views: (job.views || 0) + 1})
       .eq("id", id)
 
     // Track impression for analytics
     const {
       data: {user},
     } = await supabase.auth.getUser()
-    await supabase.from("impressions").insert({
+    await (supabase as any).from("impressions").insert({
       offer_id: id,
       user_id: user?.id || null,
       event_type: "view",
@@ -86,11 +86,11 @@ export async function GET(
     // Support all 4 languages: en, de, fr, it
     let translatedJob = job
     const supportedLocales = ["en", "de", "fr", "it"]
-    
+
     if (supportedLocales.includes(locale)) {
       try {
-        const source = job.source || "db"
-        const contentId = `job-${source}-${id}`
+        // Use simple content_id format: job-{id} to match stored translations
+        const contentId = `job-${id}`
 
         // Try to get stored translation for requested locale
         let translation = await getStoredTranslation(
@@ -107,25 +107,77 @@ export async function GET(
             const titleText = job.title || ""
             const descText = job.description || ""
             const combinedText = (titleText + " " + descText).toLowerCase()
-            
+
             // Simple language detection
             let sourceLanguage: SupportedLanguage = "en"
-            const germanIndicators = ["und", "für", "mit", "bei", "wir", "sie", "der", "die", "das", "ist", "ä", "ö", "ü", "ß"]
-            const frenchIndicators = ["pour", "avec", "dans", "nous", "vous", "les", "des", "une", "est", "sont", "é", "è", "ê", "ç"]
-            const italianIndicators = ["per", "con", "che", "sono", "della", "nella", "questo", "questa", "è", "ò", "ù"]
-            
-            const hasGerman = germanIndicators.some(ind => combinedText.includes(ind))
-            const hasFrench = frenchIndicators.some(ind => combinedText.includes(ind))
-            const hasItalian = italianIndicators.some(ind => combinedText.includes(ind))
-            
+            const germanIndicators = [
+              "und",
+              "für",
+              "mit",
+              "bei",
+              "wir",
+              "sie",
+              "der",
+              "die",
+              "das",
+              "ist",
+              "ä",
+              "ö",
+              "ü",
+              "ß",
+            ]
+            const frenchIndicators = [
+              "pour",
+              "avec",
+              "dans",
+              "nous",
+              "vous",
+              "les",
+              "des",
+              "une",
+              "est",
+              "sont",
+              "é",
+              "è",
+              "ê",
+              "ç",
+            ]
+            const italianIndicators = [
+              "per",
+              "con",
+              "che",
+              "sono",
+              "della",
+              "nella",
+              "questo",
+              "questa",
+              "è",
+              "ò",
+              "ù",
+            ]
+
+            const hasGerman = germanIndicators.some(ind =>
+              combinedText.includes(ind)
+            )
+            const hasFrench = frenchIndicators.some(ind =>
+              combinedText.includes(ind)
+            )
+            const hasItalian = italianIndicators.some(ind =>
+              combinedText.includes(ind)
+            )
+
             if (hasGerman && !hasFrench && !hasItalian) sourceLanguage = "de"
-            else if (hasFrench && !hasGerman && !hasItalian) sourceLanguage = "fr"
-            else if (hasItalian && !hasGerman && !hasFrench) sourceLanguage = "it"
-            
+            else if (hasFrench && !hasGerman && !hasItalian)
+              sourceLanguage = "fr"
+            else if (hasItalian && !hasGerman && !hasFrench)
+              sourceLanguage = "it"
+
             // Only translate if target locale is different from detected source
             if (locale !== sourceLanguage) {
-              console.log(`[Jobs API] Translating job ${id} from ${sourceLanguage} to ${locale}...`)
-              
+              console.log(
+                `[Jobs API] Translating job ${id} from ${sourceLanguage} to ${locale}...`
+              )
+
               const titleResult = await translateText(
                 titleText,
                 locale as SupportedLanguage,
@@ -211,7 +263,7 @@ export async function PUT(
     // Get existing job to check ownership
     const {data: existingJob, error: fetchError} = await supabase
       .from("offers")
-      .select("created_by, status")
+      .select("id, status")
       .eq("id", id)
       .eq("type", "job")
       .single()
@@ -225,7 +277,7 @@ export async function PUT(
 
     // Check permissions (owner or moderator+)
     const canEdit =
-      existingJob.created_by === profile.id ||
+      existingJob.id === id ||
       ["supervisor", "admin", "moderator"].includes(profile.role)
 
     if (!canEdit) {
@@ -254,6 +306,7 @@ export async function PUT(
 
     const updateData: OfferUpdate = {
       ...body,
+      description: body.description || undefined,
       updated_at: new Date().toISOString(),
     }
 
