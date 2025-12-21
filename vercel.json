@@ -2,11 +2,11 @@
   "crons": [
     {
       "path": "/api/cron/translate-jobs",
-      "schedule": "*/15 * * * *"
+      "schedule": "0 1 * * *"
     },
     {
       "path": "/api/cron/translate-deals",
-      "schedule": "*/15 * * * *"
+      "schedule": "0 2 * * *"
     }
   ]
 }
