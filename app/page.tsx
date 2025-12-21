@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Search, MapPin, ShoppingBag, TrendingUp, Users, Star, ArrowRight, Loader2 } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
+import { useRouter } from "next/navigation"
 import CountUp from "@/components/count-up"
 import RotatingText from "@/components/rotating-text"
 import { ShimmerButton } from "@/components/magicui/shimmer-button"
@@ -88,10 +89,22 @@ function dedupeJobs(jobs: Job[]): Job[] {
 export default function HomePage() {
   const { t, tr } = useTranslation()
   const locale = useLocale() // Get current locale for backend translations
+  const router = useRouter()
+  const [searchQuery, setSearchQuery] = useState('')
   const [topDeals, setTopDeals] = useState<Deal[]>([])
   const [dealsLoading, setDealsLoading] = useState(true)
   const [topJobs, setTopJobs] = useState<Job[]>([])
   const [jobsLoading, setJobsLoading] = useState(true)
+
+  // Handle search form submission
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (searchQuery.trim()) {
+      router.push(`/jobs?q=${encodeURIComponent(searchQuery.trim())}`)
+    } else {
+      router.push('/jobs')
+    }
+  }
 
   // Real counts from APIs
   const [stats, setStats] = useState({
@@ -236,12 +249,19 @@ export default function HomePage() {
             </p>
 
             {/* Hero Search */}
-            <div className="max-w-2xl mx-auto mb-6 sm:mb-8">
+            <form onSubmit={handleSearch} className="max-w-2xl mx-auto mb-6 sm:mb-8">
               <div className="flex flex-col md:flex-row gap-3 sm:gap-4">
                 <div className="flex-1">
-                  <Input type="search" placeholder={t('home.searchPlaceholder')} className="h-11 sm:h-12 text-base sm:text-lg" />
+                  <Input
+                    type="search"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder={t('home.searchPlaceholder')}
+                    className="h-11 sm:h-12 text-base sm:text-lg"
+                  />
                 </div>
                 <ShimmerButton
+                  type="submit"
                   shimmerColor="#ffffff"
                   background="var(--primary)"
                   className="h-11 sm:h-12 px-6 sm:px-8 w-full md:w-auto text-primary-foreground"
@@ -250,7 +270,7 @@ export default function HomePage() {
                   {t('common.search')}
                 </ShimmerButton>
               </div>
-            </div>
+            </form>
 
             {/* Quick Location Links */}
             <div className="max-w-2xl mx-auto mb-2 sm:mb-4">
