@@ -17,11 +17,12 @@ import { fetchWithCache } from "@/lib/utils/client-cache"
 import { toast } from "@/hooks/use-toast"
 import { useTranslation, useLocale } from "@/contexts/i18n-context"
 import { useAuth } from "@/contexts/auth-context"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 
 
 export default function DealsPage() {
-  const [searchQuery, setSearchQuery] = useState("")
+  const searchParams = useSearchParams()
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || "")
   const [sortBy, setSortBy] = useState("best-deal")
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
@@ -41,6 +42,12 @@ export default function DealsPage() {
   const locale = useLocale() // Get current language for database translations
   const { user } = useAuth()
   const router = useRouter()
+
+  // Update search query when URL parameters change
+  useEffect(() => {
+    const q = searchParams.get('q')
+    if (q) setSearchQuery(q)
+  }, [searchParams])
 
   const handleCategoryChange = (category: string, checked: boolean) => {
     if (checked) {

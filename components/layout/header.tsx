@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Search, Menu, User, Heart, ShoppingBag, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -26,6 +27,27 @@ export function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
   const { user, logout } = useAuth()
   const { t } = useTranslation()
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const [searchQuery, setSearchQuery] = useState("")
+
+  // Update search query from URL when parameters change
+  useEffect(() => {
+    const query = searchParams.get('q') || searchParams.get('query') || ''
+    setSearchQuery(query)
+  }, [searchParams])
+
+  const handleSearch = (e?: React.FormEvent) => {
+    e?.preventDefault()
+    if (!searchQuery.trim()) return
+
+    const target = searchType === 'jobs' ? '/jobs' : '/deals'
+    const params = new URLSearchParams()
+    params.set('q', searchQuery)
+    
+    router.push(`${target}?${params.toString()}`)
+    setIsOpen(false)
+  }
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20)
@@ -113,7 +135,7 @@ export function Header() {
             {/* Desktop Search Bar - Hidden on mobile/tablet */}
             <div className="hidden xl:flex items-center space-x-2 flex-1 max-w-sm mx-6">
               <div className="relative flex-1">
-                <div className="flex rounded-lg overflow-hidden border border-white/10 dark:border-gray-800/30 bg-transparent">
+                <form onSubmit={handleSearch} className="flex rounded-lg overflow-hidden border border-white/10 dark:border-gray-800/30 bg-transparent">
                   <Select value={searchType} onValueChange={setSearchType}>
                     <SelectTrigger className="w-20 border-0 bg-transparent text-foreground">
                       <SelectValue />
@@ -125,13 +147,15 @@ export function Header() {
                   </Select>
                   <Input
                     type="search"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder={`${t('common.search')} ${searchType === 'jobs' ? t('nav.jobs') : t('nav.deals')}...`}
                     className="border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-foreground placeholder:text-muted-foreground"
                   />
-                  <Button size="sm" className="h-8 w-8 m-1 rounded-md" variant="ghost">
+                  <Button type="submit" size="sm" className="h-8 w-8 m-1 rounded-md" variant="ghost">
                     <Search className="h-4 w-4" />
                   </Button>
-                </div>
+                </form>
               </div>
             </div>
 
@@ -232,16 +256,18 @@ export function Header() {
                           <SelectItem value="deals">{t('nav.deals')}</SelectItem>
                         </SelectContent>
                       </Select>
-                      <div className="relative">
+                      <form onSubmit={handleSearch} className="relative">
                         <Input
                           type="search"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
                           placeholder={`${t('common.search')} ${searchType === 'jobs' ? t('nav.jobs') : t('nav.deals')}...`}
                           className="h-10 pr-10 bg-card/90 border-border/60 text-foreground placeholder:text-foreground/60"
                         />
-                        <Button size="sm" className="absolute right-1 top-1 h-8 w-8" variant="ghost">
+                        <Button type="submit" size="sm" className="absolute right-1 top-1 h-8 w-8" variant="ghost">
                           <Search className="h-4 w-4" />
                         </Button>
-                      </div>
+                      </form>
                     </div>
 
                     {/* Mobile Navigation */}
