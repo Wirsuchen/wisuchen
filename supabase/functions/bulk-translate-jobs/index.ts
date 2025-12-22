@@ -5,46 +5,76 @@ const LANGUAGES = ["de", "fr", "it"]
 const BATCH_SIZE = 50
 const LINGVA_BASE_URL = "https://lingva.ml/api/v1"
 
-// Translate text using Lingva API (free, open-source)
+// Helper to add delay
+const delay = (ms: number) => new Promise(r => setTimeout(r, ms))
+
+// Translate text using Lingva API with retry logic
 async function translateText(
   text: string,
   targetLang: string,
-  sourceLang: string = "en"
+  sourceLang: string = "en",
+  retries: number = 3
 ): Promise<string> {
   if (!text || text.trim().length === 0) return text
 
-  try {
-    // Truncate very long text
-    const truncatedText = text.substring(0, 2000)
-    const encodedText = encodeURIComponent(truncatedText)
+  // Truncate very long text
+  const truncatedText = text.substring(0, 1500)
+  const encodedText = encodeURIComponent(truncatedText)
 
-    const response = await fetch(
-      `${LINGVA_BASE_URL}/${sourceLang}/${targetLang}/${encodedText}`
-    )
+  for (let attempt = 0; attempt < retries; attempt++) {
+    try {
+      // Add delay before request (increases with each retry)
+      if (attempt > 0) {
+        await delay(1000 * attempt) // 1s, 2s, 3s backoff
+      }
 
-    if (!response.ok) {
-      console.error(`Lingva API error: ${response.status}`)
+      const response = await fetch(
+        `${LINGVA_BASE_URL}/${sourceLang}/${targetLang}/${encodedText}`
+      )
+
+      if (response.status === 429) {
+        console.log(`Rate limited, waiting ${(attempt + 1) * 2}s...`)
+        await delay(2000 * (attempt + 1))
+        continue
+      }
+
+      if (!response.ok) {
+        console.error(`Lingva API error: ${response.status}`)
+        if (attempt < retries - 1) continue
+        return text
+      }
+
+      const data = await response.json()
+      return data.translation || text
+    } catch (error) {
+      console.error("Translation error:", error)
+      if (attempt < retries - 1) {
+        await delay(1000 * (attempt + 1))
+        continue
+      }
       return text
     }
-
-    const data = await response.json()
-    return data.translation || text
-  } catch (error) {
-    console.error("Translation error:", error)
-    return text
   }
+  return text
 }
 
-// Translate job fields
+// Translate job fields SEQUENTIALLY (not parallel) to avoid rate limits
 async function translateJob(
   title: string,
   description: string,
   lang: string
 ): Promise<{title: string; description: string}> {
-  const [translatedTitle, translatedDesc] = await Promise.all([
-    translateText(title, lang),
-    translateText(description.substring(0, 1500), lang),
-  ])
+  // Translate title first
+  const translatedTitle = await translateText(title, lang)
+
+  // Wait 500ms between title and description
+  await delay(500)
+
+  // Then translate description
+  const translatedDesc = await translateText(
+    description.substring(0, 1000),
+    lang
+  )
 
   return {
     title: translatedTitle,
@@ -195,13 +225,16 @@ Deno.serve(async (req: Request) => {
             translatedCount++
           }
 
-          // Small delay to avoid rate limiting
-          await new Promise(r => setTimeout(r, 300))
+          // Longer delay to avoid rate limiting (1.5 seconds between each translation)
+          await delay(1500)
         } catch (error) {
           console.error(`Translation failed for ${contentId}/${lang}:`, error)
           errorCount++
         }
       }
+
+      // Extra delay between jobs (2 seconds)
+      await delay(2000)
     }
 
     // Get updated stats
