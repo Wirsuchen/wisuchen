@@ -45,7 +45,7 @@ function hashText(text: string): string {
   return hash.toString(36)
 }
 
-export type SupportedLanguage = "en" | "de" | "fr" | "it"
+export type SupportedLanguage = "en" | "de" | "fr" | "it" | "auto"
 
 export interface TranslationResult {
   success: boolean

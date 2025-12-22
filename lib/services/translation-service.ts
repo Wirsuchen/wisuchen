@@ -315,6 +315,7 @@ export async function storeTranslation(
 
 /**
  * Translate fields using Lingva (FREE)
+ * Now supports auto-detection of source language when translating TO English
  */
 async function translateFields(
   fields: TranslationFields,
@@ -324,7 +325,14 @@ async function translateFields(
 
   for (const [key, value] of Object.entries(fields)) {
     if (value && typeof value === "string" && value.trim().length > 0) {
-      const translated = await translateText(value, targetLanguage, "en")
+      // When translating TO English, auto-detect source language
+      // When translating FROM English, use "en" as source
+      const sourceLang = targetLanguage === "en" ? "auto" : "en"
+      const translated = await translateText(
+        value,
+        targetLanguage,
+        sourceLang as any
+      )
       result[key as keyof TranslationFields] = translated.translation || value
     }
   }
@@ -340,11 +348,9 @@ export async function ensureTranslated(
   contentId: string,
   type: ContentType,
   fields: TranslationFields,
-  languages: SupportedLanguage[] = TARGET_LANGUAGES
+  languages: SupportedLanguage[] = ALL_LANGUAGES // Use ALL_LANGUAGES to include English
 ): Promise<void> {
   for (const lang of languages) {
-    if (lang === "en") continue
-
     // Check if translation exists
     const existing = await getStoredTranslation(contentId, lang, type)
     if (existing) continue
@@ -561,6 +567,7 @@ export async function applyTranslations<T extends {id: string}>(
 
 /**
  * Apply translations to items, generating them if missing
+ * Now supports translating TO English (from German/French sources)
  */
 async function translateAndApply<T extends {id: string}>(
   items: T[],
@@ -568,7 +575,7 @@ async function translateAndApply<T extends {id: string}>(
   language: string,
   fields: (keyof T & keyof TranslationFields)[]
 ): Promise<T[]> {
-  if (language === "en" || items.length === 0) {
+  if (items.length === 0) {
     return items
   }
 
@@ -665,7 +672,9 @@ export const translationService = {
   },
 
   async translateJobs(jobs: any[], targetLanguage: string): Promise<any[]> {
-    if (!targetLanguage || targetLanguage === "en") return jobs
+    // Always attempt translation - source content may be in German/French
+    // and need translation to English or any other language
+    if (!targetLanguage) return jobs
     return translateAndApply(jobs, "job", targetLanguage, [
       "title",
       "description",
@@ -673,7 +682,8 @@ export const translationService = {
   },
 
   async translateDeals(deals: any[], targetLanguage: string): Promise<any[]> {
-    if (!targetLanguage || targetLanguage === "en") return deals
+    // Always attempt translation - source content may be in any language
+    if (!targetLanguage) return deals
     return translateAndApply(deals, "deal", targetLanguage, [
       "title",
       "description",

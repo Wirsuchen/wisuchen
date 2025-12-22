@@ -311,9 +311,10 @@ async function handler(request: NextRequest) {
           }
         })
 
-        // Apply translations if language is not English
+        // Apply translations for the requested language
+        // This now works for ALL languages including English (for jobs originally in German/French)
         let translatedJobs = combined
-        if (lang !== "en" && combined.length > 0) {
+        if (combined.length > 0) {
           try {
             // Get content IDs for batch lookup
             const contentIds = combined.map(
@@ -328,9 +329,11 @@ async function handler(request: NextRequest) {
               lang,
               "job" as ContentType
             )
-            console.log(`[Jobs API] Found ${translations.size} translations`)
+            console.log(
+              `[Jobs API] Found ${translations.size} translations for ${lang}`
+            )
 
-            // Find jobs that need translation (not in DB)
+            // Find jobs that need translation (not in DB for this language)
             const jobsNeedingTranslation = combined.filter(job => {
               const contentId = `job-${job.source || "db"}-${job.id}`
               return !translations.has(contentId)
@@ -348,16 +351,20 @@ async function handler(request: NextRequest) {
                   try {
                     const contentId = `job-${job.source || "db"}-${job.id}`
 
+                    // Detect source language and translate to target language
+                    // For English target, we auto-detect source; for others, assume English source
+                    const sourceLang = lang === "en" ? "auto" : "en"
+
                     // Translate title and description
                     const titleResult = await translateText(
                       job.title || "",
                       lang as SupportedLanguage,
-                      "en"
+                      sourceLang as any
                     )
                     const descResult = await translateText(
                       (job.description || "").substring(0, 1000),
                       lang as SupportedLanguage,
-                      "en"
+                      sourceLang as any
                     )
 
                     await storeTranslation(contentId, lang, "job", {
