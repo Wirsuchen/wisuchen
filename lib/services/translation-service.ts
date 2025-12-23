@@ -245,7 +245,8 @@ export async function getStoredTranslationsBatch(
 ): Promise<Map<string, TranslationFields>> {
   const result = new Map<string, TranslationFields>()
 
-  if (contentIds.length === 0 || language === "en") {
+  // Don't skip English - source content may be in German/French and need English translation
+  if (contentIds.length === 0) {
     return result
   }
 
@@ -575,7 +576,8 @@ export async function applyTranslations<T extends {id: string}>(
   language: string,
   fieldMappings: {source: keyof T; target: keyof T}[]
 ): Promise<T[]> {
-  if (language === "en" || items.length === 0) {
+  // Don't skip English - source content may be in German/French and need English translation
+  if (items.length === 0) {
     return items
   }
 
