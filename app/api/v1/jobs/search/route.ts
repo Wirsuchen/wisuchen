@@ -109,7 +109,7 @@ async function handler(req: NextRequest) {
           experienceLevel: validatedParams.experienceLevel,
           limit: validatedParams.limit,
           page: validatedParams.page,
-          locale: validatedParams.locale, // Filter by jobs with translations for this locale
+          locale: validatedParams.locale,
         })
 
         logger.apiResponse("database", "searchJobs", 0, 200)
@@ -183,7 +183,7 @@ async function handler(req: NextRequest) {
           "public, s-maxage=3600, stale-while-revalidate=300"
         )
         return res
-      } catch (dbError) {
+      } catch (dbError: any) {
         console.error("Database search failed, falling back to API:", dbError)
         // Fall through to API aggregation
       }
@@ -235,6 +235,7 @@ async function handler(req: NextRequest) {
             sources: result.sources,
             cached: result.cached,
             fromDatabase: false,
+            dbError: (globalThis as any).__lastDbError || null,
             timestamp: new Date().toISOString(),
           },
         },

@@ -293,38 +293,12 @@ export class JobSyncService {
     experienceLevel?: string
     limit?: number
     page?: number
-    locale?: string // Filter to only jobs with translations for this language
+    locale?: string // Note: locale filtering disabled due to Supabase URL length limits
   }) {
-    // If locale is specified, first get job IDs that have translations
-    let translatedJobIds: string[] | null = null
-
-    if (params.locale) {
-      const {data: translations} = await this.supabase
-        .from("translations")
-        .select("content_id")
-        .eq("type", "job")
-        .eq("language", params.locale)
-
-      if (translations && translations.length > 0) {
-        // Extract job IDs from content_id formats:
-        // - job-{uuid} (simple format)
-        // - job-{source}-{uuid} (e.g., job-adzuna-uuid)
-        // - job-{source}-{subsource}-{uuid} (e.g., job-rapidapi-freelancer-uuid)
-        // UUID format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-        const uuidRegex =
-          /([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})$/i
-
-        translatedJobIds = translations
-          .map(t => {
-            const match = t.content_id.match(uuidRegex)
-            return match ? match[1] : null
-          })
-          .filter((id): id is string => id !== null)
-
-        // Remove duplicates
-        translatedJobIds = [...new Set(translatedJobIds)]
-      }
-    }
+    // Note: We don't filter by locale here anymore because passing 700+ UUIDs
+    // to .in() causes "Bad Request" errors (URL too long).
+    // Instead, we fetch all jobs and the translation service applies translations
+    // where available, returning original content otherwise.
 
     let query = this.supabase
       .from("offers")
@@ -332,21 +306,6 @@ export class JobSyncService {
       .eq("type", "job")
       .eq("status", "active")
       .order("published_at", {ascending: false})
-
-    // Filter by translated job IDs if locale was specified
-    if (translatedJobIds !== null) {
-      if (translatedJobIds.length === 0) {
-        // No translations available for this locale, return empty
-        return {
-          jobs: [],
-          total: 0,
-          page: params.page || 1,
-          limit: params.limit || 20,
-          totalPages: 0,
-        }
-      }
-      query = query.in("id", translatedJobIds)
-    }
 
     if (params.query) {
       query = query.or(
@@ -375,8 +334,9 @@ export class JobSyncService {
 
     const {data, error, count} = await query
 
+    console.log(`[JobSync DEBUG] Query returned ${data?.length || 0} jobs, total count: ${count}`)
     if (error) {
-      console.error("Error searching jobs:", error)
+      console.error("[JobSync DEBUG] Error searching jobs:", error)
       throw error
     }
 
