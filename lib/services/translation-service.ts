@@ -520,6 +520,52 @@ export async function translateBatchWithGemini(
 }
 
 /**
+ * Fast path: Apply stored translations only (no API calls)
+ * Used for pagination where jobs are already filtered to those with translations
+ */
+async function applyStoredTranslationsOnly<T extends {id: string}>(
+  items: T[],
+  type: ContentType,
+  language: string,
+  fields: (keyof T & keyof TranslationFields)[]
+): Promise<T[]> {
+  if (items.length === 0) {
+    return items
+  }
+
+  // Build content IDs
+  const contentIds = items.map(item => {
+    const source = (item as any).source || "db"
+    return `${type}-${source}-${item.id}`
+  })
+
+  // Single batch query to get all translations
+  const storedTranslations = await getStoredTranslationsBatch(
+    contentIds,
+    language,
+    type
+  )
+
+  // Apply translations, falling back to original content
+  return items.map((item, index) => {
+    const contentId = contentIds[index]
+    const translation = storedTranslations.get(contentId)
+
+    if (!translation) return item
+
+    const newItem = {...item}
+    fields.forEach(field => {
+      const translatedValue = translation[field]
+      if (translatedValue) {
+        ;(newItem as any)[field] = translatedValue
+      }
+    })
+
+    return newItem
+  })
+}
+
+/**
  * Apply stored translations to a list of items
  * Falls back to original content if translation missing
  */
@@ -674,8 +720,12 @@ export const translationService = {
   async translateJobs(jobs: any[], targetLanguage: string): Promise<any[]> {
     // Always attempt translation - source content may be in German/French
     // and need translation to English or any other language
-    if (!targetLanguage) return jobs
-    return translateAndApply(jobs, "job", targetLanguage, [
+    if (!targetLanguage || jobs.length === 0) return jobs
+
+    // Use fast path: only apply stored translations, don't generate new ones
+    // This is much faster for pagination since jobs are already filtered to
+    // only those with translations
+    return applyStoredTranslationsOnly(jobs, "job", targetLanguage, [
       "title",
       "description",
     ])
@@ -683,8 +733,10 @@ export const translationService = {
 
   async translateDeals(deals: any[], targetLanguage: string): Promise<any[]> {
     // Always attempt translation - source content may be in any language
-    if (!targetLanguage) return deals
-    return translateAndApply(deals, "deal", targetLanguage, [
+    if (!targetLanguage || deals.length === 0) return deals
+
+    // Use fast path: only apply stored translations, don't generate new ones
+    return applyStoredTranslationsOnly(deals, "deal", targetLanguage, [
       "title",
       "description",
     ])

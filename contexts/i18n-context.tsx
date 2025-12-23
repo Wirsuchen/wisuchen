@@ -20,45 +20,60 @@ interface I18nProviderProps {
 // Get locale from localStorage or cookie
 function getStoredLocale(): Locale {
   if (typeof window === 'undefined') return defaultLocale
-  
+
   // Try localStorage first
   const stored = localStorage.getItem('preferredLocale')
   if (stored && isValidLocale(stored)) {
     return stored as Locale
   }
-  
+
   // Try cookie
   if (typeof document !== 'undefined') {
-  const cookieMatch = document.cookie.match(/NEXT_LOCALE=([^;]+)/)
-  if (cookieMatch && isValidLocale(cookieMatch[1])) {
-    return cookieMatch[1] as Locale
+    const cookieMatch = document.cookie.match(/NEXT_LOCALE=([^;]+)/)
+    if (cookieMatch && isValidLocale(cookieMatch[1])) {
+      return cookieMatch[1] as Locale
     }
   }
-  
+
   return defaultLocale
 }
 
 export function I18nProvider({ children }: I18nProviderProps) {
   const [locale, setLocale] = useState<Locale>(defaultLocale)
-  
+
   useEffect(() => {
     // Get stored locale on mount
     const storedLocale = getStoredLocale()
+    console.log('🌐 [I18nProvider] Mounting, stored locale:', storedLocale)
     setLocale(storedLocale)
   }, [])
 
+  // Debug: Log whenever locale changes
+  useEffect(() => {
+    console.log('🌐 [I18nProvider] Locale state changed to:', locale)
+  }, [locale])
+
   const setLocaleHandler = (newLocale: Locale) => {
+    console.log('🌐 [I18nProvider] setLocale called with:', newLocale)
     setLocale(newLocale)
     if (typeof window !== 'undefined') {
       localStorage.setItem('preferredLocale', newLocale)
       document.cookie = `NEXT_LOCALE=${newLocale}; path=/; max-age=31536000`
+      console.log('🌐 [I18nProvider] Saved to localStorage and cookie:', newLocale)
     }
   }
 
   const value: I18nContextType = {
     locale,
     setLocale: setLocaleHandler,
-    t: (key: string, fallback?: string) => getTranslation(locale, key, fallback),
+    t: (key: string, fallback?: string) => {
+      const result = getTranslation(locale, key, fallback)
+      // Only log for specific keys to avoid spam
+      if (key.includes('heroTitle') || key.includes('tagline')) {
+        console.log(`🌐 [t] locale=${locale}, key=${key}, result=${result.substring(0, 50)}...`)
+      }
+      return result
+    },
     tr: (key: string, variables?: Record<string, string | number>) => tr(locale, key, variables),
   }
 
@@ -71,7 +86,7 @@ export function useI18n() {
     // Fallback if provider is missing
     return {
       locale: defaultLocale,
-      setLocale: () => {},
+      setLocale: () => { },
       t: (key: string, fallback?: string) => getTranslation(defaultLocale, key, fallback),
       tr: (key: string, variables?: Record<string, string | number>) => tr(defaultLocale, key, variables),
     }

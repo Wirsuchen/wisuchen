@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useI18n } from '@/contexts/i18n-context'
-import { Locale, locales, localeNames, localeFlags } from '@/i18n/config'
+import { Locale, locales, localeNames, localeFlagUrls } from '@/i18n/config'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,6 +11,21 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
 import { Globe } from 'lucide-react'
+import Image from 'next/image'
+
+// Flag component that uses images (works on all platforms including Windows)
+function FlagIcon({ locale, size = 16 }: { locale: Locale; size?: number }) {
+  return (
+    <Image
+      src={localeFlagUrls[locale]}
+      alt={localeNames[locale]}
+      width={size}
+      height={Math.round(size * 0.75)}
+      className="inline-block rounded-sm object-cover"
+      unoptimized // Use CDN directly
+    />
+  )
+}
 
 interface LanguageSwitcherProps {
   variant?: 'default' | 'compact' | 'icon-only'
@@ -53,7 +68,7 @@ export function LanguageSwitcher({ variant = 'default', className = '' }: Langua
               onClick={() => handleLocaleChange(loc)}
               className={`cursor-pointer ${locale === loc ? 'bg-accent' : ''}`}
             >
-              <span className="mr-2">{localeFlags[loc]}</span>
+              <span className="mr-2"><FlagIcon locale={loc} /></span>
               <span>{localeNames[loc]}</span>
             </DropdownMenuItem>
           ))}
@@ -71,7 +86,7 @@ export function LanguageSwitcher({ variant = 'default', className = '' }: Langua
             size="sm"
             className={`h-8 px-2 text-foreground hover:bg-accent hover:text-accent-foreground ${className}`}
           >
-            <span className="mr-1">{localeFlags[locale]}</span>
+            <span className="mr-1.5"><FlagIcon locale={locale} size={18} /></span>
             <span className="text-xs uppercase">{locale}</span>
           </Button>
         </DropdownMenuTrigger>
@@ -82,7 +97,7 @@ export function LanguageSwitcher({ variant = 'default', className = '' }: Langua
               onClick={() => handleLocaleChange(loc)}
               className={`cursor-pointer ${locale === loc ? 'bg-accent' : ''}`}
             >
-              <span className="mr-2">{localeFlags[loc]}</span>
+              <span className="mr-2"><FlagIcon locale={loc} /></span>
               <span>{localeNames[loc]}</span>
             </DropdownMenuItem>
           ))}
@@ -100,7 +115,7 @@ export function LanguageSwitcher({ variant = 'default', className = '' }: Langua
           className={`h-8 px-3 text-foreground hover:bg-accent hover:text-accent-foreground ${className}`}
         >
           <Globe className="h-4 w-4 mr-2" />
-          <span className="mr-1">{localeFlags[locale]}</span>
+          <span className="mr-1.5"><FlagIcon locale={locale} size={18} /></span>
           <span className="hidden lg:inline">{localeNames[locale]}</span>
         </Button>
       </DropdownMenuTrigger>
@@ -111,7 +126,7 @@ export function LanguageSwitcher({ variant = 'default', className = '' }: Langua
             onClick={() => handleLocaleChange(loc)}
             className={`cursor-pointer ${locale === loc ? 'bg-accent' : ''}`}
           >
-            <span className="mr-2">{localeFlags[loc]}</span>
+            <span className="mr-2"><FlagIcon locale={loc} /></span>
             <span>{localeNames[loc]}</span>
           </DropdownMenuItem>
         ))}
