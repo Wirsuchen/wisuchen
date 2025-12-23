@@ -81,6 +81,10 @@ const searchJobsSchema = z.object({
     .optional()
     .transform(v => v === "true"),
   locale: z.enum(["en", "de", "fr", "it"]).optional().default("en"),
+  requireFullTranslation: z
+    .enum(["true", "false"])
+    .optional()
+    .transform(v => v === "true"),
 })
 
 async function handler(req: NextRequest) {
@@ -110,6 +114,7 @@ async function handler(req: NextRequest) {
           limit: validatedParams.limit,
           page: validatedParams.page,
           locale: validatedParams.locale,
+          requireFullTranslation: validatedParams.requireFullTranslation,
         })
 
         logger.apiResponse("database", "searchJobs", 0, 200)
@@ -235,7 +240,6 @@ async function handler(req: NextRequest) {
             sources: result.sources,
             cached: result.cached,
             fromDatabase: false,
-            dbError: (globalThis as any).__lastDbError || null,
             timestamp: new Date().toISOString(),
           },
         },

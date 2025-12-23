@@ -140,7 +140,8 @@ export default function JobsPage() {
           limit: 20,
           page: 1,
           useCache: true,
-          locale: locale
+          locale: locale,
+          requireFullTranslation: true
         })
       } else {
         loadJobs()
@@ -168,7 +169,8 @@ export default function JobsPage() {
         limit: 20,
         page: 1,
         useCache: true,
-        locale: locale
+        locale: locale,
+        requireFullTranslation: true
       })
     }
   }, [urlLocation, urlQuery]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -225,7 +227,8 @@ export default function JobsPage() {
       limit: 20, // 20 jobs per page
       page: 1,
       useCache: true,
-      locale: locale // Pass language for database translations
+      locale: locale, // Pass language for database translations
+      requireFullTranslation: true // Only show fully translated jobs
     })
   }
 
@@ -239,7 +242,8 @@ export default function JobsPage() {
       limit: 20, // 20 jobs per page
       page: 1,
       useCache: false, // Fresh results for searches
-      locale: locale // Pass language for database translations
+      locale: locale, // Pass language for database translations
+      requireFullTranslation: true // Only show fully translated jobs
     })
   }
 
@@ -250,7 +254,8 @@ export default function JobsPage() {
       employmentType: employmentType || undefined,
       limit: 20,
       page: newPage,
-      locale: locale
+      locale: locale,
+      requireFullTranslation: true
     })
     // Scroll to top of results
     window.scrollTo({ top: 0, behavior: 'smooth' })

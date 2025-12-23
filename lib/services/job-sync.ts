@@ -293,12 +293,60 @@ export class JobSyncService {
     experienceLevel?: string
     limit?: number
     page?: number
-    locale?: string // Note: locale filtering disabled due to Supabase URL length limits
+    locale?: string
+    requireFullTranslation?: boolean // Only return jobs with all 4 language translations
   }) {
-    // Note: We don't filter by locale here anymore because passing 700+ UUIDs
-    // to .in() causes "Bad Request" errors (URL too long).
-    // Instead, we fetch all jobs and the translation service applies translations
-    // where available, returning original content otherwise.
+    // If requireFullTranslation is true, first find jobs with all 4 languages
+    let fullyTranslatedJobIds: string[] | null = null
+
+    if (params.requireFullTranslation) {
+      // Use RPC or raw query to find jobs with translations in all 4 languages
+      const {data: translationData, error: transError} = await this.supabase
+        .rpc("get_fully_translated_job_ids")
+        .select("job_id")
+
+      if (transError) {
+        // Fallback: If RPC doesn't exist, use a simpler approach
+        // Get jobs that appear in translations for each language
+        const languages = ["de", "en", "fr", "it"]
+        const jobIdSets: Set<string>[] = []
+
+        for (const lang of languages) {
+          const {data: langTranslations} = await this.supabase
+            .from("translations")
+            .select("content_id")
+            .eq("type", "job")
+            .eq("language", lang)
+
+          if (langTranslations) {
+            const uuidRegex =
+              /([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})$/i
+            const ids = new Set(
+              langTranslations
+                .map(t => {
+                  const match = t.content_id.match(uuidRegex)
+                  return match ? match[1] : null
+                })
+                .filter((id): id is string => id !== null)
+            )
+            jobIdSets.push(ids)
+          }
+        }
+
+        // Intersection of all sets = jobs with all 4 languages
+        if (jobIdSets.length === 4) {
+          const intersection = [...jobIdSets[0]].filter(
+            id =>
+              jobIdSets[1].has(id) &&
+              jobIdSets[2].has(id) &&
+              jobIdSets[3].has(id)
+          )
+          fullyTranslatedJobIds = intersection
+        }
+      } else if (translationData) {
+        fullyTranslatedJobIds = translationData.map((r: any) => r.job_id)
+      }
+    }
 
     let query = this.supabase
       .from("offers")
@@ -306,6 +354,24 @@ export class JobSyncService {
       .eq("type", "job")
       .eq("status", "active")
       .order("published_at", {ascending: false})
+
+    // Filter by fully translated job IDs if requested
+    if (fullyTranslatedJobIds !== null) {
+      if (fullyTranslatedJobIds.length === 0) {
+        return {
+          jobs: [],
+          total: 0,
+          page: params.page || 1,
+          limit: params.limit || 20,
+          totalPages: 0,
+        }
+      }
+      // Only use .in() if we have a reasonable number of IDs (< 100)
+      // Otherwise the URL becomes too long
+      if (fullyTranslatedJobIds.length <= 100) {
+        query = query.in("id", fullyTranslatedJobIds)
+      }
+    }
 
     if (params.query) {
       query = query.or(
@@ -334,9 +400,8 @@ export class JobSyncService {
 
     const {data, error, count} = await query
 
-    console.log(`[JobSync DEBUG] Query returned ${data?.length || 0} jobs, total count: ${count}`)
     if (error) {
-      console.error("[JobSync DEBUG] Error searching jobs:", error)
+      console.error("Error searching jobs:", error)
       throw error
     }
 

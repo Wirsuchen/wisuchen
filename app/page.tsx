@@ -147,10 +147,11 @@ export default function HomePage() {
       setJobsLoading(true)
       // Use cache with 1 hour TTL, include locale for backend translations
       // Backend will return translated content based on locale parameter
+      // Only show jobs that have all 4 language translations
       const data = await fetchWithCache<any>(
-        `/api/v1/jobs/search?limit=9&useCache=true&countries=de,at,ch&locale=${locale}&useDatabase=true`,
+        `/api/v1/jobs/search?limit=9&useCache=true&countries=de,at,ch&locale=${locale}&useDatabase=true&requireFullTranslation=true`,
         undefined,
-        { limit: 9, countries: ['de', 'at', 'ch'], locale },
+        { limit: 9, countries: ['de', 'at', 'ch'], locale, requireFullTranslation: true },
         60 * 60 * 1000
       )
       const jobs: Job[] = data?.data?.jobs || []
