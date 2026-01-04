@@ -11,6 +11,11 @@ import {
   translateToAllLanguages,
   MultiLanguageTranslation,
 } from "@/lib/services/ai/gemini"
+import {
+  translateBatch as googleTranslateBatch,
+  translateText as googleTranslateText,
+  SupportedLanguage as GoogleSupportedLanguage,
+} from "@/lib/services/google-translate"
 
 export type SupportedLanguage = "en" | "de" | "fr" | "it"
 export type ContentType = "job" | "deal" | "blog"
@@ -724,23 +729,202 @@ export const translationService = {
     // and need translation to English or any other language
     if (!targetLanguage || jobs.length === 0) return jobs
 
-    // Use fast path: only apply stored translations, don't generate new ones
-    // This is much faster for pagination since jobs are already filtered to
-    // only those with translations
-    return applyStoredTranslationsOnly(jobs, "job", targetLanguage, [
-      "title",
-      "description",
-    ])
+    // First try: Apply stored translations from database
+    const translatedJobs = await applyStoredTranslationsWithGoogleFallback(
+      jobs,
+      "job",
+      targetLanguage as SupportedLanguage,
+      ["title", "description"]
+    )
+    return translatedJobs
   },
 
   async translateDeals(deals: any[], targetLanguage: string): Promise<any[]> {
     // Always attempt translation - source content may be in any language
     if (!targetLanguage || deals.length === 0) return deals
 
-    // Use fast path: only apply stored translations, don't generate new ones
-    return applyStoredTranslationsOnly(deals, "deal", targetLanguage, [
-      "title",
-      "description",
-    ])
+    // First try: Apply stored translations from database with Google fallback
+    return applyStoredTranslationsWithGoogleFallback(
+      deals,
+      "deal",
+      targetLanguage as SupportedLanguage,
+      ["title", "description"]
+    )
   },
+}
+
+/**
+ * Apply stored translations with Google Translate API fallback
+ * 1. First checks DB for stored translations
+ * 2. For missing translations, uses Google Translate API in real-time
+ * 3. Stores new translations in DB for future use
+ */
+async function applyStoredTranslationsWithGoogleFallback<
+  T extends {id: string}
+>(
+  items: T[],
+  type: ContentType,
+  language: SupportedLanguage,
+  fields: (keyof T & keyof TranslationFields)[]
+): Promise<T[]> {
+  if (items.length === 0) {
+    return items
+  }
+
+  // Build content IDs
+  const contentIds = items.map(item => {
+    const source = (item as any).source || "db"
+    return `${type}-${source}-${item.id}`
+  })
+
+  // 1. Get existing translations from DB
+  const storedTranslations = await getStoredTranslationsBatch(
+    contentIds,
+    language,
+    type
+  )
+
+  // 2. Identify items missing translations
+  const itemsNeedingTranslation: {
+    index: number
+    contentId: string
+    item: T
+    textsToTranslate: string[]
+    fieldNames: string[]
+  }[] = []
+
+  items.forEach((item, index) => {
+    const contentId = contentIds[index]
+    const stored = storedTranslations.get(contentId)
+
+    // Check if translation exists and has content
+    if (!stored || !hasValidTranslation(stored, fields)) {
+      const textsToTranslate: string[] = []
+      const fieldNames: string[] = []
+
+      fields.forEach(field => {
+        const value = (item as any)[field]
+        if (typeof value === "string" && value.trim().length > 0) {
+          textsToTranslate.push(value)
+          fieldNames.push(field as string)
+        }
+      })
+
+      if (textsToTranslate.length > 0) {
+        itemsNeedingTranslation.push({
+          index,
+          contentId,
+          item,
+          textsToTranslate,
+          fieldNames,
+        })
+      }
+    }
+  })
+
+  // 3. If items need translation, use Google Translate API
+  if (itemsNeedingTranslation.length > 0) {
+    console.log(
+      `[Translation] 🔄 ${itemsNeedingTranslation.length} items need Google Translate for ${language}`
+    )
+
+    // Collect all texts to translate in one batch
+    const allTexts: string[] = []
+    const textMapping: {itemIdx: number; fieldIdx: number}[] = []
+
+    itemsNeedingTranslation.forEach((item, itemIdx) => {
+      item.textsToTranslate.forEach((text, fieldIdx) => {
+        allTexts.push(text)
+        textMapping.push({itemIdx, fieldIdx})
+      })
+    })
+
+    // Batch translate with Google
+    try {
+      const googleResult = await googleTranslateBatch(
+        allTexts,
+        language as GoogleSupportedLanguage
+      )
+
+      if (googleResult.success && googleResult.translations) {
+        // Map translations back to items
+        const translatedByItem = new Map<number, TranslationFields>()
+
+        googleResult.translations.forEach((translatedText, i) => {
+          const {itemIdx, fieldIdx} = textMapping[i]
+          const itemInfo = itemsNeedingTranslation[itemIdx]
+          const fieldName = itemInfo.fieldNames[fieldIdx]
+
+          if (!translatedByItem.has(itemIdx)) {
+            translatedByItem.set(itemIdx, {})
+          }
+          translatedByItem.get(itemIdx)![fieldName as keyof TranslationFields] =
+            translatedText
+        })
+
+        // Store new translations in DB and update the map
+        for (const [itemIdx, translated] of translatedByItem) {
+          const itemInfo = itemsNeedingTranslation[itemIdx]
+
+          // Store in DB for future use (fire and forget)
+          storeTranslation(
+            itemInfo.contentId,
+            language,
+            type,
+            translated
+          ).catch(err => {
+            console.error(
+              `[Translation] Failed to store translation for ${itemInfo.contentId}:`,
+              err
+            )
+          })
+
+          // Update the stored translations map
+          storedTranslations.set(itemInfo.contentId, translated)
+        }
+
+        console.log(
+          `[Translation] ✓ Google Translate completed for ${itemsNeedingTranslation.length} items`
+        )
+      } else {
+        console.error(
+          `[Translation] ✗ Google Translate failed:`,
+          googleResult.error
+        )
+      }
+    } catch (error) {
+      console.error(`[Translation] ✗ Google Translate error:`, error)
+    }
+  }
+
+  // 4. Apply all translations (DB + newly translated)
+  return items.map((item, index) => {
+    const contentId = contentIds[index]
+    const translation = storedTranslations.get(contentId)
+
+    if (!translation) return item
+
+    const newItem = {...item}
+    fields.forEach(field => {
+      const translatedValue = translation[field]
+      if (translatedValue) {
+        ;(newItem as any)[field] = translatedValue
+      }
+    })
+
+    return newItem
+  })
+}
+
+/**
+ * Check if a translation has valid content for the specified fields
+ */
+function hasValidTranslation(
+  translation: TranslationFields,
+  fields: (string | symbol | number)[]
+): boolean {
+  return fields.some(field => {
+    const value = translation[field as keyof TranslationFields]
+    return typeof value === "string" && value.trim().length > 0
+  })
 }
