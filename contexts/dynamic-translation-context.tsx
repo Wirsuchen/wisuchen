@@ -14,22 +14,42 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react'
 import { useI18n } from '@/contexts/i18n-context'
 
-// Simple language detection based on common words
+// Simple language detection based on common words - improved patterns
 function detectLanguage(text: string): 'en' | 'de' | 'fr' | 'it' {
     if (!text || text.length < 10) return 'en'
+
+    // Quick check for very strong German indicators (job gender notation)
+    if (/\(m\/w\/d\)|\(w\/m\/d\)|\(m\/w\/x\)|\(all[e]?\s*geschlechter\)/i.test(text)) {
+        return 'de'
+    }
+
     const lower = text.toLowerCase()
 
-    const germanWords = ['und', 'für', 'mit', 'bei', 'wir', 'sie', 'der', 'die', 'das', 'ist', 'werden', 'haben']
-    const frenchWords = ['pour', 'avec', 'dans', 'nous', 'vous', 'les', 'des', 'une', 'sont', 'cette']
-    const italianWords = ['per', 'con', 'che', 'sono', 'della', 'nella', 'questo', 'questa']
+    // Enhanced German patterns
+    const germanWords = ['und', 'für', 'mit', 'bei', 'wir', 'sie', 'der', 'die', 'das', 'ist', 'werden', 'haben', 'zur', 'zum', 'einen', 'einem', 'unseres', 'unsere', 'suchen', 'arbeiten', 'wichtigsten', 'arbeitsmarkt', 'deutschland', 'bewerber', 'unternehmen', 'wissen', 'digitaler', 'flexibler']
+    const frenchWords = ['pour', 'avec', 'dans', 'nous', 'vous', 'les', 'des', 'une', 'sont', 'cette', 'sur', 'par', 'qui', 'que', 'aux', 'ses', 'nos', 'vos']
+    const italianWords = ['per', 'con', 'che', 'sono', 'della', 'nella', 'questo', 'questa', 'gli', 'del', 'dei', 'delle', 'alla', 'allo']
 
-    const deCount = germanWords.filter(w => lower.includes(` ${w} `) || lower.startsWith(`${w} `) || lower.endsWith(` ${w}`)).length
-    const frCount = frenchWords.filter(w => lower.includes(` ${w} `) || lower.startsWith(`${w} `) || lower.endsWith(` ${w}`)).length
-    const itCount = italianWords.filter(w => lower.includes(` ${w} `) || lower.startsWith(`${w} `) || lower.endsWith(` ${w}`)).length
+    // Count word matches
+    const deCount = germanWords.filter(w => lower.includes(` ${w} `) || lower.startsWith(`${w} `) || lower.endsWith(` ${w}`) || lower === w).length
+    const frCount = frenchWords.filter(w => lower.includes(` ${w} `) || lower.startsWith(`${w} `) || lower.endsWith(` ${w}`) || lower === w).length
+    const itCount = italianWords.filter(w => lower.includes(` ${w} `) || lower.startsWith(`${w} `) || lower.endsWith(` ${w}`) || lower === w).length
 
-    if (deCount >= 2) return 'de'
-    if (frCount >= 2) return 'fr'
-    if (itCount >= 2) return 'it'
+    // Check for German special characters (strong indicator)
+    const germanChars = (lower.match(/[äöüß]/g) || []).length
+    const frenchChars = (lower.match(/[éèêëàâçîïôùûœ]/g) || []).length
+    const italianChars = (lower.match(/[àèéìíòóùú]/g) || []).length
+
+    // Add character scores (weighted more heavily)
+    const deScore = deCount + germanChars * 2
+    const frScore = frCount + frenchChars * 2
+    const itScore = itCount + italianChars * 2
+
+    // Find highest score
+    if (deScore >= 2 && deScore >= frScore && deScore >= itScore) return 'de'
+    if (frScore >= 2 && frScore >= deScore && frScore >= itScore) return 'fr'
+    if (itScore >= 2 && itScore >= deScore && itScore >= frScore) return 'it'
+
     return 'en'
 }
 
@@ -213,57 +233,115 @@ export function DynamicTranslationProvider({ children }: DynamicTranslationProvi
         isTranslatingRef.current = true
         setIsTranslating(true)
 
-        const allTexts: { contentId: string; field: string; text: string }[] = []
+        // Group items by content type for proper API calls with DB storage
+        const blogItems = items.filter(item => item.type === 'blog')
+        const jobItems = items.filter(item => item.type === 'job')
+        const dealItems = items.filter(item => item.type === 'deal')
 
-        items.forEach(item => {
-            Object.entries(item.fields).forEach(([field, text]) => {
-                if (text && text.trim()) {
-                    allTexts.push({ contentId: item.id, field, text })
-                }
-            })
-        })
+        setProgress({ current: 0, total: items.length })
 
-        setProgress({ current: 0, total: allTexts.length })
-
-        if (allTexts.length === 0) {
-            isTranslatingRef.current = false
-            setIsTranslating(false)
-            return
-        }
-
-        const batchSize = 20
         const newTranslations: TranslatedContent = {}
+        let completed = 0
 
-        for (let i = 0; i < allTexts.length; i += batchSize) {
-            const batch = allTexts.slice(i, i + batchSize)
-            const textsToTranslate = batch.map(item => item.text)
+        // Helper function to translate and store a single content item
+        const translateContentItem = async (item: ContentItem) => {
+            const detectedLang = detectLanguage(Object.values(item.fields).join(' '))
+
+            // Skip if source and target are the same
+            if (detectedLang === targetLang) {
+                return null
+            }
+
+            // Check cache first
+            const cachedTitle = getCachedTranslation(item.fields.title || '', targetLang)
+            const cachedExcerpt = getCachedTranslation(item.fields.excerpt || item.fields.description || '', targetLang)
+
+            if (cachedTitle && cachedExcerpt) {
+                return {
+                    id: item.id,
+                    title: cachedTitle,
+                    excerpt: cachedExcerpt,
+                    description: cachedExcerpt
+                }
+            }
 
             try {
-                const translations = await translateTexts(textsToTranslate, targetLang)
-
-                batch.forEach((item, index) => {
-                    if (!newTranslations[item.contentId]) {
-                        newTranslations[item.contentId] = {}
-                    }
-                    newTranslations[item.contentId][item.field] = translations[index] || item.text
+                const response = await fetch('/api/translate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contentType: item.type,
+                        title: item.fields.title || '',
+                        description: item.fields.excerpt || item.fields.description || '',
+                        toLanguage: targetLang,
+                        fromLanguage: detectedLang,
+                        contentId: item.id, // This triggers DB storage
+                    }),
                 })
 
-                setProgress({ current: Math.min(i + batchSize, allTexts.length), total: allTexts.length })
+                if (response.ok) {
+                    const data = await response.json()
+                    // Cache the translations
+                    if (data.title) cacheTranslation(item.fields.title || '', targetLang, data.title)
+                    if (data.description) cacheTranslation(item.fields.excerpt || item.fields.description || '', targetLang, data.description)
+
+                    // Log database storage status
+                    if (data.stored) {
+                        console.log(`[Translation] ✅ Saved to database: ${item.id} (${detectedLang} → ${targetLang})`)
+                    } else {
+                        console.log(`[Translation] 📝 Translated: ${item.id} (${detectedLang} → ${targetLang}) - cached locally`)
+                    }
+
+                    return {
+                        id: item.id,
+                        title: data.title || item.fields.title,
+                        excerpt: data.description || item.fields.excerpt,
+                        description: data.description || item.fields.description,
+                        stored: data.stored
+                    }
+                }
             } catch (error) {
-                console.error('Batch translation error:', error)
-                batch.forEach(item => {
-                    if (!newTranslations[item.contentId]) {
-                        newTranslations[item.contentId] = {}
-                    }
-                    newTranslations[item.contentId][item.field] = item.text
-                })
+                console.error(`Translation error for ${item.id}:`, error)
             }
+            return null
+        }
+
+        // Process items in batches of 5 to avoid overwhelming the API
+        const allItems = [...blogItems, ...jobItems, ...dealItems]
+        const batchSize = 5
+        let storedCount = 0
+        let translatedCount = 0
+
+        for (let i = 0; i < allItems.length; i += batchSize) {
+            const batch = allItems.slice(i, i + batchSize)
+            const results = await Promise.all(batch.map(translateContentItem))
+
+            results.forEach((result, idx) => {
+                const item = batch[idx]
+                if (result) {
+                    newTranslations[item.id] = {
+                        title: result.title,
+                        excerpt: result.excerpt || result.description,
+                        description: result.description || result.excerpt
+                    }
+                    translatedCount++
+                    if (result.stored) storedCount++
+                }
+            })
+
+            completed += batch.length
+            setProgress({ current: completed, total: allItems.length })
+        }
+
+        // Log summary
+        if (translatedCount > 0) {
+            console.log(`[Translation] 🎉 Complete: ${translatedCount} items translated to ${targetLang}, ${storedCount} saved to database`)
         }
 
         setTranslatedContent(newTranslations)
         isTranslatingRef.current = false
         setIsTranslating(false)
-    }, [translateTexts])
+    }, [getCachedTranslation, cacheTranslation])
 
     // Auto-translate when locale changes (debounced)
     useEffect(() => {
@@ -301,8 +379,9 @@ export function DynamicTranslationProvider({ children }: DynamicTranslationProvi
             }
         })
 
-        // Only translate new items if we're not in English and not already translating
-        if (hasNewItems && lastTranslatedLocaleRef.current !== 'en' && !isTranslatingRef.current) {
+        // Translate new items if we're not already translating
+        // Also translate when in English if content might be in another language
+        if (hasNewItems && !isTranslatingRef.current) {
             // Use a small delay to batch multiple registrations
             if (translationTimeoutRef.current) {
                 clearTimeout(translationTimeoutRef.current)
@@ -328,11 +407,13 @@ export function DynamicTranslationProvider({ children }: DynamicTranslationProvi
 
     // Get translated content
     const getTranslated = useCallback((id: string, field: string, original: string): string => {
-        if (locale === 'en') {
-            return original
+        // Check if we have a translation for this content
+        const translation = translatedContent[id]?.[field]
+        if (translation) {
+            return translation
         }
-        return translatedContent[id]?.[field] || original
-    }, [locale, translatedContent])
+        return original
+    }, [translatedContent])
 
     // Force re-translate all content
     const retranslateAll = useCallback(async () => {
