@@ -315,6 +315,25 @@ export function useAutoTranslateContent() {
         return {...job, wasTranslated: false}
       }
 
+      // Check local cache first to avoid API call
+      const cache = getTranslationCache()
+      const titleKey = getCacheKey(job.title, locale)
+      const descKey = getCacheKey(job.description, locale)
+      
+      const cachedTitle = cache[titleKey]?.translation
+      const cachedDesc = cache[descKey]?.translation
+      
+      // If we have cached versions for parts that need translation
+      if ((!titleNeedsTranslation || cachedTitle) && (!descNeedsTranslation || cachedDesc)) {
+        console.log(`[AutoTranslate] Cache hit for job: "${job.title.substring(0, 30)}..."`)
+        return {
+          ...job,
+          title: titleNeedsTranslation ? cachedTitle! : job.title,
+          description: descNeedsTranslation ? cachedDesc! : job.description,
+          wasTranslated: true
+        }
+      }
+
       // Build content ID for database storage
       const contentId =
         job.id && job.source ? `job-${job.source}-${job.id}` : undefined
@@ -348,6 +367,7 @@ export function useAutoTranslateContent() {
                 data.description
               )
             }
+            console.log(`[AutoTranslate] Cached translation for job: "${job.title.substring(0, 30)}..."`)
 
             return {
               ...job,
@@ -401,31 +421,38 @@ export function useAutoTranslateContent() {
       if (jobs.length === 0) return jobs
 
       setIsTranslating(true)
+      console.log(`[AutoTranslate] translateJobs called with ${jobs.length} jobs for target locale: ${locale}`)
+      
       try {
         // Check which jobs need translation
         const jobsToTranslate: {index: number; job: T}[] = []
 
         jobs.forEach((job, index) => {
-          if (
-            needsTranslation(job.title, locale) ||
-            needsTranslation(job.description, locale)
-          ) {
+          const tNeeds = needsTranslation(job.title, locale)
+          const dNeeds = needsTranslation(job.description, locale)
+          
+          if (tNeeds || dNeeds) {
             jobsToTranslate.push({index, job})
           }
         })
+        
+        console.log(`[AutoTranslate] ${jobsToTranslate.length} jobs actually require translation (others match locale or are empty)`)
 
         if (jobsToTranslate.length === 0) {
           return jobs
         }
 
         console.log(
-          `[AutoTranslate] Translating ${jobsToTranslate.length} jobs to ${locale}`
+          `[AutoTranslate] Sending batch of ${jobsToTranslate.length} jobs to translateJob...`
         )
 
         // Batch translate
+        const start = Date.now()
         const translatedJobs = await Promise.all(
           jobsToTranslate.map(({job}) => translateJob(job))
         )
+        const duration = Date.now() - start
+        console.log(`[AutoTranslate] Batch translation finished in ${duration}ms`)
 
         // Merge translations back
         const result = [...jobs]

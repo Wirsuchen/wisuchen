@@ -102,9 +102,11 @@ async function handler(request: NextRequest) {
         console.log(`✅ [DEALS API] Found ${dbResult.deals.length} deals in database`)
         
         let dbDeals = dbResult.deals
+        /*
         if (locale && locale !== 'en') {
           dbDeals = await translateAndStoreDeals(dbDeals, locale)
         }
+        */
 
         if (dbResult.deals.length > 0) {
           return NextResponse.json({
@@ -189,9 +191,11 @@ async function handler(request: NextRequest) {
         console.log(`✅ [DEALS API] Found Amazon product`)
 
         let deals = [deal]
+        /*
         if (locale && locale !== 'en') {
           deals = await translationService.translateDeals(deals, locale)
         }
+        */
 
         return NextResponse.json({
           deals: deals,
@@ -242,9 +246,11 @@ async function handler(request: NextRequest) {
             console.log(`✅ [DEALS API] Found ${amazonDeals.length} Amazon deals`)
 
             let deals = amazonDeals
+            /*
             if (locale && locale !== 'en') {
               deals = await translationService.translateDeals(deals, locale)
             }
+            */
 
             return NextResponse.json({
               deals: deals,
@@ -298,9 +304,11 @@ async function handler(request: NextRequest) {
       console.log(`✅ [DEALS API] Found ${deals.length} price comparison offers`)
 
       let finalDeals = deals
+      /*
       if (locale && locale !== 'en') {
         finalDeals = await translationService.translateDeals(finalDeals, locale)
       }
+      */
 
       return NextResponse.json({
         deals: finalDeals,
@@ -413,10 +421,13 @@ async function handler(request: NextRequest) {
 
     console.log(`✅ [DEALS API] Successfully processed ${deals.length} deals`)
 
+    /*
     let finalDeals = deals
     if (locale && locale !== 'en') {
       finalDeals = await translationService.translateDeals(finalDeals, locale)
     }
+    */
+    const finalDeals = deals
 
     return NextResponse.json({
       deals: finalDeals,

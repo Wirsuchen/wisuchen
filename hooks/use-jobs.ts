@@ -129,6 +129,8 @@ export function useJobs(initialParams?: SearchJobsParams): UseJobsReturn {
 
       const url = `/api/v1/jobs/search?${queryParams.toString()}`
 
+      console.log(`[useJobs] Fetching jobs with params:`, params)
+
       // Use cache with 1 hour TTL - prevents API calls on route changes/refreshes
       const data = await fetchWithCache<any>(
         url,
@@ -142,6 +144,7 @@ export function useJobs(initialParams?: SearchJobsParams): UseJobsReturn {
       }
 
       setJobs(data.data.jobs)
+      console.log(`[useJobs] Successfully fetched ${data.data.jobs.length} jobs`)
       setPagination(data.data.pagination)
       setMeta(data.data.meta)
     } catch (err: any) {

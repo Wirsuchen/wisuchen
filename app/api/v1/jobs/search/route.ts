@@ -153,12 +153,14 @@ async function handler(req: NextRequest) {
 
         // Always apply translations - works for all languages including English
         // (source content may be in German/French and need translation to English)
+        /* 
         if (validatedParams.locale) {
           mappedJobs = await translationService.translateJobs(
             mappedJobs,
             validatedParams.locale
           )
         }
+        */
 
         const res = NextResponse.json(
           {
@@ -218,12 +220,14 @@ async function handler(req: NextRequest) {
     let jobs = result.jobs
     // Always apply translations - works for all languages including English
     // (source content may be in German/French and need translation to English)
+    /*
     if (validatedParams.locale) {
       jobs = await translationService.translateJobs(
         jobs,
         validatedParams.locale
       )
     }
+    */
 
     const res = NextResponse.json(
       {

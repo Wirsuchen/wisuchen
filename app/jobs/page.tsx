@@ -128,8 +128,18 @@ export default function JobsPage() {
   // Deduplicate jobs to remove duplicates from different sources
   const uniqueJobs = useMemo(() => {
     const deduped = dedupeJobs(jobs)
+    if (jobs.length > 0) {
+      const sources = deduped.reduce((acc, job) => {
+        acc[job.source] = (acc[job.source] || 0) + 1
+        return acc
+      }, {} as Record<string, number>)
+      console.log(`[JobsPage] Job sources distribution:`, sources)
+    }
+
     if (jobs.length > deduped.length) {
-      console.log(`Removed ${jobs.length - deduped.length} duplicate jobs from ${jobs.length} total jobs`)
+      console.log(`[JobsPage] Removed ${jobs.length - deduped.length} duplicate jobs from ${jobs.length} total raw jobs`)
+    } else {
+      console.log(`[JobsPage] Received ${jobs.length} raw jobs, no duplicates found`)
     }
     return deduped
   }, [jobs])

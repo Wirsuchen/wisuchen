@@ -84,7 +84,7 @@ export async function GET(
 
     // Apply translation if locale is different from original content
     // Support all 4 languages: en, de, fr, it
-    let translatedJob = job
+    /*
     const supportedLocales = ["en", "de", "fr", "it"]
 
     if (supportedLocales.includes(locale)) {
@@ -155,7 +155,9 @@ export async function GET(
         )
       }
     }
+    */
 
+    const translatedJob = job
     return NextResponse.json({job: translatedJob})
   } catch (error) {
     console.error("API Error:", error)

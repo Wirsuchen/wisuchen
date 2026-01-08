@@ -51,17 +51,22 @@ export function getCache<T>(url: string, params?: Record<string, any>): T | null
     const key = getCacheKey(url, params)
     const cached = localStorage.getItem(key)
     
-    if (!cached) return null
+    if (!cached) {
+      console.log('❌ [Client Cache] Cache MISS for:', url)
+      return null
+    }
 
     const entry: CacheEntry<T> = JSON.parse(cached)
     
     // Check if expired
     if (Date.now() > entry.expiresAt) {
+      console.log('⚠️ [Client Cache] Cache EXPIRED for:', url)
       localStorage.removeItem(key)
       return null
     }
 
-    console.log('✅ [Client Cache] Cache HIT:', { url, params, age: Math.round((Date.now() - entry.timestamp) / 1000) + 's' })
+    const ageSeconds = Math.round((Date.now() - entry.timestamp) / 1000)
+    console.log(`✅ [Client Cache] Cache HIT for: ${url} (Age: ${ageSeconds}s)`)
     return entry.data
   } catch (error) {
     console.error('❌ [Client Cache] Error reading cache:', error)

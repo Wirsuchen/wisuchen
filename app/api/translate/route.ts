@@ -55,6 +55,7 @@ export async function POST(request: NextRequest) {
     // Handle job translation
     if (contentType === "job" && title !== undefined) {
       // Check database for existing translation first
+      /*
       if (contentId) {
         const existing = await getStoredTranslation(contentId, toLanguage, "job" as ContentType)
         if (existing && existing.title) {
@@ -67,6 +68,7 @@ export async function POST(request: NextRequest) {
           })
         }
       }
+      */
 
       const result = await translateJob(
         title || "",
@@ -77,6 +79,7 @@ export async function POST(request: NextRequest) {
 
       // Store translation in database if contentId provided
       // SAFETY CHECK: Don't save if title is suspiciously long (likely a description accidentally passed as title)
+      /*
       if (contentId && result.title && result.title.length < 200) {
         storeTranslation(contentId, toLanguage, "job" as ContentType, {
           title: result.title,
@@ -85,6 +88,7 @@ export async function POST(request: NextRequest) {
           console.error("[Translate API] Failed to store job translation:", err)
         )
       }
+      */
 
       return NextResponse.json({
         success: true,
@@ -104,6 +108,7 @@ export async function POST(request: NextRequest) {
       )
 
       // Store translation in database if contentId provided
+      /*
       if (contentId && result.title) {
         storeTranslation(contentId, toLanguage, "deal" as ContentType, {
           title: result.title,
@@ -115,6 +120,7 @@ export async function POST(request: NextRequest) {
           )
         )
       }
+      */
 
       return NextResponse.json({
         success: true,
@@ -135,6 +141,7 @@ export async function POST(request: NextRequest) {
       )
 
       // Store translation in database if contentId provided
+      /*
       if (contentId && result.title) {
         storeTranslation(contentId, toLanguage, "blog" as ContentType, {
           title: result.title,
@@ -147,6 +154,7 @@ export async function POST(request: NextRequest) {
           )
         )
       }
+      */
 
       return NextResponse.json({
         success: true,

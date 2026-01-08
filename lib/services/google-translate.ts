@@ -372,6 +372,10 @@ export async function translateJob(
     return {title, description}
   }
 
+  // Force auto-detection if source is not explicitly provided
+  // This allows Google to handle "English" source text that is actually German
+  const effectiveSource = sourceLanguage === "en" ? undefined : sourceLanguage;
+
   const textsToTranslate = [title]
   if (description) {
     textsToTranslate.push(description)
@@ -380,7 +384,7 @@ export async function translateJob(
   const result = await translateBatch(
     textsToTranslate,
     targetLanguage,
-    sourceLanguage
+    effectiveSource
   )
 
   if (!result.success || !result.translations) {
