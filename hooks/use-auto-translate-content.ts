@@ -14,7 +14,7 @@ import {useState, useEffect, useCallback, useRef} from "react"
 import {useLocale} from "@/contexts/i18n-context"
 
 // Language detection patterns - improved for better accuracy
-const TRANSLATION_CACHE_KEY = "auto_translate_cache_v2"
+const TRANSLATION_CACHE_KEY = "auto_translate_cache_v4"
 const CACHE_TTL = 24 * 60 * 60 * 1000 // 24 hours
 
 interface CacheEntry {
@@ -31,14 +31,15 @@ const LANGUAGE_PATTERNS: Record<string, RegExp[]> = {
     /[äöüß]/gi,
     // German compound words and work-related terms
     /\b(Ausbildung|Arbeit|Unternehmen|Stelle|Beruf|GmbH|Entwickler|Verstärkung|Projekten|Vollzeit|Teilzeit|Anwendung|Anforderung|Aufgaben|Verantwortlich|Informationen)\b/gi,
-    // German gender notation (very strong indicator)
+    // German gender notation (strong indicator but common in English titles in DACH)
+    // We treat this as a weighted pattern now, not an early exit
     /\(m\/w\/d\)|\(w\/m\/d\)|\(m\/w\/x\)|\(all[e]?\s*geschlechter\)/gi,
   ],
   en: [
     // Common English words
     /\b(and|for|with|at|we|they|the|is|their|our|will|have|not|also|on|after|about|or|can|if|this|one|be|to|an|searching|working|modern|technologies)\b/gi,
     // IT/Tech specific English terms
-    /\b(developer|software|engineer|full|stack|frontend|backend|data|scientist|manager|senior|junior|lead|product|owner|scrum|master|consultant|architect|analyst)\b/gi,
+    /\b(developer|software|engineer|full|stack|frontend|backend|data|scientist|manager|senior|junior|lead|product|owner|scrum|master|consultant|architect|analyst|deployment|cloud|service|services|web)\b/gi,
   ],
   fr: [
     /\b(pour|avec|dans|nous|vous|les|des|une|sont|cette|notre|votre|être|avoir|faire|plus|tout|sans|mais|comme|sur|par|qui|que|aux|ses|nos|vos)\b/gi,
@@ -101,14 +102,7 @@ function getCacheKey(text: string, targetLang: string): string {
  * Detect the language of a text based on common patterns
  */
 export function detectLanguage(text: string): "en" | "de" | "fr" | "it" {
-  if (!text || text.length < 5) return "en"
-
-  // Quick check for very strong German indicators (job gender notation)
-  if (
-    /\(m\/w\/d\)|\(w\/m\/d\)|\(m\/w\/x\)|\(all[e]?\s*geschlechter\)/i.test(text)
-  ) {
-    return "de"
-  }
+  if (!text || text.length < 2) return "en"
 
   const lowerText = text.toLowerCase()
   const scores: Record<string, number> = {de: 0, fr: 0, it: 0, en: 0}
@@ -117,12 +111,24 @@ export function detectLanguage(text: string): "en" | "de" | "fr" | "it" {
     for (const pattern of patterns) {
       const matches = lowerText.match(pattern)
       if (matches) {
-        // Special characters are weighted more heavily
-        const isSpecialChars =
-          pattern.source.includes("[äöüß]") ||
-          pattern.source.includes("[éèêë") ||
-          pattern.source.includes("[àèéì")
-        scores[lang] += isSpecialChars ? matches.length * 2 : matches.length
+        // Special weighting logic:
+        // - German gender notation: +2 points (indicates DACH context but not necessarily German language content)
+        // - German/French/Italian special chars: +2 points (strong indicator)
+        // - English IT terms: +1.5 points (to override gender notation in "Senior Developer (m/w/d)")
+        
+        const patternStr = pattern.source;
+        let weight = 1;
+
+        if (patternStr.includes("(m\\/w\\/d)")) {
+            weight = 2; 
+        } else if (patternStr.includes("[äöüß]") || patternStr.includes("[éèêë") || patternStr.includes("[àèéì")) {
+            weight = 2;
+        } else if (lang === 'en' && patternStr.includes("developer")) {
+             // IT terms list
+             weight = 1.5;
+        }
+
+        scores[lang] += matches.length * weight;
       }
     }
   }
@@ -138,11 +144,16 @@ export function detectLanguage(text: string): "en" | "de" | "fr" | "it" {
     }
   }
 
+  // If we have a tie between DE and EN, and EN has a decent score, prefer EN
+  // This helps with "Senior Developer (m/w/d)" where scores might be close
+  if (maxLang === 'de' && scores.en > 0 && scores.en >= scores.de - 1) {
+      return 'en';
+  }
+
   // If no languages detected significantly, default to English
-  // If maxScore is low but English has matched keywords, prefer English
   if (maxLang === "en" && scores.en > 0) return "en"
 
-  // Require minimum score threshold to detect non-English (lowered to 1 for better detection on titles)
+  // Require minimum score threshold from non-english languages to switch away from default
   return maxScore >= 1 ? (maxLang as "de" | "fr" | "it" | "en") : "en"
 }
 
@@ -150,7 +161,7 @@ export function detectLanguage(text: string): "en" | "de" | "fr" | "it" {
  * Check if text needs translation (is in different language than target)
  */
 export function needsTranslation(text: string, targetLang: string): boolean {
-  if (!text || text.length < 10) return false
+  if (!text || text.length < 2) return false
   const detectedLang = detectLanguage(text)
   return detectedLang !== targetLang
 }
@@ -177,7 +188,7 @@ export function useAutoTranslateContent() {
       text: string,
       contentType: "job" | "deal" | "blog" | "general" = "general"
     ): Promise<TranslateResult> => {
-      if (!text || text.length < 10) {
+      if (!text || text.length < 2) {
         return {translatedText: text, wasTranslated: false}
       }
 
@@ -465,7 +476,7 @@ export function useTranslatedText(
   const [wasTranslated, setWasTranslated] = useState(false)
 
   useEffect(() => {
-    if (!text || text.length < 10) {
+    if (!text || text.length < 2) {
       setTranslatedText(text)
       setWasTranslated(false)
       return
