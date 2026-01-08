@@ -18,7 +18,7 @@ import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/contexts/auth-context'
 import Link from 'next/link'
 import { useTranslation, useLocale } from '@/contexts/i18n-context'
-import { useAutoTranslateContent, useTranslatedText } from '@/hooks/use-auto-translate-content'
+import { useAutoTranslateContent, useTranslatedText, useTranslatedJob } from '@/hooks/use-auto-translate-content'
 
 
 const sanitizeJobDescription = (text: string) => {
@@ -580,10 +580,10 @@ interface JobCardProps {
 function JobCard({ job }: JobCardProps) {
   const { t, tr } = useTranslation()
 
-  // Use client-side auto-translation for title and description
-  const contentId = `job-${job.source}-${job.externalId || job.id}`
-  const { translatedText: title } = useTranslatedText(job.title, 'job', contentId)
-  const { translatedText: description } = useTranslatedText(job.description || '', 'job', contentId)
+  // Use client-side auto-translation for title and description at once
+  const { translatedJob } = useTranslatedJob(job)
+  const title = translatedJob.title
+  const description = translatedJob.description
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -728,10 +728,15 @@ interface UserJobCardProps {
 function UserJobCard({ job }: UserJobCardProps) {
   const { t, tr } = useTranslation()
 
-  // Use client-side auto-translation for title and description
-  const contentId = `job-user-${job.id}`
-  const { translatedText: title } = useTranslatedText(job.title, 'job', contentId)
-  const { translatedText: description } = useTranslatedText(job.description || '', 'job', contentId)
+  // Use client-side auto-translation for title and description at once
+  // Add source property required by useTranslatedJob hook
+  const { translatedJob } = useTranslatedJob({
+    ...job,
+    source: 'user-posted',
+    description: job.description ?? undefined
+  })
+  const title = translatedJob.title
+  const description = translatedJob.description
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return t('jobs.notPublished')

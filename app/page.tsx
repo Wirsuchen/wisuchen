@@ -17,7 +17,7 @@ import { formatEuroText, formatEuro } from "@/lib/utils"
 import { fetchWithCache } from "@/lib/utils/client-cache"
 import { useTranslation, useLocale } from "@/contexts/i18n-context"
 import { useState, useEffect } from "react"
-import { useTranslatedText } from "@/hooks/use-auto-translate-content"
+import { useTranslatedText, useTranslatedJob } from "@/hooks/use-auto-translate-content"
 import type { Job } from "@/hooks/use-jobs"
 
 interface Deal {
@@ -89,9 +89,9 @@ function dedupeJobs(jobs: Job[]): Job[] {
 
 function FeaturedJobCard({ job }: { job: Job }) {
   const { t } = useTranslation()
-  const contentId = `job-${job.source}-${job.externalId || job.id}`
-  const { translatedText: title } = useTranslatedText(job.title, 'job', contentId)
-  const { translatedText: description } = useTranslatedText(job.description || '', 'job', contentId)
+  const { translatedJob } = useTranslatedJob(job)
+  const title = translatedJob.title
+  const description = translatedJob.description
 
   const salaryText = job.salary?.text || (
     job.salary?.min || job.salary?.max

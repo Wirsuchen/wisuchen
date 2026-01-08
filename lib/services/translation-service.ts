@@ -303,7 +303,7 @@ export async function storeTranslation(
         updated_at: new Date().toISOString(),
       },
       {
-        onConflict: "content_id,language,type",
+        onConflict: "content_id,language",
       }
     )
 

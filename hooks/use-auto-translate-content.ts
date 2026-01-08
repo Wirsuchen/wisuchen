@@ -530,3 +530,96 @@ export function useTranslatedText(
 
   return {translatedText, isTranslating, wasTranslated}
 }
+
+/**
+ * Hook to auto-translate a whole job (title + description) at once
+ */
+export function useTranslatedJob(job: {
+  id: string
+  source: string
+  externalId?: string
+  title: string
+  description?: string
+}) {
+  const locale = useLocale()
+  const [translatedJob, setTranslatedJob] = useState({
+    title: job.title,
+    description: job.description || "",
+  })
+  const [isTranslating, setIsTranslating] = useState(false)
+
+  useEffect(() => {
+    const titleNeeds = needsTranslation(job.title, locale)
+    const descNeeds = job.description
+      ? needsTranslation(job.description, locale)
+      : false
+
+    if (!titleNeeds && !descNeeds) {
+      setTranslatedJob({
+        title: job.title,
+        description: job.description || "",
+      })
+      return
+    }
+
+    const cacheKeyTitle = getCacheKey(job.title, locale)
+    const cacheKeyDesc = job.description
+      ? getCacheKey(job.description, locale)
+      : ""
+    const cache = getTranslationCache()
+
+    // If both are cached coverage is good
+    if (
+      cache[cacheKeyTitle] &&
+      (!job.description || cache[cacheKeyDesc])
+    ) {
+      setTranslatedJob({
+        title: cache[cacheKeyTitle].translation,
+        description: job.description
+          ? cache[cacheKeyDesc].translation
+          : "",
+      })
+      return
+    }
+
+    // Translate both at once
+    setIsTranslating(true)
+    const contentId = `job-${job.source}-${job.externalId || job.id}`
+
+    fetch("/api/translate", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        contentType: "job",
+        title: job.title,
+        description: job.description || "",
+        toLanguage: locale,
+        fromLanguage: detectLanguage(job.title), // hint from title
+        contentId,
+      }),
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          // Cache results
+          setTranslationCache(cacheKeyTitle, data.title)
+          if (job.description && data.description) {
+            setTranslationCache(cacheKeyDesc, data.description)
+          }
+
+          setTranslatedJob({
+            title: data.title,
+            description: data.description || "",
+          })
+        }
+      })
+      .catch(err => {
+        console.error("[useTranslatedJob] Error:", err)
+      })
+      .finally(() => {
+        setIsTranslating(false)
+      })
+  }, [job.title, job.description, job.id, job.source, job.externalId, locale])
+
+  return {translatedJob, isTranslating}
+}

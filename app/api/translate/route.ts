@@ -7,7 +7,7 @@ import {
   translateBlog,
   SupportedLanguage,
 } from "@/lib/services/google-translate"
-import {storeTranslation, ContentType} from "@/lib/services/translation-service"
+import {storeTranslation, getStoredTranslation, ContentType} from "@/lib/services/translation-service"
 
 /**
  * Translation API Route
@@ -54,6 +54,20 @@ export async function POST(request: NextRequest) {
 
     // Handle job translation
     if (contentType === "job" && title !== undefined) {
+      // Check database for existing translation first
+      if (contentId) {
+        const existing = await getStoredTranslation(contentId, toLanguage, "job" as ContentType)
+        if (existing && existing.title) {
+          console.log(`[Translate API] Found existing translation for ${contentId} in ${toLanguage}`)
+          return NextResponse.json({
+            success: true,
+            title: existing.title,
+            description: existing.description || description,
+            fromDatabase: true,
+          })
+        }
+      }
+
       const result = await translateJob(
         title || "",
         description || "",
