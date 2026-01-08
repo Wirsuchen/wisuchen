@@ -25,15 +25,15 @@ interface CacheEntry {
 // Language detection patterns - improved for better accuracy
 const LANGUAGE_PATTERNS: Record<string, RegExp[]> = {
   de: [
-    // Common German words
-    /\b(und|für|mit|bei|wir|sie|der|die|das|ist|ihre|unser|werden|haben|nicht|auch|auf|nach|über|oder|kann|wenn|diese|einer|sein|zur|zum|einen|unseres|unsere|suchen|arbeiten|moderner|modernen|technologien)\b/gi,
+    // Common German words and particles
+    /\b(und|für|mit|bei|wir|sie|der|die|das|dem|den|des|ein|eine|einer|einen|einem|ist|sind|war|wäre|ihre|ihr|wir|euch|unser|werden|haben|hat|nicht|auch|auf|nach|über|oder|kann|können|wenn|diese|dieser|dieses|sein|zur|zum|aus|von|bis|am|im|bzw|inkl|ggf)\b/gi,
     // German special characters (strong indicator)
     /[äöüß]/gi,
     // German compound words and work-related terms
-    /\b(Ausbildung|Arbeit|Unternehmen|Stelle|Beruf|GmbH|Entwickler|Verstärkung|Projekten|Vollzeit|Teilzeit|Anwendung|Anforderung|Aufgaben|Verantwortlich|Informationen)\b/gi,
+    /\b(Ausbildung|Arbeit|Unternehmen|Stelle|Beruf|GmbH|Entwickler|Verstärkung|Projekten|Vollzeit|Teilzeit|Anwendung|Anforderung|Aufgaben|Verantwortlich|Informationen|Erfahrung|Kenntnisse|Bewerbung|Mitarbeiter|Team)\b/gi,
     // German gender notation (strong indicator but common in English titles in DACH)
     // We treat this as a weighted pattern now, not an early exit
-    /\(m\/w\/d\)|\(w\/m\/d\)|\(m\/w\/x\)|\(all[e]?\s*geschlechter\)/gi,
+    /\(m\/w\/d\)|\(w\/m\/d\)|\(m\/w\/x\)|\(all[e]?\s*geschlechter\)|\([mdw]\/[mdw]\/[mdw]\)/gi,
   ],
   en: [
     // Common English words
@@ -232,7 +232,7 @@ export function useAutoTranslateContent() {
               description: contentType === "blog" ? undefined : "",
               content: contentType === "blog" ? text : undefined,
               toLanguage: locale,
-              fromLanguage: detectedLang,
+              fromLanguage: undefined, // Let Google detect source language for better accuracy
             }),
           })
 
@@ -330,7 +330,7 @@ export function useAutoTranslateContent() {
             title: job.title,
             description: job.description,
             toLanguage: locale,
-            fromLanguage: detectedLang,
+              fromLanguage: undefined, // Let Google detect source language for better accuracy
             contentId, // Will store in DB if provided
           }),
         })
