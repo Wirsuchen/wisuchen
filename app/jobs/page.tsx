@@ -18,7 +18,7 @@ import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/contexts/auth-context'
 import Link from 'next/link'
 import { useTranslation, useLocale } from '@/contexts/i18n-context'
-import { useAutoTranslateContent } from '@/hooks/use-auto-translate-content'
+import { useAutoTranslateContent, useTranslatedText } from '@/hooks/use-auto-translate-content'
 
 
 const sanitizeJobDescription = (text: string) => {
@@ -580,9 +580,9 @@ interface JobCardProps {
 function JobCard({ job }: JobCardProps) {
   const { t, tr } = useTranslation()
 
-  // API returns translated content when locale is passed
-  const title = job.title
-  const description = job.description || ''
+  // Use client-side auto-translation for title and description
+  const { translatedText: title } = useTranslatedText(job.title, 'job')
+  const { translatedText: description } = useTranslatedText(job.description || '', 'job')
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -727,9 +727,9 @@ interface UserJobCardProps {
 function UserJobCard({ job }: UserJobCardProps) {
   const { t, tr } = useTranslation()
 
-  // API returns translated content when locale is passed
-  const title = job.title
-  const description = job.description || ''
+  // Use client-side auto-translation for title and description
+  const { translatedText: title } = useTranslatedText(job.title, 'job')
+  const { translatedText: description } = useTranslatedText(job.description || '', 'job')
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return t('jobs.notPublished')

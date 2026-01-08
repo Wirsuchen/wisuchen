@@ -17,6 +17,7 @@ import { formatEuroText, formatEuro } from "@/lib/utils"
 import { fetchWithCache } from "@/lib/utils/client-cache"
 import { useTranslation, useLocale } from "@/contexts/i18n-context"
 import { useState, useEffect } from "react"
+import { useTranslatedText } from "@/hooks/use-auto-translate-content"
 import type { Job } from "@/hooks/use-jobs"
 
 interface Deal {
@@ -84,6 +85,74 @@ function dedupeJobs(jobs: Job[]): Job[] {
   }
 
   return Array.from(byKey.values())
+}
+
+function FeaturedJobCard({ job }: { job: Job }) {
+  const { t } = useTranslation()
+  const { translatedText: title } = useTranslatedText(job.title, 'job')
+
+  const salaryText = job.salary?.text || (
+    job.salary?.min || job.salary?.max
+      ? `${job.salary?.min ? `€${job.salary.min.toLocaleString()}` : ''}${job.salary?.min && job.salary?.max ? ' - ' : ''}${job.salary?.max ? `€${job.salary.max.toLocaleString()}` : ''}`
+      : undefined
+  )
+
+  const typeKey = job.employmentType
+    ? normalizeEmploymentType(job.employmentType)
+    : undefined
+
+  const jobTypeLabel = typeKey
+    ? (() => {
+      const tKey = `jobs.${typeKey}`
+      const translated = t(tKey)
+      return translated !== tKey ? translated : typeKey.replace(/_/g, ' ')
+    })()
+    : undefined
+
+  const handleOpen = () => {
+    try {
+      const storageKey = `job:${job.source}:${job.externalId || job.id}`
+      sessionStorage.setItem(storageKey, JSON.stringify({ ...job, title }))
+    } catch { }
+  }
+
+  return (
+    <Card className="flex flex-col hover:shadow-lg transition-shadow h-full">
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <CardTitle className="text-lg font-semibold line-clamp-2" title={title}>
+              {title}
+            </CardTitle>
+            <CardDescription className="truncate mt-1" title={job.company}>
+              {job.company}
+            </CardDescription>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="flex-1 flex flex-col justify-between gap-4">
+        <div className="space-y-3">
+          <div className="flex items-center text-sm text-muted-foreground">
+            <MapPin className="h-4 w-4 mr-2 text-red-500 shrink-0" />
+            <span className="truncate" title={job.location}>{job.location}</span>
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            {salaryText ? (
+              <span className="font-semibold text-accent text-sm truncate max-w-[60%]" title={salaryText}>{salaryText}</span>
+            ) : <span></span>}
+            {jobTypeLabel && (
+              <Badge variant="outline" className="capitalize shrink-0 text-xs font-normal">{jobTypeLabel}</Badge>
+            )}
+          </div>
+        </div>
+        <Button className="w-full bg-transparent mt-auto" variant="outline" asChild>
+          <Link href={`/jobs/${encodeURIComponent(job.externalId || job.id)}?source=${encodeURIComponent(job.source)}`} onClick={handleOpen}>
+            {t('home.viewDetails')}
+          </Link>
+        </Button>
+      </CardContent>
+    </Card>
+  )
 }
 
 export default function HomePage() {
@@ -345,69 +414,8 @@ export default function HomePage() {
                 <div className="col-span-full flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-accent" /></div>
               ) : topJobs.length > 0 ? (
                 topJobs.map((job) => {
-                  const salaryText = job.salary?.text || (
-                    job.salary?.min || job.salary?.max
-                      ? `${job.salary?.min ? `€${job.salary.min.toLocaleString()}` : ''}${job.salary?.min && job.salary?.max ? ' - ' : ''}${job.salary?.max ? `€${job.salary.max.toLocaleString()}` : ''}`
-                      : undefined
-                  )
-
-                  // Normalize type to snake_case and translate via jobs.<typeKey>; fallback to humanized text
-                  const typeKey = job.employmentType
-                    ? normalizeEmploymentType(job.employmentType)
-                    : undefined
-                  const jobTypeLabel = typeKey
-                    ? (() => {
-                      const tKey = `jobs.${typeKey}`
-                      const translated = t(tKey)
-                      return translated !== tKey ? translated : typeKey.replace(/_/g, ' ')
-                    })()
-                    : undefined
                   const key = `${job.source}-${job.externalId || job.id}`
-
-                  const handleOpen = () => {
-                    try {
-                      const storageKey = `job:${job.source}:${job.externalId || job.id}`
-                      sessionStorage.setItem(storageKey, JSON.stringify(job))
-                    } catch { }
-                  }
-
-                  return (
-                    <Card key={key} className="flex flex-col hover:shadow-lg transition-shadow h-full">
-                      <CardHeader className="pb-3">
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex-1 min-w-0">
-                            <CardTitle className="text-lg font-semibold line-clamp-2" title={job.title}>
-                              {job.title}
-                            </CardTitle>
-                            <CardDescription className="truncate mt-1" title={job.company}>
-                              {job.company}
-                            </CardDescription>
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="flex-1 flex flex-col justify-between gap-4">
-                        <div className="space-y-3">
-                          <div className="flex items-center text-sm text-muted-foreground">
-                            <MapPin className="h-4 w-4 mr-2 text-red-500 shrink-0" />
-                            <span className="truncate" title={job.location}>{job.location}</span>
-                          </div>
-                          <div className="flex flex-wrap items-center justify-between gap-2">
-                            {salaryText ? (
-                              <span className="font-semibold text-accent text-sm truncate max-w-[60%]" title={salaryText}>{salaryText}</span>
-                            ) : <span></span>}
-                            {jobTypeLabel && (
-                              <Badge variant="outline" className="capitalize shrink-0 text-xs font-normal">{jobTypeLabel}</Badge>
-                            )}
-                          </div>
-                        </div>
-                        <Button className="w-full bg-transparent mt-auto" variant="outline" asChild>
-                          <Link href={`/jobs/${encodeURIComponent(job.externalId || job.id)}?source=${encodeURIComponent(job.source)}`} onClick={handleOpen}>
-                            {t('home.viewDetails')}
-                          </Link>
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  )
+                  return <FeaturedJobCard key={key} job={job} />
                 })
               ) : (
                 <div className="col-span-full text-center py-12 text-muted-foreground">
