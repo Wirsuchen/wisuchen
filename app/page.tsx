@@ -220,9 +220,9 @@ export default function HomePage() {
       // Backend will return translated content based on locale parameter
       // Only show jobs that have all 4 language translations
       const data = await fetchWithCache<any>(
-        `/api/v1/jobs/search?limit=9&useCache=true&countries=de,at,ch&locale=${locale}&useDatabase=true&requireFullTranslation=true`,
+        `/api/v1/jobs/search?limit=9&useCache=true&countries=de,at,ch&locale=${locale}&useDatabase=true`,
         undefined,
-        { limit: 9, countries: ['de', 'at', 'ch'], locale, requireFullTranslation: true },
+        { limit: 9, countries: ['de', 'at', 'ch'], locale },
         60 * 60 * 1000
       )
       const jobs: Job[] = data?.data?.jobs || []
