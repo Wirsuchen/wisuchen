@@ -4,9 +4,10 @@
  * This service handles translation of dynamic content (jobs, deals, blogs)
  * using the Google Cloud Translation API v2.
  *
- * Supports two authentication methods:
- * 1. Service Account JSON key (recommended) - set GOOGLE_APPLICATION_CREDENTIALS
- * 2. API Key - set GOOGLE_CLOUD_TRANSLATE_API_KEY
+ * Supports three authentication methods (in order of priority):
+ * 1. Service Account JSON from environment variable (GOOGLE_SERVICE_ACCOUNT_JSON) - for Vercel
+ * 2. Service Account JSON file (GOOGLE_APPLICATION_CREDENTIALS) - for local development
+ * 3. API Key (GOOGLE_CLOUD_TRANSLATE_API_KEY) - fallback
  *
  * For static UI text, use the i18n system instead.
  */
@@ -35,28 +36,56 @@ function hashText(text: string): string {
 
 /**
  * Get access token from service account credentials
+ * Supports both file-based and environment variable-based credentials
  */
 async function getAccessToken(): Promise<string | null> {
   try {
-    // Check for service account JSON file
-    const credentialsPath =
-      process.env.GOOGLE_APPLICATION_CREDENTIALS ||
-      path.join(
-        process.cwd(),
-        "credentials",
-        "google-translate-service-account.json"
-      )
+    // Method 1: Check for service account JSON in environment variable (for Vercel)
+    const serviceAccountJson = process.env.GOOGLE_SERVICE_ACCOUNT_JSON
+    if (serviceAccountJson && !authClient) {
+      try {
+        const credentials = JSON.parse(serviceAccountJson)
+        const auth = new GoogleAuth({
+          credentials,
+          scopes: ["https://www.googleapis.com/auth/cloud-translation"],
+        })
+        authClient = await auth.getClient()
+        console.log(
+          "[GoogleTranslate] Using service account from environment variable"
+        )
+      } catch (parseError) {
+        console.error(
+          "[GoogleTranslate] Failed to parse GOOGLE_SERVICE_ACCOUNT_JSON:",
+          parseError
+        )
+      }
+    }
 
-    if (!fs.existsSync(credentialsPath)) {
-      return null
+    // Method 2: Check for service account JSON file (for local development)
+    if (!authClient) {
+      const credentialsPath =
+        process.env.GOOGLE_APPLICATION_CREDENTIALS ||
+        path.join(
+          process.cwd(),
+          "credentials",
+          "google-translate-service-account.json"
+        )
+
+      if (fs.existsSync(credentialsPath)) {
+        const auth = new GoogleAuth({
+          keyFile: credentialsPath,
+          scopes: ["https://www.googleapis.com/auth/cloud-translation"],
+        })
+        authClient = await auth.getClient()
+        console.log(
+          "[GoogleTranslate] Using service account from file:",
+          credentialsPath
+        )
+      }
     }
 
     if (!authClient) {
-      const auth = new GoogleAuth({
-        keyFile: credentialsPath,
-        scopes: ["https://www.googleapis.com/auth/cloud-translation"],
-      })
-      authClient = await auth.getClient()
+      return null
     }
 
     const accessToken = await authClient.getAccessToken()
