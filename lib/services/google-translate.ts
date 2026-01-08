@@ -184,6 +184,11 @@ export async function translateBatch(
     return {success: true, translations: []}
   }
 
+  // Don't translate if source and target are the same
+  if (sourceLanguage === targetLanguage) {
+    return {success: true, translations: texts}
+  }
+
   // Filter out empty texts and track their positions
   const validTexts: {index: number; text: string}[] = []
   const results: string[] = new Array(texts.length).fill("")

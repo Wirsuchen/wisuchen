@@ -18,11 +18,31 @@ import {
   ArrowLeft,
   ArrowRight,
   Loader2,
+  Languages,
 } from "lucide-react"
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
 import { Input } from "@/components/ui/input"
 import { useTranslation, useI18n } from '@/contexts/i18n-context'
+
+// Simple language detection
+function detectLanguage(text: string): 'en' | 'de' | 'fr' | 'it' {
+  if (!text || text.length < 10) return 'en'
+  const lower = text.toLowerCase()
+
+  const germanWords = ['und', 'für', 'mit', 'bei', 'wir', 'sie', 'der', 'die', 'das', 'ist', 'werden', 'haben']
+  const frenchWords = ['pour', 'avec', 'dans', 'nous', 'vous', 'les', 'des', 'une', 'sont', 'cette']
+  const italianWords = ['per', 'con', 'che', 'sono', 'della', 'nella', 'questo', 'questa']
+
+  const deCount = germanWords.filter(w => lower.includes(` ${w} `) || lower.startsWith(`${w} `)).length
+  const frCount = frenchWords.filter(w => lower.includes(` ${w} `) || lower.startsWith(`${w} `)).length
+  const itCount = italianWords.filter(w => lower.includes(` ${w} `) || lower.startsWith(`${w} `)).length
+
+  if (deCount >= 2) return 'de'
+  if (frCount >= 2) return 'fr'
+  if (itCount >= 2) return 'it'
+  return 'en'
+}
 
 interface BlogPostProps {
   post: {
@@ -64,15 +84,18 @@ export function BlogPost({ post }: BlogPostProps) {
     // Update the last translated locale
     lastTranslatedLocaleRef.current = locale
 
-    // If locale is English, restore original
-    if (locale === 'en') {
+    // Detect source language of original content
+    const sourceLanguage = detectLanguage(originalPostRef.current.title + ' ' + originalPostRef.current.excerpt)
+
+    // If locale is English and content is already English, restore original
+    if (locale === 'en' && sourceLanguage === 'en') {
       setTranslatedTitle(originalPostRef.current.title)
       setTranslatedExcerpt(originalPostRef.current.excerpt)
       setTranslatedContent(originalPostRef.current.content)
       return
     }
 
-    // Translate to target locale
+    // Translate to target locale (including translating TO English if source is not English)
     const translateBlog = async () => {
       try {
         const response = await fetch('/api/translate', {
@@ -84,7 +107,7 @@ export function BlogPost({ post }: BlogPostProps) {
             description: originalPostRef.current.excerpt,
             content: originalPostRef.current.content,
             toLanguage: locale,
-            fromLanguage: 'en'
+            fromLanguage: sourceLanguage
           })
         })
 

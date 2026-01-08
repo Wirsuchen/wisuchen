@@ -14,6 +14,25 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react'
 import { useI18n } from '@/contexts/i18n-context'
 
+// Simple language detection based on common words
+function detectLanguage(text: string): 'en' | 'de' | 'fr' | 'it' {
+    if (!text || text.length < 10) return 'en'
+    const lower = text.toLowerCase()
+
+    const germanWords = ['und', 'für', 'mit', 'bei', 'wir', 'sie', 'der', 'die', 'das', 'ist', 'werden', 'haben']
+    const frenchWords = ['pour', 'avec', 'dans', 'nous', 'vous', 'les', 'des', 'une', 'sont', 'cette']
+    const italianWords = ['per', 'con', 'che', 'sono', 'della', 'nella', 'questo', 'questa']
+
+    const deCount = germanWords.filter(w => lower.includes(` ${w} `) || lower.startsWith(`${w} `) || lower.endsWith(` ${w}`)).length
+    const frCount = frenchWords.filter(w => lower.includes(` ${w} `) || lower.startsWith(`${w} `) || lower.endsWith(` ${w}`)).length
+    const itCount = italianWords.filter(w => lower.includes(` ${w} `) || lower.startsWith(`${w} `) || lower.endsWith(` ${w}`)).length
+
+    if (deCount >= 2) return 'de'
+    if (frCount >= 2) return 'fr'
+    if (itCount >= 2) return 'it'
+    return 'en'
+}
+
 interface TranslationCache {
     [key: string]: {
         [targetLang: string]: string
@@ -98,20 +117,32 @@ export function DynamicTranslationProvider({ children }: DynamicTranslationProvi
     }, [getCacheKey])
 
     // Translate content using the API
+    // Now supports translating TO English when source is in another language
+    // Also skips translation when source and target are the same
     const translateTexts = useCallback(async (texts: string[], targetLang: string): Promise<string[]> => {
-        if (targetLang === 'en' || texts.length === 0) {
+        if (texts.length === 0) {
             return texts
         }
 
         const results: string[] = []
-        const textsToTranslate: { index: number; text: string }[] = []
+        const textsToTranslate: { index: number; text: string; sourceLang?: string }[] = []
 
         texts.forEach((text, index) => {
+            // Detect the source language of each text
+            const detectedLang = detectLanguage(text)
+
+            // Skip translation if source and target are the same
+            if (detectedLang === targetLang) {
+                results[index] = text
+                return
+            }
+
+            // Check cache first
             const cached = getCachedTranslation(text, targetLang)
             if (cached) {
                 results[index] = cached
             } else {
-                textsToTranslate.push({ index, text })
+                textsToTranslate.push({ index, text, sourceLang: detectedLang })
             }
         })
 
@@ -120,12 +151,14 @@ export function DynamicTranslationProvider({ children }: DynamicTranslationProvi
         }
 
         try {
+            // Group by source language for better translation accuracy
             const response = await fetch('/api/translate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     texts: textsToTranslate.map(t => t.text),
                     toLanguage: targetLang,
+                    fromLanguage: textsToTranslate[0]?.sourceLang, // Use first item's detected language
                 }),
             })
 
@@ -159,9 +192,22 @@ export function DynamicTranslationProvider({ children }: DynamicTranslationProvi
 
         const items = Array.from(registeredContentRef.current.values())
 
-        if (items.length === 0 || targetLang === 'en') {
+        if (items.length === 0) {
             setTranslatedContent({})
             return
+        }
+
+        // For English locale, check if any content needs translation (is in wrong language)
+        if (targetLang === 'en') {
+            const hasNonEnglishContent = items.some(item =>
+                Object.values(item.fields).some(text =>
+                    text && detectLanguage(text) !== 'en'
+                )
+            )
+            if (!hasNonEnglishContent) {
+                setTranslatedContent({})
+                return
+            }
         }
 
         isTranslatingRef.current = true

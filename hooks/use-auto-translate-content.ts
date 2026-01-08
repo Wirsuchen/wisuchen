@@ -13,22 +13,27 @@
 import {useState, useEffect, useCallback, useRef} from "react"
 import {useLocale} from "@/contexts/i18n-context"
 
-// Language detection patterns
+// Language detection patterns - improved for better accuracy
 const LANGUAGE_PATTERNS: Record<string, RegExp[]> = {
   de: [
-    /\b(und|für|mit|bei|wir|sie|der|die|das|ist|ihre|unser|werden|haben|nicht|auch|auf|nach|über|oder|kann|wenn|diese|einer|sein)\b/gi,
+    // Common German words
+    /\b(und|für|mit|bei|wir|sie|der|die|das|ist|ihre|unser|werden|haben|nicht|auch|auf|nach|über|oder|kann|wenn|diese|einer|sein|zur|zum|einen|einem|unseres|unsere|suchen|arbeiten|moderner|modernen|technologien)\b/gi,
+    // German special characters (strong indicator)
     /[äöüß]/gi,
-    /\b(Ausbildung|Arbeit|Unternehmen|Stelle|Beruf|GmbH)\b/gi,
+    // German compound words and work-related terms
+    /\b(Ausbildung|Arbeit|Unternehmen|Stelle|Beruf|GmbH|Entwickler|Verstärkung|Projekten|Vollzeit|Teilzeit|Anwendung|Anforderung|Aufgaben|Verantwortlich|Informationen)\b/gi,
+    // German gender notation (very strong indicator)
+    /\(m\/w\/d\)|\(w\/m\/d\)|\(m\/w\/x\)|\(all[e]?\s*geschlechter\)/gi,
   ],
   fr: [
-    /\b(pour|avec|dans|nous|vous|les|des|une|sont|cette|notre|votre|être|avoir|faire|plus|tout|sans|mais|comme)\b/gi,
+    /\b(pour|avec|dans|nous|vous|les|des|une|sont|cette|notre|votre|être|avoir|faire|plus|tout|sans|mais|comme|sur|par|qui|que|aux|ses|nos|vos)\b/gi,
     /[éèêëàâçîïôùûœ]/gi,
-    /\b(entreprise|travail|poste|emploi|société)\b/gi,
+    /\b(entreprise|travail|poste|emploi|société|équipe|expérience|responsable|développement)\b/gi,
   ],
   it: [
-    /\b(per|con|che|sono|della|nella|questo|questa|nostro|vostro|essere|avere|fare|tutto|anche|molto|così|quando)\b/gi,
+    /\b(per|con|che|sono|della|nella|questo|questa|nostro|vostro|essere|avere|fare|tutto|anche|molto|così|quando|gli|del|dei|delle|alla|allo)\b/gi,
     /[àèéìíòóùú]/gi,
-    /\b(azienda|lavoro|posizione|impiego)\b/gi,
+    /\b(azienda|lavoro|posizione|impiego|sviluppo|responsabile)\b/gi,
   ],
 }
 
@@ -91,6 +96,13 @@ function getCacheKey(text: string, targetLang: string): string {
 export function detectLanguage(text: string): "en" | "de" | "fr" | "it" {
   if (!text || text.length < 10) return "en"
 
+  // Quick check for very strong German indicators (job gender notation)
+  if (
+    /\(m\/w\/d\)|\(w\/m\/d\)|\(m\/w\/x\)|\(all[e]?\s*geschlechter\)/i.test(text)
+  ) {
+    return "de"
+  }
+
   const lowerText = text.toLowerCase()
   const scores: Record<string, number> = {de: 0, fr: 0, it: 0}
 
@@ -98,7 +110,12 @@ export function detectLanguage(text: string): "en" | "de" | "fr" | "it" {
     for (const pattern of patterns) {
       const matches = lowerText.match(pattern)
       if (matches) {
-        scores[lang] += matches.length
+        // Special characters are weighted more heavily
+        const isSpecialChars =
+          pattern.source.includes("[äöüß]") ||
+          pattern.source.includes("[éèêë") ||
+          pattern.source.includes("[àèéì")
+        scores[lang] += isSpecialChars ? matches.length * 2 : matches.length
       }
     }
   }
@@ -114,8 +131,8 @@ export function detectLanguage(text: string): "en" | "de" | "fr" | "it" {
     }
   }
 
-  // Require minimum score threshold to detect non-English
-  return maxScore >= 3 ? (maxLang as "de" | "fr" | "it") : "en"
+  // Require minimum score threshold to detect non-English (lowered to 2 for better detection)
+  return maxScore >= 2 ? (maxLang as "de" | "fr" | "it") : "en"
 }
 
 /**

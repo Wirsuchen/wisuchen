@@ -135,22 +135,35 @@ export default function JobsPage() {
   }, [jobs])
 
   // Auto-translate jobs that are in wrong language
-  // Use a ref to prevent re-running while translation is in progress
+  // Use refs to prevent re-running while translation is in progress and track locale
   const isTranslatingJobsRef = useRef(false)
+  const lastTranslatedLocaleRef = useRef<string | null>(null)
 
   useEffect(() => {
+    // Reset translation state when locale changes
+    if (lastTranslatedLocaleRef.current !== locale) {
+      setTranslatedJobs([])
+      isTranslatingJobsRef.current = false
+    }
+
     if (uniqueJobs.length > 0 && !loading && !isTranslatingJobsRef.current) {
       isTranslatingJobsRef.current = true
+      lastTranslatedLocaleRef.current = locale
+
+      console.log(`[JobsPage] Starting auto-translation for ${uniqueJobs.length} jobs to locale: ${locale}`)
+
       translateJobs(uniqueJobs).then(translated => {
+        console.log(`[JobsPage] Translation complete, ${translated.filter((j, i) => j.title !== uniqueJobs[i]?.title).length} jobs translated`)
         setTranslatedJobs(translated)
         isTranslatingJobsRef.current = false
-      }).catch(() => {
+      }).catch((err) => {
+        console.error('[JobsPage] Translation failed:', err)
         isTranslatingJobsRef.current = false
       })
     } else if (uniqueJobs.length === 0) {
       setTranslatedJobs([])
     }
-  }, [uniqueJobs, loading, locale]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [uniqueJobs, loading, locale, translateJobs])
 
   // Use translated jobs if available, otherwise use original
   const displayJobs = translatedJobs.length > 0 ? translatedJobs : uniqueJobs
