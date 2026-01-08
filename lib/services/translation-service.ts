@@ -784,13 +784,14 @@ async function applyStoredTranslationsWithGoogleFallback<
     type
   )
 
-  // 2. Identify items missing translations
+  // 2. Identify items missing translations OR items with wrong language content
   const itemsNeedingTranslation: {
     index: number
     contentId: string
     item: T
     textsToTranslate: string[]
     fieldNames: string[]
+    detectedSourceLang?: SupportedLanguage
   }[] = []
 
   items.forEach((item, index) => {
@@ -798,12 +799,40 @@ async function applyStoredTranslationsWithGoogleFallback<
     const stored = storedTranslations.get(contentId)
 
     // Check if translation exists and has content
-    if (!stored || !hasValidTranslation(stored, fields)) {
+    const hasStored = stored && hasValidTranslation(stored, fields)
+
+    // For English target: verify the stored content is actually English
+    // This fixes cases where German/French content was incorrectly stored as "English"
+    let needsTranslation = !hasStored
+    let detectedSourceLang: SupportedLanguage | undefined
+
+    if (hasStored && language === "en") {
+      // Check if the stored "English" translation is actually in another language
+      const storedText = fields
+        .map(f => stored[f as keyof TranslationFields])
+        .filter(v => typeof v === "string")
+        .join(" ")
+
+      detectedSourceLang = detectLanguage(storedText)
+
+      if (detectedSourceLang !== "en") {
+        console.log(
+          `[Translation] ⚠️ Stored "English" translation for ${contentId} is actually ${detectedSourceLang}, will translate`
+        )
+        needsTranslation = true
+      }
+    }
+
+    if (needsTranslation) {
       const textsToTranslate: string[] = []
       const fieldNames: string[] = []
 
+      // Use stored content if available (for wrong-language fix), otherwise use item content
       fields.forEach(field => {
-        const value = (item as any)[field]
+        const storedValue = stored?.[field as keyof TranslationFields]
+        const itemValue = (item as any)[field]
+        const value = hasStored && storedValue ? storedValue : itemValue
+
         if (typeof value === "string" && value.trim().length > 0) {
           textsToTranslate.push(value)
           fieldNames.push(field as string)
@@ -817,6 +846,7 @@ async function applyStoredTranslationsWithGoogleFallback<
           item,
           textsToTranslate,
           fieldNames,
+          detectedSourceLang,
         })
       }
     }
@@ -828,40 +858,68 @@ async function applyStoredTranslationsWithGoogleFallback<
       `[Translation] 🔄 ${itemsNeedingTranslation.length} items need Google Translate for ${language}`
     )
 
-    // Collect all texts to translate in one batch
-    const allTexts: string[] = []
-    const textMapping: {itemIdx: number; fieldIdx: number}[] = []
+    // Group texts by source language for more accurate translation
+    const textsBySourceLang = new Map<
+      SupportedLanguage | undefined,
+      {
+        texts: string[]
+        mappings: {itemIdx: number; fieldIdx: number}[]
+      }
+    >()
 
     itemsNeedingTranslation.forEach((item, itemIdx) => {
+      const sourceLang = item.detectedSourceLang
+
+      if (!textsBySourceLang.has(sourceLang)) {
+        textsBySourceLang.set(sourceLang, {texts: [], mappings: []})
+      }
+
+      const group = textsBySourceLang.get(sourceLang)!
       item.textsToTranslate.forEach((text, fieldIdx) => {
-        allTexts.push(text)
-        textMapping.push({itemIdx, fieldIdx})
+        group.texts.push(text)
+        group.mappings.push({itemIdx, fieldIdx})
       })
     })
 
-    // Batch translate with Google
+    // Batch translate each source language group
+    const translatedByItem = new Map<number, TranslationFields>()
+
     try {
-      const googleResult = await googleTranslateBatch(
-        allTexts,
-        language as GoogleSupportedLanguage
-      )
+      for (const [sourceLang, {texts, mappings}] of textsBySourceLang) {
+        console.log(
+          `[Translation] Translating ${texts.length} texts from ${
+            sourceLang || "auto"
+          } to ${language}`
+        )
 
-      if (googleResult.success && googleResult.translations) {
-        // Map translations back to items
-        const translatedByItem = new Map<number, TranslationFields>()
+        const googleResult = await googleTranslateBatch(
+          texts,
+          language as GoogleSupportedLanguage,
+          sourceLang as GoogleSupportedLanguage | undefined
+        )
 
-        googleResult.translations.forEach((translatedText, i) => {
-          const {itemIdx, fieldIdx} = textMapping[i]
-          const itemInfo = itemsNeedingTranslation[itemIdx]
-          const fieldName = itemInfo.fieldNames[fieldIdx]
+        if (googleResult.success && googleResult.translations) {
+          googleResult.translations.forEach((translatedText, i) => {
+            const {itemIdx, fieldIdx} = mappings[i]
+            const itemInfo = itemsNeedingTranslation[itemIdx]
+            const fieldName = itemInfo.fieldNames[fieldIdx]
 
-          if (!translatedByItem.has(itemIdx)) {
-            translatedByItem.set(itemIdx, {})
-          }
-          translatedByItem.get(itemIdx)![fieldName as keyof TranslationFields] =
-            translatedText
-        })
+            if (!translatedByItem.has(itemIdx)) {
+              translatedByItem.set(itemIdx, {})
+            }
+            translatedByItem.get(itemIdx)![
+              fieldName as keyof TranslationFields
+            ] = translatedText
+          })
+        } else {
+          console.error(
+            `[Translation] ✗ Google Translate failed for ${sourceLang}:`,
+            googleResult.error
+          )
+        }
+      }
 
+      if (translatedByItem.size > 0) {
         // Store new translations in DB and update the map
         for (const [itemIdx, translated] of translatedByItem) {
           const itemInfo = itemsNeedingTranslation[itemIdx]
@@ -884,12 +942,7 @@ async function applyStoredTranslationsWithGoogleFallback<
         }
 
         console.log(
-          `[Translation] ✓ Google Translate completed for ${itemsNeedingTranslation.length} items`
-        )
-      } else {
-        console.error(
-          `[Translation] ✗ Google Translate failed:`,
-          googleResult.error
+          `[Translation] ✓ Google Translate completed for ${translatedByItem.size} items`
         )
       }
     } catch (error) {

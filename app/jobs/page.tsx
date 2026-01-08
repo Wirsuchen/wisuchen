@@ -4,19 +4,21 @@
  * Jobs Page - Real Jobs from RapidAPI
  * Fetches live job data from multiple RapidAPI sources
  * Uses database translations when locale is not English
+ * Auto-translates any content that's in the wrong language
  */
 
-import { useEffect, useState, useMemo, useCallback } from 'react'
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useJobs, type Job } from '@/hooks/use-jobs'
 import { PageLayout } from '@/components/layout/page-layout'
-import { Loader2, Search, MapPin, Briefcase, DollarSign, ExternalLink, Filter, RefreshCw, TrendingUp, Edit } from 'lucide-react'
+import { Loader2, Search, MapPin, Briefcase, DollarSign, ExternalLink, Filter, RefreshCw, TrendingUp, Edit, Languages } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/contexts/auth-context'
 import Link from 'next/link'
 import { useTranslation, useLocale } from '@/contexts/i18n-context'
+import { useAutoTranslateContent } from '@/hooks/use-auto-translate-content'
 
 
 const sanitizeJobDescription = (text: string) => {
@@ -117,6 +119,10 @@ export default function JobsPage() {
   const { t } = useTranslation()
   const locale = useLocale() // Get current language for translations
 
+  // Auto-translate hook for client-side translation fallback
+  const { translateJobs, isTranslating: autoTranslating } = useAutoTranslateContent()
+  const [translatedJobs, setTranslatedJobs] = useState<Job[]>([])
+
   const { jobs, loading, error, search, refresh, pagination, meta } = useJobs()
 
   // Deduplicate jobs to remove duplicates from different sources
@@ -127,6 +133,27 @@ export default function JobsPage() {
     }
     return deduped
   }, [jobs])
+
+  // Auto-translate jobs that are in wrong language
+  // Use a ref to prevent re-running while translation is in progress
+  const isTranslatingJobsRef = useRef(false)
+
+  useEffect(() => {
+    if (uniqueJobs.length > 0 && !loading && !isTranslatingJobsRef.current) {
+      isTranslatingJobsRef.current = true
+      translateJobs(uniqueJobs).then(translated => {
+        setTranslatedJobs(translated)
+        isTranslatingJobsRef.current = false
+      }).catch(() => {
+        isTranslatingJobsRef.current = false
+      })
+    } else if (uniqueJobs.length === 0) {
+      setTranslatedJobs([])
+    }
+  }, [uniqueJobs, loading, locale]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Use translated jobs if available, otherwise use original
+  const displayJobs = translatedJobs.length > 0 ? translatedJobs : uniqueJobs
 
   // Load jobs on mount and when locale changes (to get translated content)
   // Also apply URL parameters on initial load
@@ -475,10 +502,17 @@ export default function JobsPage() {
         )}
 
         {/* Jobs List */}
-        {uniqueJobs.length > 0 && (
+        {displayJobs.length > 0 && (
           <>
+            {/* Auto-translate indicator */}
+            {autoTranslating && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+                <Languages className="h-4 w-4 animate-pulse" />
+                <span>{t('common.translating') || 'Translating content...'}</span>
+              </div>
+            )}
             <div className="space-y-4">
-              {uniqueJobs.map((job) => (
+              {displayJobs.map((job) => (
                 <JobCard
                   key={`${job.source}-${job.id}`}
                   job={job}

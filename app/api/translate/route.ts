@@ -7,12 +7,13 @@ import {
   translateBlog,
   SupportedLanguage,
 } from "@/lib/services/google-translate"
+import {storeTranslation, ContentType} from "@/lib/services/translation-service"
 
 /**
  * Translation API Route
  *
  * Uses Google Cloud Translate API with service account authentication
- * Falls back to stored translations in Supabase first
+ * Stores translations in Supabase for future use
  *
  * Supports:
  * - Single text translation
@@ -34,6 +35,8 @@ export async function POST(request: NextRequest) {
       title,
       description,
       blogContent,
+      // Optional: content ID to store translation in database
+      contentId,
     } = body
 
     // Support both 'content' and 'blogContent' for blog translation
@@ -57,10 +60,22 @@ export async function POST(request: NextRequest) {
         toLanguage as SupportedLanguage,
         fromLanguage as SupportedLanguage | undefined
       )
+
+      // Store translation in database if contentId provided
+      if (contentId && result.title) {
+        storeTranslation(contentId, toLanguage, "job" as ContentType, {
+          title: result.title,
+          description: result.description,
+        }).catch(err =>
+          console.error("[Translate API] Failed to store job translation:", err)
+        )
+      }
+
       return NextResponse.json({
         success: true,
         title: result.title,
         description: result.description,
+        stored: !!contentId,
       })
     }
 
@@ -72,10 +87,25 @@ export async function POST(request: NextRequest) {
         toLanguage as SupportedLanguage,
         fromLanguage as SupportedLanguage | undefined
       )
+
+      // Store translation in database if contentId provided
+      if (contentId && result.title) {
+        storeTranslation(contentId, toLanguage, "deal" as ContentType, {
+          title: result.title,
+          description: result.description,
+        }).catch(err =>
+          console.error(
+            "[Translate API] Failed to store deal translation:",
+            err
+          )
+        )
+      }
+
       return NextResponse.json({
         success: true,
         title: result.title,
         description: result.description,
+        stored: !!contentId,
       })
     }
 
@@ -88,11 +118,27 @@ export async function POST(request: NextRequest) {
         toLanguage as SupportedLanguage,
         fromLanguage as SupportedLanguage | undefined
       )
+
+      // Store translation in database if contentId provided
+      if (contentId && result.title) {
+        storeTranslation(contentId, toLanguage, "blog" as ContentType, {
+          title: result.title,
+          description: result.description,
+          content: result.content,
+        }).catch(err =>
+          console.error(
+            "[Translate API] Failed to store blog translation:",
+            err
+          )
+        )
+      }
+
       return NextResponse.json({
         success: true,
         title: result.title,
         description: result.description,
         content: result.content,
+        stored: !!contentId,
       })
     }
 

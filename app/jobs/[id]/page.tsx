@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useState, use } from "react"
+import React, { useEffect, useState, use, useRef } from "react"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { Button } from "@/components/ui/button"
@@ -20,6 +20,7 @@ import {
   Sparkles,
   ExternalLink,
   ArrowLeft,
+  Languages,
 } from "lucide-react"
 import Link from "next/link"
 import { formatEuroText } from "@/lib/utils"
@@ -31,6 +32,7 @@ import { toast } from "@/hooks/use-toast"
 import { useTranslation, useI18n } from "@/contexts/i18n-context"
 import { TranslateButton } from "@/components/ui/translate-button"
 import { useTranslatedText } from "@/contexts/dynamic-translation-context"
+import { useAutoTranslateContent } from "@/hooks/use-auto-translate-content"
 
 const sanitizeJobDescription = (text: string) => {
   if (!text) return ""
@@ -56,6 +58,9 @@ function JobDetailContent({ params }: { params: Promise<{ id: string }> }) {
   const { t } = useTranslation()
   const canUseAI = !!(user && (user.isSubscribed || ['pro', 'premium'].includes(user.plan || '')))
 
+  // Auto-translate hook
+  const { translateJob, isTranslating: autoTranslating } = useAutoTranslateContent()
+
   type ExtJob = Job & {
     logo?: string
     category?: string
@@ -69,9 +74,42 @@ function JobDetailContent({ params }: { params: Promise<{ id: string }> }) {
   }
 
   const [job, setJob] = useState<ExtJob | null>(null)
+  const [translatedJob, setTranslatedJob] = useState<ExtJob | null>(null)
   const [relatedJobs, setRelatedJobs] = useState<Job[]>([])
   const [loadingRelated, setLoadingRelated] = useState(false)
   const [loadingJob, setLoadingJob] = useState(true)
+
+  // Ref to prevent re-running translation
+  const isTranslatingJobRef = useRef(false)
+
+  // Auto-translate job when loaded
+  useEffect(() => {
+    if (job && !loadingJob && !isTranslatingJobRef.current) {
+      isTranslatingJobRef.current = true
+      translateJob({
+        title: job.title,
+        description: job.description,
+        company: job.company,
+        location: job.location,
+      }).then(translated => {
+        if (translated.wasTranslated) {
+          setTranslatedJob({
+            ...job,
+            title: translated.title,
+            description: translated.description,
+          })
+        } else {
+          setTranslatedJob(null)
+        }
+        isTranslatingJobRef.current = false
+      }).catch(() => {
+        isTranslatingJobRef.current = false
+      })
+    }
+  }, [job?.id, loadingJob]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Use translated job if available
+  const displayJob = translatedJob || job
 
   // Load job either from sessionStorage (when coming from external search with source)
   // or from the database via /api/jobs/[id] (when opened from /saved or user-posted jobs)
@@ -370,15 +408,18 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
     )
   }
 
-  // Derive display fields from aggregator job
-  const salaryText = job.salary?.text || (
-    job.salary?.min || job.salary?.max
-      ? `${job.salary?.min ? `€${job.salary.min.toLocaleString()}` : ''}${job.salary?.min && job.salary?.max ? ' - ' : ''}${job.salary?.max ? `€${job.salary.max.toLocaleString()}` : ''}`
+  // Derive display fields from aggregator job (use translated if available)
+  const jobForDisplay = displayJob || job
+  if (!jobForDisplay) return null
+
+  const salaryText = jobForDisplay.salary?.text || (
+    jobForDisplay.salary?.min || jobForDisplay.salary?.max
+      ? `${jobForDisplay.salary?.min ? `€${jobForDisplay.salary.min.toLocaleString()}` : ''}${jobForDisplay.salary?.min && jobForDisplay.salary?.max ? ' - ' : ''}${jobForDisplay.salary?.max ? `€${jobForDisplay.salary.max.toLocaleString()}` : ''}`
       : undefined
   )
-  const jobType = job.employmentType ? job.employmentType.replace('_', ' ') : undefined
-  const postedDate = job.publishedAt ? new Date(job.publishedAt).toLocaleDateString() : undefined
-  const cleanedDescription = sanitizeJobDescription(job.description || "")
+  const jobType = jobForDisplay.employmentType ? jobForDisplay.employmentType.replace('_', ' ') : undefined
+  const postedDate = jobForDisplay.publishedAt ? new Date(jobForDisplay.publishedAt).toLocaleDateString() : undefined
+  const cleanedDescription = sanitizeJobDescription(jobForDisplay.description || "")
 
   return (
     <div className="min-h-screen">
@@ -400,30 +441,37 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
           <div className="lg:col-span-2">
             <Card>
               <CardHeader className="p-4 sm:p-6">
+                {/* Auto-translate indicator */}
+                {autoTranslating && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                    <Languages className="h-4 w-4 animate-pulse" />
+                    <span>{t('common.translating') || 'Translating...'}</span>
+                  </div>
+                )}
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                   <div className="flex items-start gap-3 sm:gap-4 min-w-0">
                     <img
                       src={"/placeholder-logo.svg"}
-                      alt={`${job.company} logo`}
+                      alt={`${jobForDisplay.company} logo`}
                       className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg object-cover flex-shrink-0"
                     />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start gap-2 flex-wrap">
-                        <CardTitle className="text-xl sm:text-2xl leading-tight">{job.title}</CardTitle>
+                        <CardTitle className="text-xl sm:text-2xl leading-tight">{jobForDisplay.title}</CardTitle>
                         <TranslateButton
-                          text={job.title}
+                          text={jobForDisplay.title}
                           onTranslate={(t) => setJob(prev => prev ? ({ ...prev, title: t }) : null)}
                           className="text-gray-400 hover:text-blue-600 flex-shrink-0"
                         />
                       </div>
                       <CardDescription className="text-base sm:text-lg flex items-center mt-1 truncate">
                         <Building2 className="h-4 w-4 mr-1 flex-shrink-0" />
-                        <span className="truncate">{job.company}</span>
+                        <span className="truncate">{jobForDisplay.company}</span>
                       </CardDescription>
                       <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-2 sm:gap-4 mt-3 text-xs sm:text-sm text-muted-foreground">
                         <div className="flex items-center">
                           <MapPin className="h-4 w-4 mr-1 flex-shrink-0" />
-                          <span className="truncate">{job.location}</span>
+                          <span className="truncate">{jobForDisplay.location}</span>
                         </div>
                         {salaryText && (
                           <div className="flex items-center">

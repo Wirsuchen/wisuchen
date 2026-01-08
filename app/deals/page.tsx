@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useMemo } from "react"
+import React, { useEffect, useState, useMemo, useRef } from "react"
 import { PageLayout } from "@/components/layout/page-layout"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Separator } from "@/components/ui/separator"
-import { Search, Filter, Heart, Star, ShoppingBag, TrendingDown, Grid3X3, List, Loader2 } from "lucide-react"
+import { Search, Filter, Heart, Star, ShoppingBag, TrendingDown, Grid3X3, List, Loader2, Languages } from "lucide-react"
 import Link from "next/link"
 import { filterDeals, sortDeals } from "@/lib/filters"
 import { formatEuro, formatEuroText } from "@/lib/utils"
@@ -18,6 +18,7 @@ import { toast } from "@/hooks/use-toast"
 import { useTranslation, useLocale } from "@/contexts/i18n-context"
 import { useAuth } from "@/contexts/auth-context"
 import { useRouter, useSearchParams } from "next/navigation"
+import { useAutoTranslateContent } from "@/hooks/use-auto-translate-content"
 
 
 export default function DealsPage() {
@@ -42,6 +43,10 @@ export default function DealsPage() {
   const locale = useLocale() // Get current language for database translations
   const { user } = useAuth()
   const router = useRouter()
+
+  // Auto-translate hook for client-side translation fallback
+  const { translateBatch, isTranslating: autoTranslating } = useAutoTranslateContent()
+  const [translatedDeals, setTranslatedDeals] = useState<any[]>([])
 
   // Update search query when URL parameters change
   useEffect(() => {
@@ -127,7 +132,55 @@ export default function DealsPage() {
     loadDeals()
   }, [locale]) // Reload when locale changes to get translated content
 
-  const filteredDeals = filterDeals(deals, {
+  // Auto-translate deals that are in wrong language
+  // Use a ref to prevent re-running while translation is in progress
+  const isTranslatingRef = useRef(false)
+
+  useEffect(() => {
+    if (deals.length > 0 && !loading && !isTranslatingRef.current) {
+      // Import detectLanguage inline to avoid dependency issues
+      const detectLang = (text: string): string => {
+        if (!text || text.length < 10) return 'en'
+        const lower = text.toLowerCase()
+        const germanWords = ['und', 'für', 'mit', 'bei', 'wir', 'sie', 'der', 'die', 'das', 'ist']
+        const frenchWords = ['pour', 'avec', 'dans', 'nous', 'vous', 'les', 'des', 'une', 'sont']
+        const deCount = germanWords.filter(w => lower.includes(w)).length
+        const frCount = frenchWords.filter(w => lower.includes(w)).length
+        if (deCount >= 3) return 'de'
+        if (frCount >= 3) return 'fr'
+        return 'en'
+      }
+
+      // Check if any deals need translation
+      const needsAutoTranslation = deals.some(
+        deal => detectLang(deal.title) !== locale || detectLang(deal.description) !== locale
+      )
+
+      if (needsAutoTranslation) {
+        isTranslatingRef.current = true
+        // Translate titles and descriptions
+        const textsToTranslate = deals.flatMap(deal => [deal.title, deal.description])
+        translateBatch(textsToTranslate, 'deal').then(results => {
+          const translated = deals.map((deal, index) => ({
+            ...deal,
+            title: results[index * 2].translatedText,
+            description: results[index * 2 + 1].translatedText,
+          }))
+          setTranslatedDeals(translated)
+          isTranslatingRef.current = false
+        }).catch(() => {
+          isTranslatingRef.current = false
+        })
+      } else {
+        setTranslatedDeals([])
+      }
+    }
+  }, [deals, loading, locale]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Use translated deals if available
+  const displayDeals = translatedDeals.length > 0 ? translatedDeals : deals
+
+  const filteredDeals = filterDeals(displayDeals, {
     searchQuery,
     categories: selectedCategories,
     brands: selectedBrands,
@@ -135,8 +188,6 @@ export default function DealsPage() {
   })
 
   const sortedDeals = sortDeals(filteredDeals, sortBy)
-
-  // API returns translated content when locale is passed, no client-side translation needed
 
   const clearAll = () => {
     setSearchQuery("")
