@@ -89,7 +89,9 @@ function dedupeJobs(jobs: Job[]): Job[] {
 
 function FeaturedJobCard({ job }: { job: Job }) {
   const { t } = useTranslation()
-  const { translatedText: title } = useTranslatedText(job.title, 'job')
+  const contentId = `job-${job.source}-${job.externalId || job.id}`
+  const { translatedText: title } = useTranslatedText(job.title, 'job', contentId)
+  const { translatedText: description } = useTranslatedText(job.description || '', 'job', contentId)
 
   const salaryText = job.salary?.text || (
     job.salary?.min || job.salary?.max
@@ -112,7 +114,7 @@ function FeaturedJobCard({ job }: { job: Job }) {
   const handleOpen = () => {
     try {
       const storageKey = `job:${job.source}:${job.externalId || job.id}`
-      sessionStorage.setItem(storageKey, JSON.stringify({ ...job, title }))
+      sessionStorage.setItem(storageKey, JSON.stringify({ ...job, title, description }))
     } catch { }
   }
 

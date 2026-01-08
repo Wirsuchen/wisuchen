@@ -441,7 +441,8 @@ export function useAutoTranslateContent() {
  */
 export function useTranslatedText(
   text: string,
-  contentType: "job" | "deal" | "blog" | "general" = "general"
+  contentType: "job" | "deal" | "blog" | "general" = "general",
+  contentId?: string
 ): {
   translatedText: string
   isTranslating: boolean
@@ -486,6 +487,7 @@ export function useTranslatedText(
         description: "",
         toLanguage: locale,
         fromLanguage: detected,
+        contentId,
       }),
     })
       .then(res => res.json())
@@ -502,7 +504,7 @@ export function useTranslatedText(
       .finally(() => {
         setIsTranslating(false)
       })
-  }, [text, locale, contentType])
+  }, [text, locale, contentType, contentId])
 
   return {translatedText, isTranslating, wasTranslated}
 }

@@ -581,8 +581,9 @@ function JobCard({ job }: JobCardProps) {
   const { t, tr } = useTranslation()
 
   // Use client-side auto-translation for title and description
-  const { translatedText: title } = useTranslatedText(job.title, 'job')
-  const { translatedText: description } = useTranslatedText(job.description || '', 'job')
+  const contentId = `job-${job.source}-${job.externalId || job.id}`
+  const { translatedText: title } = useTranslatedText(job.title, 'job', contentId)
+  const { translatedText: description } = useTranslatedText(job.description || '', 'job', contentId)
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -728,8 +729,9 @@ function UserJobCard({ job }: UserJobCardProps) {
   const { t, tr } = useTranslation()
 
   // Use client-side auto-translation for title and description
-  const { translatedText: title } = useTranslatedText(job.title, 'job')
-  const { translatedText: description } = useTranslatedText(job.description || '', 'job')
+  const contentId = `job-user-${job.id}`
+  const { translatedText: title } = useTranslatedText(job.title, 'job', contentId)
+  const { translatedText: description } = useTranslatedText(job.description || '', 'job', contentId)
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return t('jobs.notPublished')
@@ -806,9 +808,9 @@ function UserJobCard({ job }: UserJobCardProps) {
         </div>
       </div>
 
-      {job.description && (
+      {description && (
         <p className="text-gray-600 mb-4 line-clamp-2 leading-relaxed">
-          {getJobSnippet(job.description)}...
+          {getJobSnippet(description)}...
         </p>
       )}
 
