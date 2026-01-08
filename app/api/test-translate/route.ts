@@ -36,18 +36,26 @@ export async function GET() {
   const fs = await import("fs")
   const path = await import("path")
 
+  let serviceAccountInfo: {project_id?: string; client_email?: string} = {}
+
   try {
-    const credPath = path.join(
-      process.cwd(),
-      "credentials",
-      "google-translate-service-account.json"
-    )
+    const credPath =
+      process.env.GOOGLE_APPLICATION_CREDENTIALS ||
+      path.join(
+        process.cwd(),
+        "credentials",
+        "google-translate-service-account.json"
+      )
     if (fs.existsSync(credPath)) {
       const content = fs.readFileSync(credPath, "utf-8")
       const parsed = JSON.parse(content)
       results.credentials.hasServiceAccount = !!(
         parsed.client_email && parsed.private_key
       )
+      serviceAccountInfo = {
+        project_id: parsed.project_id,
+        client_email: parsed.client_email,
+      }
     }
   } catch {
     results.credentials.hasServiceAccount = false
@@ -96,6 +104,7 @@ export async function GET() {
         ? "✅ Google Translate API is working!"
         : "❌ Translation failed",
       credentialsFound: hasCredentials,
+      serviceAccount: serviceAccountInfo,
       tests: results,
       help: !hasCredentials
         ? "No credentials found. Please add your service account JSON to credentials/google-translate-service-account.json or set GOOGLE_CLOUD_TRANSLATE_API_KEY environment variable."
