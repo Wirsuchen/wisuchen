@@ -296,6 +296,8 @@ export class JobSyncService {
     locale?: string
     requireFullTranslation?: boolean // Only return jobs with all 4 language translations
   }) {
+    /*
+    // DISABLED: No longer using translations table for job filtering
     // If requireFullTranslation is true, first find jobs with all 4 languages
     let fullyTranslatedJobIds: string[] | null = null
 
@@ -348,13 +350,6 @@ export class JobSyncService {
       }
     }
 
-    let query = this.supabase
-      .from("offers")
-      .select("*", {count: "exact"})
-      .eq("type", "job")
-      .eq("status", "active")
-      .order("published_at", {ascending: false})
-
     // Filter by fully translated job IDs if requested
     if (fullyTranslatedJobIds !== null) {
       if (fullyTranslatedJobIds.length === 0) {
@@ -372,6 +367,14 @@ export class JobSyncService {
         query = query.in("id", fullyTranslatedJobIds)
       }
     }
+    */
+
+    let query = this.supabase
+      .from("offers")
+      .select("*", {count: "exact"})
+      .eq("type", "job")
+      .eq("status", "active")
+      .order("published_at", {ascending: false})
 
     if (params.query) {
       query = query.or(
