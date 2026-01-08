@@ -575,10 +575,9 @@ interface JobCardProps {
 function JobCard({ job }: JobCardProps) {
   const { t, tr } = useTranslation()
 
-  // Use client-side auto-translation for title and description at once
-  const { translatedJob } = useTranslatedJob(job)
-  const title = translatedJob.title
-  const description = translatedJob.description
+  // Job is already translated by the parent component (JobsPage) using batch translation
+  const title = job.title
+  const description = job.description
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
