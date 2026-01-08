@@ -97,6 +97,7 @@ export default function DealDetailPage() {
   const { toast } = useToast()
   const { t, tr } = useTranslation()
   const { user } = useAuth()
+  const { locale } = useI18n()
 
   useEffect(() => {
     if (!routeParams) return
@@ -116,9 +117,9 @@ export default function DealDetailPage() {
 
         // Use cache with 1 hour TTL
         const data = await fetchWithCache<any>(
-          `/api/deals?page=1&limit=50`,
+          `/api/deals?page=1&limit=50&locale=${locale}`,
           undefined,
-          { page: 1, limit: 50 },
+          { page: 1, limit: 50, locale },
           60 * 60 * 1000
         )
 
@@ -169,10 +170,9 @@ export default function DealDetailPage() {
     return () => {
       cancelled = true
     }
-  }, [dealId])
+  }, [dealId, locale])
 
   // Auto-translate deal when locale changes
-  const { locale } = useI18n()
   const originalDealRef = useRef<{ title: string; description: string } | null>(null)
   const lastTranslatedLocaleRef = useRef<string>('en')
   const dealIdRefForTranslation = useRef<string | null>(null)

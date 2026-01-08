@@ -12,6 +12,9 @@ import { useToast } from "@/hooks/use-toast"
 export function Footer() {
   const { t } = useTranslation()
   const { toast } = useToast()
+
+
+
   const [email, setEmail] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 

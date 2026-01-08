@@ -109,6 +109,7 @@ export function DynamicTranslationProvider({ children }: DynamicTranslationProvi
     const registeredContentRef = useRef<Map<string, ContentItem>>(new Map())
     const lastTranslatedLocaleRef = useRef<string>('en')
     const isTranslatingRef = useRef<boolean>(false)
+    const needsRetranslationRef = useRef<boolean>(false)
     const translationTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
     // Generate cache key for a piece of content
@@ -208,12 +209,26 @@ export function DynamicTranslationProvider({ children }: DynamicTranslationProvi
     // Translate all registered content
     const translateAllContent = useCallback(async (targetLang: string) => {
         // Prevent concurrent translations
-        if (isTranslatingRef.current) return
+        if (isTranslatingRef.current) {
+            console.log('[Translation] ⏳ Already translating, skipping...')
+            return
+        }
 
         const items = Array.from(registeredContentRef.current.values())
 
+        console.log(`[Translation] 📋 Translating ${items.length} registered items to ${targetLang}`)
+
         if (items.length === 0) {
             setTranslatedContent({})
+            isTranslatingRef.current = false
+            setIsTranslating(false)
+            if (needsRetranslationRef.current) {
+                needsRetranslationRef.current = false
+                if (translationTimeoutRef.current) clearTimeout(translationTimeoutRef.current)
+                translationTimeoutRef.current = setTimeout(() => {
+                    translateAllContent(targetLang)
+                }, 500)
+            }
             return
         }
 
@@ -226,6 +241,15 @@ export function DynamicTranslationProvider({ children }: DynamicTranslationProvi
             )
             if (!hasNonEnglishContent) {
                 setTranslatedContent({})
+                isTranslatingRef.current = false
+                setIsTranslating(false)
+                if (needsRetranslationRef.current) {
+                    needsRetranslationRef.current = false
+                    if (translationTimeoutRef.current) clearTimeout(translationTimeoutRef.current)
+                    translationTimeoutRef.current = setTimeout(() => {
+                        translateAllContent(targetLang)
+                    }, 500)
+                }
                 return
             }
         }
@@ -341,6 +365,16 @@ export function DynamicTranslationProvider({ children }: DynamicTranslationProvi
         setTranslatedContent(newTranslations)
         isTranslatingRef.current = false
         setIsTranslating(false)
+        // Check if new content was registered while we were translating
+        if (needsRetranslationRef.current) {
+            console.log('[Translation] 🔄 New content registered during translation, triggering re-translation...')
+            needsRetranslationRef.current = false
+            // Trigger another translation pass after a short delay
+            if (translationTimeoutRef.current) clearTimeout(translationTimeoutRef.current)
+            translationTimeoutRef.current = setTimeout(() => {
+                translateAllContent(targetLang)
+            }, 500)
+        }
     }, [getCachedTranslation, cacheTranslation])
 
     // Auto-translate when locale changes (debounced)
@@ -348,10 +382,19 @@ export function DynamicTranslationProvider({ children }: DynamicTranslationProvi
         // Only translate if locale actually changed
         if (lastTranslatedLocaleRef.current === locale) return
 
+        console.log(`[Translation] 🌐 Locale changed: ${lastTranslatedLocaleRef.current} → ${locale}`)
+
         // Clear any pending translation
         if (translationTimeoutRef.current) {
             clearTimeout(translationTimeoutRef.current)
         }
+
+        // Reset translation state to allow new translation
+        isTranslatingRef.current = false
+        needsRetranslationRef.current = false
+
+        // Clear previous translations when locale changes
+        setTranslatedContent({})
 
         // Update the ref immediately
         lastTranslatedLocaleRef.current = locale
@@ -379,16 +422,24 @@ export function DynamicTranslationProvider({ children }: DynamicTranslationProvi
             }
         })
 
+        if (hasNewItems) console.log(`[Translation] 📥 Registered ${items.length} items. Total registered: ${registeredContentRef.current.size}`)
+
         // Translate new items if we're not already translating
         // Also translate when in English if content might be in another language
-        if (hasNewItems && !isTranslatingRef.current) {
-            // Use a small delay to batch multiple registrations
-            if (translationTimeoutRef.current) {
-                clearTimeout(translationTimeoutRef.current)
+        if (hasNewItems) {
+            if (isTranslatingRef.current) {
+                // If already translating, mark for re-translation after current batch
+                console.log('[Translation] ⏳ Translation in progress, queueing re-translation for new items')
+                needsRetranslationRef.current = true
+            } else {
+                // Use a small delay to batch multiple registrations
+                if (translationTimeoutRef.current) {
+                    clearTimeout(translationTimeoutRef.current)
+                }
+                translationTimeoutRef.current = setTimeout(() => {
+                    translateAllContent(lastTranslatedLocaleRef.current)
+                }, 200)
             }
-            translationTimeoutRef.current = setTimeout(() => {
-                translateAllContent(lastTranslatedLocaleRef.current)
-            }, 200)
         }
     }, [translateAllContent])
 
@@ -397,6 +448,7 @@ export function DynamicTranslationProvider({ children }: DynamicTranslationProvi
         ids.forEach(id => {
             registeredContentRef.current.delete(id)
         })
+        console.log(`[Translation] 📤 Unregistered ${ids.length} items. Total registered: ${registeredContentRef.current.size}`)
 
         setTranslatedContent(prev => {
             const next = { ...prev }
@@ -421,7 +473,7 @@ export function DynamicTranslationProvider({ children }: DynamicTranslationProvi
         await translateAllContent(locale)
     }, [locale, translateAllContent])
 
-    const value: DynamicTranslationContextType = {
+    const value = React.useMemo<DynamicTranslationContextType>(() => ({
         registerContent,
         unregisterContent,
         getTranslated,
@@ -429,7 +481,7 @@ export function DynamicTranslationProvider({ children }: DynamicTranslationProvi
         progress,
         retranslateAll,
         currentLocale: locale,
-    }
+    }), [registerContent, unregisterContent, getTranslated, isTranslating, progress, retranslateAll, locale])
 
     return (
         <DynamicTranslationContext.Provider value={value}>
@@ -470,6 +522,7 @@ export function useAutoTranslatedContent(items: ContentItem[]) {
         lastItemsKeyRef.current = itemsKey
 
         // Register new items
+        console.log(`[useAutoTranslatedContent] Registering ${items.length} items (key: ${itemsKey.substring(0, 20)}...)`)
         registerContent(items)
 
         // Track registered IDs for cleanup
@@ -479,8 +532,10 @@ export function useAutoTranslatedContent(items: ContentItem[]) {
         return () => {
             // Cleanup on unmount
             if (itemIdsRef.current.length > 0) {
+                console.log(`[useAutoTranslatedContent] Cleaning up ${itemIdsRef.current.length} items`)
                 unregisterContent(itemIdsRef.current)
             }
+            lastItemsKeyRef.current = ''
         }
     }, [items, registerContent, unregisterContent])
 

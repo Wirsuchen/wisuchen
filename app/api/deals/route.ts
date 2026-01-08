@@ -455,4 +455,4 @@ async function handler(request: NextRequest) {
   }
 }
 
-export const GET = withRateLimit(handler, { max: 100, windowMs: 60000 })
+export const GET = withRateLimit(handler, { max: 300, windowMs: 60000 })

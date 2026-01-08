@@ -67,16 +67,16 @@ export default function BlogPage() {
   const featuredPost = useMemo(() => posts[0], [posts])
   const allPosts = posts
 
-  const filteredPosts = allPosts.filter((post) => {
+  const filteredPosts = useMemo(() => allPosts.filter((post) => {
     const matchesCategory =
       selectedCategory === "all" || post.category.toLowerCase().replace(/\s+/g, "-") === selectedCategory
     const matchesSearch =
       post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       post.excerpt.toLowerCase().includes(searchQuery.toLowerCase())
     return matchesCategory && matchesSearch
-  })
+  }), [allPosts, selectedCategory, searchQuery])
 
-  const sortedPosts = [...filteredPosts].sort((a, b) => {
+  const sortedPosts = useMemo(() => [...filteredPosts].sort((a, b) => {
     switch (sortBy) {
       case "oldest":
         return new Date(a.publishedDate).getTime() - new Date(b.publishedDate).getTime()
@@ -86,7 +86,7 @@ export default function BlogPage() {
       default:
         return new Date(b.publishedDate).getTime() - new Date(a.publishedDate).getTime()
     }
-  })
+  }), [filteredPosts, sortBy])
 
 
   // Prepare content items for auto-translation (using stable ID-based comparison)

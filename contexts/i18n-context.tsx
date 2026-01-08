@@ -68,10 +68,6 @@ export function I18nProvider({ children }: I18nProviderProps) {
     setLocale: setLocaleHandler,
     t: (key: string, fallback?: string) => {
       const result = getTranslation(locale, key, fallback)
-      // Only log for specific keys to avoid spam
-      if (key.includes('heroTitle') || key.includes('tagline')) {
-        console.log(`🌐 [t] locale=${locale}, key=${key}, result=${result.substring(0, 50)}...`)
-      }
       return result
     },
     tr: (key: string, variables?: Record<string, string | number>) => tr(locale, key, variables),
