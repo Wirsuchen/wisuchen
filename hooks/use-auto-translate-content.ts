@@ -14,7 +14,7 @@ import {useState, useEffect, useCallback, useRef} from "react"
 import {useLocale} from "@/contexts/i18n-context"
 
 // Language detection patterns - improved for better accuracy
-const TRANSLATION_CACHE_KEY = "auto_translate_cache_v4"
+const TRANSLATION_CACHE_KEY = "auto_translate_cache_v5"
 const CACHE_TTL = 24 * 60 * 60 * 1000 // 24 hours
 
 interface CacheEntry {

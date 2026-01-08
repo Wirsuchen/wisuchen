@@ -76,7 +76,8 @@ export async function POST(request: NextRequest) {
       )
 
       // Store translation in database if contentId provided
-      if (contentId && result.title) {
+      // SAFETY CHECK: Don't save if title is suspiciously long (likely a description accidentally passed as title)
+      if (contentId && result.title && result.title.length < 200) {
         storeTranslation(contentId, toLanguage, "job" as ContentType, {
           title: result.title,
           description: result.description,
