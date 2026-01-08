@@ -14,16 +14,31 @@ import {useState, useEffect, useCallback, useRef} from "react"
 import {useLocale} from "@/contexts/i18n-context"
 
 // Language detection patterns - improved for better accuracy
+const TRANSLATION_CACHE_KEY = "auto_translate_cache_v2"
+const CACHE_TTL = 24 * 60 * 60 * 1000 // 24 hours
+
+interface CacheEntry {
+  translation: string
+  timestamp: number
+}
+
+// Language detection patterns - improved for better accuracy
 const LANGUAGE_PATTERNS: Record<string, RegExp[]> = {
   de: [
     // Common German words
-    /\b(und|für|mit|bei|wir|sie|der|die|das|ist|ihre|unser|werden|haben|nicht|auch|auf|nach|über|oder|kann|wenn|diese|einer|sein|zur|zum|einen|einem|unseres|unsere|suchen|arbeiten|moderner|modernen|technologien)\b/gi,
+    /\b(und|für|mit|bei|wir|sie|der|die|das|ist|ihre|unser|werden|haben|nicht|auch|auf|nach|über|oder|kann|wenn|diese|einer|sein|zur|zum|einen|unseres|unsere|suchen|arbeiten|moderner|modernen|technologien)\b/gi,
     // German special characters (strong indicator)
     /[äöüß]/gi,
     // German compound words and work-related terms
     /\b(Ausbildung|Arbeit|Unternehmen|Stelle|Beruf|GmbH|Entwickler|Verstärkung|Projekten|Vollzeit|Teilzeit|Anwendung|Anforderung|Aufgaben|Verantwortlich|Informationen)\b/gi,
     // German gender notation (very strong indicator)
     /\(m\/w\/d\)|\(w\/m\/d\)|\(m\/w\/x\)|\(all[e]?\s*geschlechter\)/gi,
+  ],
+  en: [
+    // Common English words
+    /\b(and|for|with|at|we|they|the|is|their|our|will|have|not|also|on|after|about|or|can|if|this|one|be|to|an|searching|working|modern|technologies)\b/gi,
+    // IT/Tech specific English terms
+    /\b(developer|software|engineer|full|stack|frontend|backend|data|scientist|manager|senior|junior|lead|product|owner|scrum|master|consultant|architect|analyst)\b/gi,
   ],
   fr: [
     /\b(pour|avec|dans|nous|vous|les|des|une|sont|cette|notre|votre|être|avoir|faire|plus|tout|sans|mais|comme|sur|par|qui|que|aux|ses|nos|vos)\b/gi,
@@ -37,15 +52,7 @@ const LANGUAGE_PATTERNS: Record<string, RegExp[]> = {
   ],
 }
 
-// Local storage cache for translations
-const TRANSLATION_CACHE_KEY = "auto_translate_cache"
-const CACHE_TTL = 24 * 60 * 60 * 1000 // 24 hours
-
-interface CacheEntry {
-  translation: string
-  timestamp: number
-}
-
+// Local storage cache functions
 function getTranslationCache(): Record<string, CacheEntry> {
   if (typeof window === "undefined") return {}
   try {
@@ -94,7 +101,7 @@ function getCacheKey(text: string, targetLang: string): string {
  * Detect the language of a text based on common patterns
  */
 export function detectLanguage(text: string): "en" | "de" | "fr" | "it" {
-  if (!text || text.length < 10) return "en"
+  if (!text || text.length < 5) return "en"
 
   // Quick check for very strong German indicators (job gender notation)
   if (
@@ -104,7 +111,7 @@ export function detectLanguage(text: string): "en" | "de" | "fr" | "it" {
   }
 
   const lowerText = text.toLowerCase()
-  const scores: Record<string, number> = {de: 0, fr: 0, it: 0}
+  const scores: Record<string, number> = {de: 0, fr: 0, it: 0, en: 0}
 
   for (const [lang, patterns] of Object.entries(LANGUAGE_PATTERNS)) {
     for (const pattern of patterns) {
@@ -131,8 +138,12 @@ export function detectLanguage(text: string): "en" | "de" | "fr" | "it" {
     }
   }
 
-  // Require minimum score threshold to detect non-English (lowered to 2 for better detection)
-  return maxScore >= 2 ? (maxLang as "de" | "fr" | "it") : "en"
+  // If no languages detected significantly, default to English
+  // If maxScore is low but English has matched keywords, prefer English
+  if (maxLang === "en" && scores.en > 0) return "en"
+
+  // Require minimum score threshold to detect non-English (lowered to 1 for better detection on titles)
+  return maxScore >= 1 ? (maxLang as "de" | "fr" | "it" | "en") : "en"
 }
 
 /**
