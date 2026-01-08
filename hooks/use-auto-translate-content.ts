@@ -277,7 +277,8 @@ export function useAutoTranslateContent() {
       }
 
       // Build content ID for database storage
-      const contentId = job.id && job.source ? `job-${job.source}-${job.id}` : undefined
+      const contentId =
+        job.id && job.source ? `job-${job.source}-${job.id}` : undefined
       const detectedLang = detectLanguage(job.title + " " + job.description)
 
       // Use single API call to translate and store
@@ -303,9 +304,12 @@ export function useAutoTranslateContent() {
               setTranslationCache(getCacheKey(job.title, locale), data.title)
             }
             if (data.description) {
-              setTranslationCache(getCacheKey(job.description, locale), data.description)
+              setTranslationCache(
+                getCacheKey(job.description, locale),
+                data.description
+              )
             }
-            
+
             return {
               ...job,
               title: data.title || job.title,
@@ -345,7 +349,14 @@ export function useAutoTranslateContent() {
    * Translate an array of jobs
    */
   const translateJobs = useCallback(
-    async <T extends {id?: string; source?: string; title: string; description: string}>(
+    async <
+      T extends {
+        id?: string
+        source?: string
+        title: string
+        description: string
+      }
+    >(
       jobs: T[]
     ): Promise<T[]> => {
       if (jobs.length === 0) return jobs
