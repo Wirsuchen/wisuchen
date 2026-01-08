@@ -7,7 +7,7 @@ import {
   ContentType,
   SupportedLanguage,
 } from "@/lib/services/translation-service"
-import {translateText} from "@/lib/services/lingva-translate"
+
 
 // GET /api/jobs/[id] - Get a specific job
 export async function GET(
@@ -102,99 +102,31 @@ export async function GET(
         // If no translation exists for this locale, create one
         if (!translation) {
           try {
-            // Detect source language from job content (simple heuristic)
-            // If job has German chars or common German words, assume German source
-            const titleText = job.title || ""
-            const descText = job.description || ""
-            const combinedText = (titleText + " " + descText).toLowerCase()
-
-            // Simple language detection
-            let sourceLanguage: SupportedLanguage = "en"
-            const germanIndicators = [
-              "und",
-              "für",
-              "mit",
-              "bei",
-              "wir",
-              "sie",
-              "der",
-              "die",
-              "das",
-              "ist",
-              "ä",
-              "ö",
-              "ü",
-              "ß",
-            ]
-            const frenchIndicators = [
-              "pour",
-              "avec",
-              "dans",
-              "nous",
-              "vous",
-              "les",
-              "des",
-              "une",
-              "est",
-              "sont",
-              "é",
-              "è",
-              "ê",
-              "ç",
-            ]
-            const italianIndicators = [
-              "per",
-              "con",
-              "che",
-              "sono",
-              "della",
-              "nella",
-              "questo",
-              "questa",
-              "è",
-              "ò",
-              "ù",
-            ]
-
-            const hasGerman = germanIndicators.some(ind =>
-              combinedText.includes(ind)
-            )
-            const hasFrench = frenchIndicators.some(ind =>
-              combinedText.includes(ind)
-            )
-            const hasItalian = italianIndicators.some(ind =>
-              combinedText.includes(ind)
+            console.log(
+              `[Jobs API] Translating job ${id} to ${locale} (auto-detect source)...`
             )
 
-            if (hasGerman && !hasFrench && !hasItalian) sourceLanguage = "de"
-            else if (hasFrench && !hasGerman && !hasItalian)
-              sourceLanguage = "fr"
-            else if (hasItalian && !hasGerman && !hasFrench)
-              sourceLanguage = "it"
+            const { translateJob } = await import(
+              "@/lib/services/google-translate"
+            )
 
-            // Only translate if target locale is different from detected source
-            if (locale !== sourceLanguage) {
-              console.log(
-                `[Jobs API] Translating job ${id} from ${sourceLanguage} to ${locale}...`
-              )
+            // Translate both title and description
+            // Pass undefined for sourceLanguage to let Google auto-detect
+            const translated = await translateJob(
+              job.title || "",
+              job.description || "",
+              locale as SupportedLanguage,
+              undefined
+            )
 
-              const titleResult = await translateText(
-                titleText,
-                locale as SupportedLanguage,
-                sourceLanguage
-              )
-              const descResult = await translateText(
-                descText.substring(0, 2000),
-                locale as SupportedLanguage,
-                sourceLanguage
-              )
+            const newTranslation = {
+              title: translated.title,
+              description: translated.description,
+            }
 
-              const newTranslation = {
-                title: titleResult.translation || job.title,
-                description: descResult.translation || job.description,
-              }
-
-              // Store for future use
+            // Store for future use
+            // Only store if we actually got a translation (simple check: title exists)
+            if (newTranslation.title) {
               await storeTranslation(contentId, locale, "job", newTranslation)
               console.log(`[Jobs API] ✓ Translated job ${id} to ${locale}`)
 
