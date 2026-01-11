@@ -373,7 +373,15 @@ export class JobSyncService {
     }
 
     if (params.location) {
-      query = query.ilike("location", `%${params.location}%`)
+      // Support comma-separated location patterns (OR matching)
+      const locationPatterns = params.location.split(',').map(l => l.trim()).filter(Boolean)
+      if (locationPatterns.length === 1) {
+        query = query.ilike("location", `%${locationPatterns[0]}%`)
+      } else if (locationPatterns.length > 1) {
+        // Build OR filter for multiple locations
+        const orFilter = locationPatterns.map(loc => `location.ilike.%${loc}%`).join(',')
+        query = query.or(orFilter)
+      }
     }
 
     if (params.employmentType) {

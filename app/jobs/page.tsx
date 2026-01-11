@@ -102,13 +102,25 @@ interface UserPostedJob {
   applications_count: number
 }
 
+// Map country codes to location search patterns (matches German and English names + major cities)
+const COUNTRY_LOCATION_MAP: Record<string, string> = {
+  'de': 'Germany,Deutschland,Berlin,Munich,München,Frankfurt,Hamburg,Köln,Cologne,Düsseldorf,Stuttgart,Hannover,Bremen,Leipzig,Dresden,Dortmund,Essen,Nürnberg,Nuremberg',
+  'remote': 'Remote,Home office,Homeoffice,Work from home,Worldwide,Anywhere',
+  'ch': 'Switzerland,Schweiz,Suisse,Zürich,Zurich,Geneva,Genf,Genève,Basel,Bern,Lausanne'
+}
+
 export default function JobsPage() {
   const searchParams = useSearchParams()
   const urlLocation = searchParams.get('location') || ''
+  const urlCountry = searchParams.get('country') || ''
   const urlQuery = searchParams.get('q') || searchParams.get('query') || ''
 
+  // Convert country code to location pattern if provided
+  const effectiveLocation = urlCountry ? (COUNTRY_LOCATION_MAP[urlCountry] || urlLocation) : urlLocation
+
   const [searchQuery, setSearchQuery] = useState(urlQuery)
-  const [location, setLocation] = useState(urlLocation)
+  const [location, setLocation] = useState(effectiveLocation)
+  const [selectedCountry, setSelectedCountry] = useState(urlCountry)
   const [employmentType, setEmploymentType] = useState<string>('')
   const [showFilters, setShowFilters] = useState(false)
   const [initialLoadDone, setInitialLoadDone] = useState(false)
@@ -146,11 +158,11 @@ export default function JobsPage() {
   // Also apply URL parameters on initial load
   useEffect(() => {
     if (!initialLoadDone) {
-      // First load - use URL params if available
-      if (urlLocation || urlQuery) {
+      // First load - use URL params if available (including country filter)
+      if (effectiveLocation || urlQuery) {
         search({
           query: urlQuery || undefined,
-          location: urlLocation || undefined,
+          location: effectiveLocation || undefined,
           limit: 20,
           page: 1,
           useCache: true,
@@ -167,19 +179,23 @@ export default function JobsPage() {
     }
   }, [locale]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Update state when URL params change
+  // Update state when URL params change (location or country)
   useEffect(() => {
-    if (urlLocation !== location) {
-      setLocation(urlLocation)
+    const newEffectiveLocation = urlCountry ? (COUNTRY_LOCATION_MAP[urlCountry] || urlLocation) : urlLocation
+    if (newEffectiveLocation !== location) {
+      setLocation(newEffectiveLocation)
+    }
+    if (urlCountry !== selectedCountry) {
+      setSelectedCountry(urlCountry)
     }
     if (urlQuery !== searchQuery) {
       setSearchQuery(urlQuery)
     }
     // Trigger search if URL params changed after initial load
-    if (initialLoadDone && (urlLocation || urlQuery)) {
+    if (initialLoadDone && (newEffectiveLocation || urlQuery)) {
       search({
         query: urlQuery || undefined,
-        location: urlLocation || undefined,
+        location: newEffectiveLocation || undefined,
         limit: 20,
         page: 1,
         useCache: true,
@@ -187,7 +203,7 @@ export default function JobsPage() {
         requireFullTranslation: true // Only show jobs with all 4 language translations
       })
     }
-  }, [urlLocation, urlQuery]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [urlLocation, urlQuery, urlCountry]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Load user's posted jobs with translations based on locale
   const loadUserJobs = useCallback(async () => {
@@ -396,6 +412,48 @@ export default function JobsPage() {
                   <Filter className="w-4 h-4" />
                 </Button>
               </div>
+            </div>
+
+            {/* Quick Country Filters */}
+            <div className="flex flex-wrap gap-2 pt-3">
+              <Link
+                href="/jobs?country=de"
+                className={`inline-flex items-center rounded-full border px-3 py-1.5 text-sm transition-colors ${selectedCountry === 'de'
+                    ? 'bg-gray-900 text-white border-gray-900'
+                    : 'bg-white hover:bg-gray-50 border-gray-200'
+                  }`}
+              >
+                <MapPin className="h-3.5 w-3.5 mr-1.5 text-red-500" />
+                {t('home.germany', 'Germany')}
+              </Link>
+              <Link
+                href="/jobs?country=remote"
+                className={`inline-flex items-center rounded-full border px-3 py-1.5 text-sm transition-colors ${selectedCountry === 'remote'
+                    ? 'bg-gray-900 text-white border-gray-900'
+                    : 'bg-white hover:bg-gray-50 border-gray-200'
+                  }`}
+              >
+                <MapPin className="h-3.5 w-3.5 mr-1.5 text-blue-500" />
+                {t('home.remoteJobs', 'Remote')}
+              </Link>
+              <Link
+                href="/jobs?country=ch"
+                className={`inline-flex items-center rounded-full border px-3 py-1.5 text-sm transition-colors ${selectedCountry === 'ch'
+                    ? 'bg-gray-900 text-white border-gray-900'
+                    : 'bg-white hover:bg-gray-50 border-gray-200'
+                  }`}
+              >
+                <MapPin className="h-3.5 w-3.5 mr-1.5 text-red-500" />
+                {t('home.switzerland', 'Switzerland')}
+              </Link>
+              {selectedCountry && (
+                <Link
+                  href="/jobs"
+                  className="inline-flex items-center rounded-full border px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 border-gray-200 transition-colors"
+                >
+                  ✕ {t('jobs.clearFilter', 'Clear Filter')}
+                </Link>
+              )}
             </div>
 
             {/* Advanced Filters */}

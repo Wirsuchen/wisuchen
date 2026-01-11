@@ -396,21 +396,21 @@ export default function HomePage() {
             <div className="max-w-2xl mx-auto mb-2 sm:mb-4">
               <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-sm">
                 <Link
-                  href="/jobs?location=Germany"
+                  href="/jobs?country=de"
                   className="inline-flex items-center rounded-full border px-3 py-1 bg-background hover:bg-accent/50 transition-colors"
                 >
                   <MapPin className="h-4 w-4 mr-1 text-red-500" />
                   {t('home.jobsIn')} {t('home.germany', 'Germany')}
                 </Link>
                 <Link
-                  href="/jobs?location=Austria"
+                  href="/jobs?country=remote"
                   className="inline-flex items-center rounded-full border px-3 py-1 bg-background hover:bg-accent/50 transition-colors"
                 >
-                  <MapPin className="h-4 w-4 mr-1 text-red-500" />
-                  {t('home.jobsIn')} {t('home.austria', 'Austria')}
+                  <MapPin className="h-4 w-4 mr-1 text-blue-500" />
+                  {t('home.remoteJobs', 'Remote Jobs')}
                 </Link>
                 <Link
-                  href="/jobs?location=Switzerland"
+                  href="/jobs?country=ch"
                   className="inline-flex items-center rounded-full border px-3 py-1 bg-background hover:bg-accent/50 transition-colors"
                 >
                   <MapPin className="h-4 w-4 mr-1 text-red-500" />
