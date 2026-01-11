@@ -87,7 +87,15 @@ export async function GET(
     if (supportedLocales.includes(locale)) {
       try {
         // Build content_id matching the format used in translations table
-        const contentId = buildContentId("job", id, job.source || "db")
+        // Different sources use different ID formats:
+        // - adzuna: uses offer.id (UUID)
+        // - rapidapi-*: uses external_id
+        // - db (user-posted): uses offer.id (UUID)
+        const source = job.source || "db"
+        const idForTranslation = source.startsWith("rapidapi-") && job.external_id 
+          ? job.external_id 
+          : id
+        const contentId = buildContentId("job", idForTranslation, source)
 
         // Try to get stored translation from Supabase
         const translation = await getStoredTranslation(contentId, locale, "job")

@@ -182,9 +182,11 @@ function JobDetailContent({ params }: { params: Promise<{ id: string }> }) {
         if (job.employmentType) params.append('employmentType', job.employmentType)
         params.append('limit', '6')
         params.append('page', '1')
+        params.append('locale', locale)
+        params.append('requireFullTranslation', 'true')
 
         const url = `/api/v1/jobs/search?${params.toString()}`
-        const data = await fetchWithCache<any>(url, undefined, { city, type: job.employmentType }, 60 * 60 * 1000)
+        const data = await fetchWithCache<any>(url, undefined, { city, type: job.employmentType, locale, requireFullTranslation: true }, 60 * 60 * 1000)
 
         if (data.success && data.data.jobs) {
           // Filter out the current job and limit to 3
