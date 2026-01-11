@@ -148,6 +148,10 @@ export async function storeTranslation(
 
 /**
  * Build content ID for different content types
+ * Note: Different sources use different ID formats:
+ *   - adzuna: uses offer.id (UUID)
+ *   - rapidapi-*: uses offer.external_id
+ *   - db (user-posted): uses offer.id (UUID)
  */
 export function buildContentId(type: ContentType, id: string, source?: string): string {
   if (type === "blog" || type === "page") {
@@ -171,10 +175,26 @@ export async function applyStoredTranslations<T extends {id: string}>(
     return items
   }
 
-  // Build content IDs
-  const contentIds = items.map(item => {
+  // Build content IDs based on source type:
+  // - adzuna: uses offer.id (UUID)
+  // - rapidapi-*: uses external_id
+  // - db (user-posted): uses offer.id (UUID)
+  const contentIds = items.map((item, index) => {
     const source = (item as any).source || "db"
-    return buildContentId(type, item.id, source)
+    // For adzuna and db jobs, use the database id (UUID)
+    // For rapidapi-* jobs, use the external_id
+    let itemId: string
+    if (source === "adzuna" || source === "db" || !source) {
+      itemId = item.id
+    } else {
+      // For rapidapi sources, prefer externalId/external_id
+      itemId = (item as any).externalId || (item as any).external_id || item.id
+    }
+    const contentId = buildContentId(type, itemId, source)
+    if (index < 3) {
+      console.log(`[Translation Debug] Item ${index}: source=${source}, id=${item.id}, externalId=${(item as any).externalId}, contentId=${contentId}`)
+    }
+    return contentId
   })
 
   // Fetch all translations in one batch query

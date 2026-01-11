@@ -10,7 +10,7 @@ interface CacheEntry<T> {
   expiresAt: number
 }
 
-const CACHE_PREFIX = 'api_cache_'
+const CACHE_PREFIX = 'api_cache_v2_' // Increment version to invalidate old cache
 const DEFAULT_TTL = 60 * 60 * 1000 // 1 hour in milliseconds
 
 /**

@@ -135,20 +135,43 @@ async function handler(request: NextRequest) {
           try {
             // 1. Get IDs of all translated jobs for this language
             // We use type assertion since tables might not be fully typed in generated types
+            // NOTE: We need to match on external_id for external jobs and id for database jobs
+            // Content IDs are in format: job-{source}-{external_id} or job-db-{uuid}
             const {data: translations} = await (supabase as any)
               .from("translations")
               .select("content_id")
               .eq("language", lang)
               .eq("type", "job")
 
-            const translatedIds = (translations || [])
+            // Build a set of content_ids that have translations
+            // We'll use this for checking instead of trying to extract UUIDs
+            const translatedContentIds = new Set(
+              (translations || []).map((t: any) => t.content_id)
+            )
+
+            // For database jobs with translations (job-db-{uuid} format), extract UUIDs
+            // For external jobs, we can't easily filter by ID in the query, so we skip prioritization
+            const translatedDbIds = (translations || [])
+              .filter((t: any) => t.content_id?.startsWith("job-db-"))
+              .map((t: any) => t.content_id.replace("job-db-", ""))
+              .filter((id: string) => id && id.length === 36) // Valid UUIDs only
+
+            // Also get external job IDs that have translations (for matching later)
+            const translatedExternalIds = (translations || [])
+              .filter((t: any) => t.content_id && !t.content_id.startsWith("job-db-"))
               .map((t: any) => {
-                // Extract UUID from end of "job-source-uuid" string
-                // UUID is 36 chars long
-                if (!t.content_id || t.content_id.length < 36) return null
-                return t.content_id.slice(-36)
+                // Extract external_id from job-{source}-{external_id}
+                const parts = t.content_id.split("-")
+                // Remove "job" prefix and source, rest is the external_id
+                if (parts.length >= 3) {
+                  return parts.slice(2).join("-")
+                }
+                return null
               })
               .filter(Boolean)
+
+            // Use database job UUIDs for prioritized fetching
+            const translatedIds = translatedDbIds
 
             if (translatedIds.length === 0) {
               jobs = await fetchStandard()
@@ -314,9 +337,22 @@ async function handler(request: NextRequest) {
         if (combined.length > 0) {
           try {
             // Get content IDs for batch lookup
-            const contentIds = combined.map(
-              j => `job-${j.source || "db"}-${j.id}`
-            )
+            // Different sources use different ID formats:
+            // - adzuna: uses offer.id (UUID)
+            // - rapidapi-*: uses external_id
+            // - db (user-posted): uses offer.id (UUID)
+            const contentIds = combined.map(j => {
+              const source = j.source || "db"
+              // For adzuna and db jobs, use the database id (UUID)
+              // For rapidapi-* sources, use the external_id
+              let jobId: string
+              if (source === "adzuna" || source === "db" || !source) {
+                jobId = j.id
+              } else {
+                jobId = j.external_id || j.externalId || j.id
+              }
+              return `job-${source}-${jobId}`
+            })
             console.log(
               `[Jobs API] Fetching translations for lang=${lang}, count=${contentIds.length}`
             )
@@ -331,10 +367,10 @@ async function handler(request: NextRequest) {
             )
 
             // Apply translations, falling back to original if not found
-            translatedJobs = combined.map(job => {
-              const translation = translations.get(
-                `job-${job.source || "db"}-${job.id}`
-              )
+            translatedJobs = combined.map((job, index) => {
+              // Use the same content_id that was used for lookup
+              const contentId = contentIds[index]
+              const translation = translations.get(contentId)
               if (translation) {
                 return {
                   ...job,

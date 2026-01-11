@@ -269,9 +269,9 @@ export default function HomePage() {
       // Backend will return translated content based on locale parameter
       // Only show jobs that have all 4 language translations
       const data = await fetchWithCache<any>(
-        `/api/v1/jobs/search?limit=9&useCache=true&countries=de,at,ch&locale=${locale}&useDatabase=true`,
+        `/api/v1/jobs/search?limit=9&useCache=true&countries=de,at,ch&locale=${locale}&useDatabase=true&requireFullTranslation=true`,
         undefined,
-        { limit: 9, countries: ['de', 'at', 'ch'], locale },
+        { limit: 9, countries: ['de', 'at', 'ch'], locale, requireFullTranslation: true },
         60 * 60 * 1000
       )
       const jobs: Job[] = data?.data?.jobs || []
@@ -288,9 +288,8 @@ export default function HomePage() {
 
   const fetchStats = async () => {
     try {
-      // Fetch actual total jobs count from all sources (cached)
-      // Request with limit=500 to get maximum jobs and use the total count
-      const jobsResponse = await fetch('/api/v1/jobs/search?limit=500&useCache=true')
+      // Fetch actual total jobs count from fully translated jobs only
+      const jobsResponse = await fetch('/api/v1/jobs/search?limit=1&useCache=true&requireFullTranslation=true')
       const jobsData = await jobsResponse.json()
 
       // Get the actual total count from all aggregated sources

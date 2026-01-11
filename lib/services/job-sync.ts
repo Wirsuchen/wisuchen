@@ -285,6 +285,7 @@ export class JobSyncService {
   /**
    * Search jobs from database
    * When locale is provided, only returns jobs that have translations for that language
+   * When requireFullTranslation is true, only returns jobs with all 4 language translations
    */
   async searchJobs(params: {
     query?: string
@@ -296,79 +297,68 @@ export class JobSyncService {
     locale?: string
     requireFullTranslation?: boolean // Only return jobs with all 4 language translations
   }) {
-    /*
-    // DISABLED: No longer using translations table for job filtering
-    // If requireFullTranslation is true, first find jobs with all 4 languages
-    let fullyTranslatedJobIds: string[] | null = null
+    const page = params.page || 1
+    const limit = params.limit || 20
+    const from = (page - 1) * limit
 
+    // If requireFullTranslation is true, use a dedicated RPC function that handles
+    // the join server-side (avoids passing 1000s of IDs in the URL which causes Bad Request)
     if (params.requireFullTranslation) {
-      // Use RPC or raw query to find jobs with translations in all 4 languages
-      const {data: translationData, error: transError} = await this.supabase
-        .rpc("get_fully_translated_job_ids")
-        .select("job_id")
+      try {
+        // Use RPC function that returns paginated results with all filters applied
+        const {data, error, count} = await this.supabase.rpc(
+          "search_fully_translated_jobs",
+          {
+            p_query: params.query || null,
+            p_location: params.location || null,
+            p_employment_type: params.employmentType || null,
+            p_experience_level: params.experienceLevel || null,
+            p_limit: limit,
+            p_offset: from,
+          }
+        )
 
-      if (transError) {
-        // Fallback: If RPC doesn't exist, use a simpler approach
-        // Get jobs that appear in translations for each language
-        const languages = ["de", "en", "fr", "it"]
-        const jobIdSets: Set<string>[] = []
+        if (error) {
+          console.error("Error in search_fully_translated_jobs RPC:", error)
+          // Fall through to regular search
+        } else {
+          // Get total count - RPC returns BIGINT directly, not an object
+          const {data: countResult, error: countError} = await this.supabase.rpc(
+            "count_fully_translated_jobs",
+            {
+              p_query: params.query || null,
+              p_location: params.location || null,
+              p_employment_type: params.employmentType || null,
+              p_experience_level: params.experienceLevel || null,
+            }
+          )
 
-        for (const lang of languages) {
-          const {data: langTranslations} = await this.supabase
-            .from("translations")
-            .select("content_id")
-            .eq("type", "job")
-            .eq("language", lang)
+          if (countError) {
+            console.error("Error in count_fully_translated_jobs RPC:", countError)
+          }
 
-          if (langTranslations) {
-            const uuidRegex =
-              /([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})$/i
-            const ids = new Set(
-              langTranslations
-                .map(t => {
-                  const match = t.content_id.match(uuidRegex)
-                  return match ? match[1] : null
-                })
-                .filter((id): id is string => id !== null)
-            )
-            jobIdSets.push(ids)
+          // countResult is the BIGINT value directly
+          const totalCount = typeof countResult === 'number' ? countResult : parseInt(countResult, 10) || 0
+
+          console.log(
+            `[JobSync] Found ${data?.length || 0} fully translated jobs (page ${page}, total: ${totalCount})`
+          )
+
+          return {
+            jobs: data || [],
+            total: totalCount,
+            page,
+            limit,
+            totalPages: Math.ceil(totalCount / limit),
           }
         }
-
-        // Intersection of all sets = jobs with all 4 languages
-        if (jobIdSets.length === 4) {
-          const intersection = [...jobIdSets[0]].filter(
-            id =>
-              jobIdSets[1].has(id) &&
-              jobIdSets[2].has(id) &&
-              jobIdSets[3].has(id)
-          )
-          fullyTranslatedJobIds = intersection
-        }
-      } else if (translationData) {
-        fullyTranslatedJobIds = translationData.map((r: any) => r.job_id)
+      } catch (error) {
+        console.error("Error in requireFullTranslation:", error)
+        // Fall through to regular search
       }
     }
 
-    // Filter by fully translated job IDs if requested
-    if (fullyTranslatedJobIds !== null) {
-      if (fullyTranslatedJobIds.length === 0) {
-        return {
-          jobs: [],
-          total: 0,
-          page: params.page || 1,
-          limit: params.limit || 20,
-          totalPages: 0,
-        }
-      }
-      // Only use .in() if we have a reasonable number of IDs (< 100)
-      // Otherwise the URL becomes too long
-      if (fullyTranslatedJobIds.length <= 100) {
-        query = query.in("id", fullyTranslatedJobIds)
-      }
-    }
-    */
-
+    // Regular search (no translation requirement)
     let query = this.supabase
       .from("offers")
       .select("*", {count: "exact"})
@@ -394,11 +384,7 @@ export class JobSyncService {
       query = query.eq("experience_level", params.experienceLevel)
     }
 
-    const page = params.page || 1
-    const limit = params.limit || 20
-    const from = (page - 1) * limit
     const to = from + limit - 1
-
     query = query.range(from, to)
 
     const {data, error, count} = await query
