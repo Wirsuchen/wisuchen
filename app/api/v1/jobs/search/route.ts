@@ -80,7 +80,7 @@ const searchJobsSchema = z.object({
     .enum(["true", "false"])
     .optional()
     .transform(v => v === "true"),
-  locale: z.enum(["en", "de", "fr", "it"]).optional().default("en"),
+  locale: z.enum(["en", "de", "fr", "it"]).optional().default("de"),
   requireFullTranslation: z
     .enum(["true", "false"])
     .optional()
@@ -151,16 +151,13 @@ async function handler(req: NextRequest) {
           publishedAt: job.published_at,
         }))
 
-        // Always apply translations - works for all languages including English
-        // (source content may be in German/French and need translation to English)
-        /* 
+        // Apply translations from database based on locale
         if (validatedParams.locale) {
           mappedJobs = await translationService.translateJobs(
             mappedJobs,
             validatedParams.locale
           )
         }
-        */
 
         const res = NextResponse.json(
           {
@@ -218,16 +215,13 @@ async function handler(req: NextRequest) {
     logger.apiResponse("aggregator", "searchJobs", 0, 200)
 
     let jobs = result.jobs
-    // Always apply translations - works for all languages including English
-    // (source content may be in German/French and need translation to English)
-    /*
+    // Apply translations from database based on locale
     if (validatedParams.locale) {
       jobs = await translationService.translateJobs(
         jobs,
         validatedParams.locale
       )
     }
-    */
 
     const res = NextResponse.json(
       {

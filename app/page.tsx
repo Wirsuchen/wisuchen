@@ -17,7 +17,6 @@ import { formatEuroText, formatEuro } from "@/lib/utils"
 import { fetchWithCache } from "@/lib/utils/client-cache"
 import { useTranslation, useLocale } from "@/contexts/i18n-context"
 import { useState, useEffect } from "react"
-import { useTranslatedText, useTranslatedJob } from "@/hooks/use-auto-translate-content"
 import type { Job } from "@/hooks/use-jobs"
 
 interface Deal {
@@ -87,11 +86,61 @@ function dedupeJobs(jobs: Job[]): Job[] {
   return Array.from(byKey.values())
 }
 
+// FeaturedDealCard - Translations come from Supabase via API
+function FeaturedDealCard({ deal }: { deal: Deal }) {
+  const { t, tr } = useTranslation()
+  // Translations are applied server-side from Supabase via the API
+  const title = deal.title
+
+  return (
+    <Card className="hover:shadow-lg transition-shadow">
+      <CardHeader>
+        <div className="flex items-start justify-between">
+          <CardTitle className="text-lg line-clamp-2" title={title}>
+            {title}
+          </CardTitle>
+          <Badge className="bg-accent text-accent-foreground shrink-0">{tr('deals.percentOff', { percent: deal.discount })}</Badge>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {/* Deal Image */}
+        {deal.image && (
+          <div className="mb-4">
+            <img
+              src={deal.image}
+              alt={title}
+              className="w-full h-44 sm:h-40 object-cover rounded-md"
+            />
+          </div>
+        )}
+        <div className="space-y-3">
+          <div className="flex items-center space-x-2">
+            <span className="text-2xl font-bold text-accent">{formatEuro(deal.currentPrice)}</span>
+            <span className="text-sm text-muted-foreground line-through">{formatEuro(deal.originalPrice)}</span>
+          </div>
+          <div className="flex items-center justify-end">
+            <div className="flex items-center">
+              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
+              <span className="text-sm">{deal.rating}</span>
+            </div>
+          </div>
+        </div>
+        <Button className="w-full mt-4" asChild>
+          <Link href={`/deals/${deal.id}`}>
+            <ShoppingBag className="h-4 w-4 mr-2" />
+            {t('home.viewDeal')}
+          </Link>
+        </Button>
+      </CardContent>
+    </Card>
+  )
+}
+
 function FeaturedJobCard({ job }: { job: Job }) {
   const { t } = useTranslation()
-  const { translatedJob } = useTranslatedJob(job)
-  const title = translatedJob.title
-  const description = translatedJob.description
+  // Translations are applied server-side from Supabase via the API
+  const title = job.title
+  const description = job.description
 
   const salaryText = job.salary?.text || (
     job.salary?.min || job.salary?.max
@@ -455,46 +504,7 @@ export default function HomePage() {
                 </div>
               ) : (
                 topDeals.map((deal) => (
-                  <Card key={deal.id} className="hover:shadow-lg transition-shadow">
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <CardTitle className="text-lg line-clamp-2">
-                          {deal.title}
-                        </CardTitle>
-                        <Badge className="bg-accent text-accent-foreground shrink-0">{tr('deals.percentOff', { percent: deal.discount })}</Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      {/* Deal Image */}
-                      {deal.image && (
-                        <div className="mb-4">
-                          <img
-                            src={deal.image}
-                            alt={deal.title}
-                            className="w-full h-44 sm:h-40 object-cover rounded-md"
-                          />
-                        </div>
-                      )}
-                      <div className="space-y-3">
-                        <div className="flex items-center space-x-2">
-                          <span className="text-2xl font-bold text-accent">{formatEuro(deal.currentPrice)}</span>
-                          <span className="text-sm text-muted-foreground line-through">{formatEuro(deal.originalPrice)}</span>
-                        </div>
-                        <div className="flex items-center justify-end">
-                          <div className="flex items-center">
-                            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
-                            <span className="text-sm">{deal.rating}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <Button className="w-full mt-4" asChild>
-                        <Link href={`/deals/${deal.id}`}>
-                          <ShoppingBag className="h-4 w-4 mr-2" />
-                          {t('home.viewDeal')}
-                        </Link>
-                      </Button>
-                    </CardContent>
-                  </Card>
+                  <FeaturedDealCard key={deal.id} deal={deal} />
                 ))
               )}
             </div>

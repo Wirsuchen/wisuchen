@@ -32,7 +32,6 @@ import { formatEuro, formatEuroText } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { useTranslation, useI18n } from "@/contexts/i18n-context"
 import { useAuth } from "@/contexts/auth-context"
-import { TranslateButton } from "@/components/ui/translate-button"
 
 interface DealDetail {
   id: string
@@ -500,11 +499,6 @@ export default function DealDetailPage() {
                           >
                             {deal.title}
                           </a>
-                          <TranslateButton
-                            text={deal.title}
-                            onTranslate={(t) => setDeal(prev => prev ? ({ ...prev, title: t }) : null)}
-                            className="text-gray-400 hover:text-blue-600 shrink-0"
-                          />
                         </h1>
                         <div className="flex items-center mt-2">
                           <div className="flex items-center">
@@ -684,15 +678,7 @@ export default function DealDetailPage() {
                 {/* Description */}
                 <div className="space-y-4 sm:space-y-6">
                   <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <h2 className="text-lg sm:text-xl font-semibold">{t('deals.detail.productDescription')}</h2>
-                      <TranslateButton
-                        text={deal.description}
-                        onTranslate={(t) => setDeal(prev => prev ? ({ ...prev, description: t }) : null)}
-                        contentType="general"
-                        className="text-gray-400 hover:text-blue-600"
-                      />
-                    </div>
+                    <h2 className="text-lg sm:text-xl font-semibold mb-3">{t('deals.detail.productDescription')}</h2>
                     <div className="prose prose-sm max-w-none">
                       <pre className="whitespace-pre-wrap font-sans text-sm sm:text-base leading-relaxed">{deal.description}</pre>
                     </div>

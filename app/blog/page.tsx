@@ -12,11 +12,11 @@ import { Search, Calendar, Clock, ArrowRight, TrendingUp, ArrowLeft, Loader2 } f
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
 import { useToast } from "@/hooks/use-toast"
-import { useTranslation } from "@/contexts/i18n-context"
-import { useAutoTranslatedContent } from "@/contexts/dynamic-translation-context"
+import { useTranslation, useLocale } from "@/contexts/i18n-context"
 
 export default function BlogPage() {
   const { t } = useTranslation()
+  const locale = useLocale()
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [sortBy, setSortBy] = useState("newest")
@@ -29,19 +29,42 @@ export default function BlogPage() {
 
   useEffect(() => {
     const supabase = createClient()
-      ; (async () => {
-        setLoading(true)
-        const { data } = await supabase
-          .from('blog_posts')
-          .select('id, title, slug, excerpt, content, featured_image_url, published_at, views_count, categories:categories(name,slug), profiles:profiles(full_name)')
-          .eq('status', 'published')
-          .order('published_at', { ascending: false })
-        const mapped = (data || []).map((p: any) => ({
+    ;(async () => {
+      setLoading(true)
+      
+      // Fetch blog posts
+      const { data: blogData } = await supabase
+        .from('blog_posts')
+        .select('id, title, slug, excerpt, content, featured_image_url, published_at, views_count, categories:categories(name,slug), profiles:profiles(full_name)')
+        .eq('status', 'published')
+        .order('published_at', { ascending: false })
+      
+      // Fetch translations for current locale
+      const blogIds = (blogData || []).map((p: any) => `blog-${p.id}`)
+      const { data: translations } = await supabase
+        .from('translations')
+        .select('content_id, translations')
+        .in('content_id', blogIds)
+        .eq('language', locale)
+        .eq('type', 'blog')
+      
+      // Create a map of translations
+      const translationMap = new Map<string, any>()
+      ;(translations || []).forEach((t: any) => {
+        translationMap.set(t.content_id, t.translations)
+      })
+      
+      // Map posts with translations applied
+      const mapped = (blogData || []).map((p: any) => {
+        const contentId = `blog-${p.id}`
+        const translation = translationMap.get(contentId)
+        
+        return {
           id: p.id,
           slug: p.slug,
-          title: p.title,
-          excerpt: p.excerpt || '',
-          content: p.content || '',
+          title: translation?.title || p.title,
+          excerpt: translation?.excerpt || translation?.description || p.excerpt || '',
+          content: translation?.content || p.content || '',
           author: p.profiles?.full_name || 'Admin',
           publishedDate: p.published_at || p.created_at,
           readTime: `${Math.max(1, Math.round(((p.content || '').replace(/<[^>]+>/g, ' ').split(/\s+/).filter(Boolean).length) / 225))} min read`,
@@ -51,18 +74,20 @@ export default function BlogPage() {
           image: p.featured_image_url || '/blog-market-trends.png',
           featured: false,
           views: p.views_count || 0,
-        }))
-        setPosts(mapped)
-        const counts: Record<string, { name: string; count: number }> = {}
-        mapped.forEach((m) => {
-          const key = m.categorySlug
-          if (!counts[key]) counts[key] = { name: m.category, count: 0 }
-          counts[key].count++
-        })
-        setCategories([{ id: 'all', name: t('blog.allPosts'), count: mapped.length }, ...Object.entries(counts).map(([id, v]) => ({ id, name: v.name, count: v.count }))])
-        setLoading(false)
-      })()
-  }, [])
+        }
+      })
+      
+      setPosts(mapped)
+      const counts: Record<string, { name: string; count: number }> = {}
+      mapped.forEach((m) => {
+        const key = m.categorySlug
+        if (!counts[key]) counts[key] = { name: m.category, count: 0 }
+        counts[key].count++
+      })
+      setCategories([{ id: 'all', name: t('blog.allPosts'), count: mapped.length }, ...Object.entries(counts).map(([id, v]) => ({ id, name: v.name, count: v.count }))])
+      setLoading(false)
+    })()
+  }, [locale]) // Reload when locale changes to get translations
 
   const featuredPost = useMemo(() => posts[0], [posts])
   const allPosts = posts
@@ -89,22 +114,8 @@ export default function BlogPage() {
   }), [filteredPosts, sortBy])
 
 
-  // Prepare content items for auto-translation (using stable ID-based comparison)
-  const contentItemsIdKey = useMemo(() => sortedPosts.map((p: any) => p.id).join(','), [sortedPosts])
-  const contentItems = useMemo(() => {
-    return sortedPosts.map((post: any) => ({
-      id: `blog-${post.id}`,
-      type: 'blog' as const,
-      fields: {
-        title: post.title || '',
-        excerpt: post.excerpt || '',
-      }
-    }))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [contentItemsIdKey, sortedPosts]) // Using contentItemsIdKey for stable comparison
-
-  // Register blog posts for auto-translation when locale changes
-  const { getTranslated, isTranslating } = useAutoTranslatedContent(contentItems)
+  // Translations are fetched from Supabase via the API based on locale
+  // No client-side auto-translation needed
 
   const handleNewsletterSubscribe = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -217,13 +228,6 @@ export default function BlogPage() {
           </Select>
         </div>
 
-        {/* Translation Indicator */}
-        {isTranslating && (
-          <div className="flex items-center justify-center gap-2 py-2 text-sm text-muted-foreground mb-4">
-            <Loader2 className="w-4 h-4 animate-spin" />
-            <span>{t('common.translating')}</span>
-          </div>
-        )}
 
         {/* Featured Post */}
         {selectedCategory === "all" && !searchQuery && featuredPost && (
@@ -252,16 +256,9 @@ export default function BlogPage() {
                   </div>
                 </div>
                 <h2 className="text-2xl font-bold mb-4">
-                  {isTranslating ? (
-                    <span className="inline-flex items-center gap-2">
-                      <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                      <span className="animate-pulse">{getTranslated(`blog-${featuredPost.id}`, 'title', featuredPost.title)}</span>
-                    </span>
-                  ) : (
-                    getTranslated(`blog-${featuredPost.id}`, 'title', featuredPost.title)
-                  )}
+                  {featuredPost.title}
                 </h2>
-                <p className="text-muted-foreground mb-6">{getTranslated(`blog-${featuredPost.id}`, 'excerpt', featuredPost.excerpt)}</p>
+                <p className="text-muted-foreground mb-6">{featuredPost.excerpt}</p>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-primary-foreground text-sm font-bold">
@@ -316,17 +313,10 @@ export default function BlogPage() {
                 </div>
                 <Link href={`/blog/${post.slug}`}>
                   <h3 className="text-lg font-semibold mb-3 hover:text-accent transition-colors line-clamp-2">
-                    {isTranslating ? (
-                      <span className="inline-flex items-center gap-2">
-                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                        <span className="animate-pulse">{getTranslated(`blog-${post.id}`, 'title', post.title)}</span>
-                      </span>
-                    ) : (
-                      getTranslated(`blog-${post.id}`, 'title', post.title)
-                    )}
+                    {post.title}
                   </h3>
                 </Link>
-                <p className="text-muted-foreground text-sm mb-4 line-clamp-3">{getTranslated(`blog-${post.id}`, 'excerpt', post.excerpt)}</p>
+                <p className="text-muted-foreground text-sm mb-4 line-clamp-3">{post.excerpt}</p>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center text-primary-foreground text-xs font-bold">

@@ -1,30 +1,28 @@
 /**
- * Backend Translation Service with Supabase Storage
+ * Translation Service - Supabase Only
  *
- * Stores translations in database for instant retrieval.
- * Uses Gemini AI for translations with structured JSON output.
+ * Fetches translations from the Supabase translations table.
+ * No external APIs - all translations are pre-stored in the database.
+ * 
+ * Translation Table Structure:
+ * - content_id: Unique identifier (e.g., "job-rapidapi-jsearch-{id}", "deal-db-{id}", "blog-{uuid}")
+ * - language: Language code (en, de, fr, it)
+ * - type: Content type (job, deal, blog, category, page)
+ * - translations: JSONB with translated fields (title, description, content, etc.)
  */
 
 import {createClient} from "@/lib/supabase/server"
-import {translateText} from "@/lib/services/lingva-translate"
-import {
-  translateToAllLanguages,
-  MultiLanguageTranslation,
-} from "@/lib/services/ai/gemini"
-import {
-  translateBatch as googleTranslateBatch,
-  translateText as googleTranslateText,
-  SupportedLanguage as GoogleSupportedLanguage,
-} from "@/lib/services/google-translate"
 
 export type SupportedLanguage = "en" | "de" | "fr" | "it"
-export type ContentType = "job" | "deal" | "blog"
+export type ContentType = "job" | "deal" | "blog" | "category" | "page"
 
 export interface TranslationFields {
   title?: string
   description?: string
   excerpt?: string
   content?: string
+  name?: string // For categories
+  location?: string // For jobs
 }
 
 interface StoredTranslation {
@@ -40,177 +38,8 @@ interface StoredTranslation {
 // All supported languages
 const ALL_LANGUAGES: SupportedLanguage[] = ["en", "de", "fr", "it"]
 
-// Languages to translate to (excluding English which is the source)
-const TARGET_LANGUAGES: SupportedLanguage[] = ["de", "fr", "it"]
-
 /**
- * Detect the source language of text based on common word patterns
- */
-export function detectLanguage(text: string): SupportedLanguage {
-  const lowerText = text.toLowerCase()
-
-  const germanIndicators = [
-    "und",
-    "für",
-    "mit",
-    "bei",
-    "wir",
-    "sie",
-    "der",
-    "die",
-    "das",
-    "ist",
-    "ä",
-    "ö",
-    "ü",
-    "ihre",
-    "unser",
-    "werden",
-  ]
-  const frenchIndicators = [
-    "pour",
-    "avec",
-    "dans",
-    "nous",
-    "vous",
-    "les",
-    "des",
-    "une",
-    "sont",
-    "cette",
-    "é",
-    "è",
-    "ê",
-    "notre",
-    "votre",
-  ]
-  const italianIndicators = [
-    "per",
-    "con",
-    "che",
-    "sono",
-    "della",
-    "nella",
-    "questo",
-    "questa",
-    "è",
-    "ò",
-    "ù",
-    "nostro",
-    "vostro",
-  ]
-
-  const hasGerman = germanIndicators.filter(ind =>
-    lowerText.includes(ind)
-  ).length
-  const hasFrench = frenchIndicators.filter(ind =>
-    lowerText.includes(ind)
-  ).length
-  const hasItalian = italianIndicators.filter(ind =>
-    lowerText.includes(ind)
-  ).length
-
-  // Return language with most matches, default to English
-  const max = Math.max(hasGerman, hasFrench, hasItalian)
-  if (max === 0) return "en"
-  if (hasGerman === max && hasGerman > hasFrench && hasGerman > hasItalian)
-    return "de"
-  if (hasFrench === max && hasFrench > hasGerman && hasFrench > hasItalian)
-    return "fr"
-  if (hasItalian === max && hasItalian > hasGerman && hasItalian > hasFrench)
-    return "it"
-
-  return "en" // Default
-}
-
-/**
- * Auto-translate content to all 4 languages
- * Detects source language and translates to all others
- * Returns content_id for the translations
- */
-export async function autoTranslateToAllLanguages(
-  contentId: string,
-  type: ContentType,
-  fields: TranslationFields
-): Promise<{
-  success: boolean
-  sourceLanguage: SupportedLanguage
-  translatedLanguages: SupportedLanguage[]
-}> {
-  const translatedLanguages: SupportedLanguage[] = []
-
-  try {
-    // Combine all text fields for language detection
-    const combinedText = Object.values(fields)
-      .filter(v => typeof v === "string")
-      .join(" ")
-    const sourceLanguage = detectLanguage(combinedText)
-
-    console.log(
-      `[Translation] Detected source language: ${sourceLanguage} for ${contentId}`
-    )
-
-    // Store original content for source language
-    await storeTranslation(contentId, sourceLanguage, type, fields)
-    translatedLanguages.push(sourceLanguage)
-    console.log(
-      `[Translation] Stored original ${sourceLanguage} content for ${contentId}`
-    )
-
-    // Translate to all other languages
-    const targetLanguages = ALL_LANGUAGES.filter(
-      lang => lang !== sourceLanguage
-    )
-
-    for (const targetLang of targetLanguages) {
-      try {
-        const translated: TranslationFields = {}
-
-        for (const [key, value] of Object.entries(fields)) {
-          if (value && typeof value === "string" && value.trim().length > 0) {
-            // Truncate very long content for translation
-            const textToTranslate = value.substring(0, 3000)
-            const result = await translateText(
-              textToTranslate,
-              targetLang,
-              sourceLanguage
-            )
-            translated[key as keyof TranslationFields] =
-              result.translation || value
-          }
-        }
-
-        await storeTranslation(contentId, targetLang, type, translated)
-        translatedLanguages.push(targetLang)
-        console.log(
-          `[Translation] Created ${targetLang} translation for ${contentId}`
-        )
-
-        // Small delay to avoid rate limiting
-        await new Promise(resolve => setTimeout(resolve, 300))
-      } catch (err) {
-        console.error(
-          `[Translation] Failed to translate ${contentId} to ${targetLang}:`,
-          err
-        )
-      }
-    }
-
-    console.log(
-      `[Translation] ✓ Completed ${translatedLanguages.length}/4 translations for ${contentId}`
-    )
-    return {success: true, sourceLanguage, translatedLanguages}
-  } catch (error) {
-    console.error(
-      `[Translation] Auto-translate failed for ${contentId}:`,
-      error
-    )
-    return {success: false, sourceLanguage: "en", translatedLanguages}
-  }
-}
-
-/**
- * Get stored translations from Supabase
+ * Get stored translation from Supabase for a single item
  */
 export async function getStoredTranslation(
   contentId: string,
@@ -220,7 +49,6 @@ export async function getStoredTranslation(
   try {
     const supabase = await createClient()
 
-    // Use type assertion since translations table isn't in generated types yet
     const {data, error} = await (supabase as any)
       .from("translations")
       .select("translations")
@@ -241,7 +69,7 @@ export async function getStoredTranslation(
 }
 
 /**
- * Get translations for multiple content items at once
+ * Get translations for multiple content items at once (batch)
  */
 export async function getStoredTranslationsBatch(
   contentIds: string[],
@@ -250,7 +78,6 @@ export async function getStoredTranslationsBatch(
 ): Promise<Map<string, TranslationFields>> {
   const result = new Map<string, TranslationFields>()
 
-  // Don't skip English - source content may be in German/French and need English translation
   if (contentIds.length === 0) {
     return result
   }
@@ -258,7 +85,6 @@ export async function getStoredTranslationsBatch(
   try {
     const supabase = await createClient()
 
-    // Use type assertion since translations table isn't in generated types yet
     const {data, error} = await (supabase as any)
       .from("translations")
       .select("content_id, translations")
@@ -267,6 +93,7 @@ export async function getStoredTranslationsBatch(
       .eq("type", type)
 
     if (error || !data) {
+      console.error("Error fetching batch translations:", error)
       return result
     }
 
@@ -274,6 +101,7 @@ export async function getStoredTranslationsBatch(
       result.set(row.content_id, row.translations as TranslationFields)
     }
 
+    console.log(`[Translation] Fetched ${result.size}/${contentIds.length} translations for ${language}`)
     return result
   } catch (error) {
     console.error("Error getting batch translations:", error)
@@ -282,7 +110,7 @@ export async function getStoredTranslationsBatch(
 }
 
 /**
- * Store translation in Supabase
+ * Store translation in Supabase (for admin/cron jobs)
  */
 export async function storeTranslation(
   contentId: string,
@@ -293,7 +121,6 @@ export async function storeTranslation(
   try {
     const supabase = await createClient()
 
-    // Use type assertion since translations table isn't in generated types yet
     const {error} = await (supabase as any).from("translations").upsert(
       {
         content_id: contentId,
@@ -320,232 +147,37 @@ export async function storeTranslation(
 }
 
 /**
- * Translate fields using Lingva (FREE)
- * Now supports auto-detection of source language when translating TO English
+ * Build content ID for different content types
  */
-async function translateFields(
-  fields: TranslationFields,
-  targetLanguage: SupportedLanguage
-): Promise<TranslationFields> {
-  const result: TranslationFields = {}
-
-  for (const [key, value] of Object.entries(fields)) {
-    if (value && typeof value === "string" && value.trim().length > 0) {
-      // When translating TO English, auto-detect source language
-      // When translating FROM English, use "en" as source
-      const sourceLang = targetLanguage === "en" ? "auto" : "en"
-      const translated = await translateText(
-        value,
-        targetLanguage,
-        sourceLang as any
-      )
-      result[key as keyof TranslationFields] = translated.translation || value
-    }
+export function buildContentId(type: ContentType, id: string, source?: string): string {
+  if (type === "blog" || type === "page") {
+    return `${type}-${id}`
   }
-
-  return result
+  // For jobs and deals, include source
+  return `${type}-${source || "db"}-${id}`
 }
 
 /**
- * Ensure content is translated to all languages and stored in DB
- * Returns immediately if translations exist, otherwise translates and stores
+ * Apply stored translations to items from Supabase database
+ * Falls back to original content if translation is not available
  */
-export async function ensureTranslated(
-  contentId: string,
-  type: ContentType,
-  fields: TranslationFields,
-  languages: SupportedLanguage[] = ALL_LANGUAGES // Use ALL_LANGUAGES to include English
-): Promise<void> {
-  for (const lang of languages) {
-    // Check if translation exists
-    const existing = await getStoredTranslation(contentId, lang, type)
-    if (existing) continue
-
-    // Translate and store
-    try {
-      const translated = await translateFields(fields, lang)
-      await storeTranslation(contentId, lang, type, translated)
-
-      // Small delay to avoid rate limiting
-      await new Promise(resolve => setTimeout(resolve, 200))
-    } catch (error) {
-      console.error(`Error translating ${contentId} to ${lang}:`, error)
-    }
-  }
-}
-
-/**
- * Translate a batch of content items with small delays
- * Used for bulk translation jobs
- */
-export async function translateBatchWithDelay(
-  items: Array<{id: string; fields: TranslationFields}>,
-  type: ContentType,
-  languages: SupportedLanguage[] = TARGET_LANGUAGES,
-  delayMs: number = 500,
-  onProgress?: (completed: number, total: number) => void
-): Promise<{success: number; failed: number}> {
-  let success = 0
-  let failed = 0
-  const total = items.length * languages.filter(l => l !== "en").length
-  let completed = 0
-
-  for (const item of items) {
-    for (const lang of languages) {
-      if (lang === "en") continue
-
-      try {
-        // Check if already exists
-        const existing = await getStoredTranslation(item.id, lang, type)
-        if (existing) {
-          success++
-          completed++
-          continue
-        }
-
-        // Translate
-        const translated = await translateFields(item.fields, lang)
-        const stored = await storeTranslation(item.id, lang, type, translated)
-
-        if (stored) {
-          success++
-        } else {
-          failed++
-        }
-
-        completed++
-        onProgress?.(completed, total)
-
-        // Delay between translations
-        await new Promise(resolve => setTimeout(resolve, delayMs))
-      } catch (error) {
-        console.error(`Error translating ${item.id} to ${lang}:`, error)
-        failed++
-        completed++
-      }
-    }
-  }
-
-  return {success, failed}
-}
-
-/**
- * Translate items to ALL languages using Gemini AI with structured output
- * Optimized for 20 RPM rate limit (3500ms delay between calls)
- * Each API call translates to EN/DE/FR/IT simultaneously
- *
- * SMART TRANSLATION: Checks if translations already exist and skips fully translated items
- */
-export async function translateBatchWithGemini(
-  items: Array<{id: string; title: string; description: string}>,
-  type: ContentType,
-  delayMs: number = 3500, // 20 RPM = 3 seconds + buffer
-  onProgress?: (completed: number, total: number) => void
-): Promise<{success: number; failed: number; skipped: number}> {
-  let success = 0
-  let failed = 0
-  let skipped = 0
-  const total = items.length
-  const targetLanguages: SupportedLanguage[] = ["de", "fr", "it"]
-
-  for (let i = 0; i < items.length; i++) {
-    const item = items[i]
-
-    try {
-      // Check if all translations already exist for this item
-      let allTranslationsExist = true
-      for (const lang of targetLanguages) {
-        const existing = await getStoredTranslation(item.id, lang, type)
-        if (!existing || !existing.title) {
-          allTranslationsExist = false
-          break
-        }
-      }
-
-      // Skip if already fully translated
-      if (allTranslationsExist) {
-        skipped++
-        console.log(
-          `⏭ Skipped ${
-            i + 1
-          }/${total} (already translated): ${item.title.substring(0, 40)}...`
-        )
-        onProgress?.(i + 1, total)
-        continue
-      }
-
-      // Translate to all 4 languages in one API call
-      const result = await translateToAllLanguages({
-        title: item.title,
-        description: item.description?.substring(0, 1500) || "", // Limit description length
-        contentType: type,
-      })
-
-      if (result.success && result.translations) {
-        // Store all 4 translations
-        const languages: (keyof MultiLanguageTranslation)[] = [
-          "en",
-          "de",
-          "fr",
-          "it",
-        ]
-
-        for (const lang of languages) {
-          const translation = result.translations[lang]
-          await storeTranslation(item.id, lang, type, {
-            title: translation.title,
-            description: translation.description,
-          })
-        }
-
-        success++
-        console.log(
-          `✓ Translated ${i + 1}/${total}: ${item.title.substring(0, 40)}...`
-        )
-      } else {
-        failed++
-        console.error(`✗ Failed ${i + 1}/${total}: ${result.error}`)
-      }
-
-      // Delay to stay under 60 RPM rate limit (only after actual API call)
-      if (i < items.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, delayMs))
-      }
-    } catch (error) {
-      console.error(`✗ Error translating ${item.id}:`, error)
-      failed++
-    }
-
-    onProgress?.(i + 1, total)
-  }
-
-  console.log(
-    `\n📊 Translation Summary: ${success} translated, ${skipped} skipped, ${failed} failed`
-  )
-  return {success, failed, skipped}
-}
-
-/**
- * Fast path: Apply stored translations only (no API calls)
- * Used for pagination where jobs are already filtered to those with translations
- */
-async function applyStoredTranslationsOnly<T extends {id: string}>(
+export async function applyStoredTranslations<T extends {id: string}>(
   items: T[],
   type: ContentType,
   language: string,
   fields: (keyof T & keyof TranslationFields)[]
 ): Promise<T[]> {
-  if (items.length === 0) {
+  if (items.length === 0 || !language) {
     return items
   }
 
   // Build content IDs
   const contentIds = items.map(item => {
     const source = (item as any).source || "db"
-    return `${type}-${source}-${item.id}`
+    return buildContentId(type, item.id, source)
   })
 
-  // Single batch query to get all translations
+  // Fetch all translations in one batch query
   const storedTranslations = await getStoredTranslationsBatch(
     contentIds,
     language,
@@ -557,148 +189,13 @@ async function applyStoredTranslationsOnly<T extends {id: string}>(
     const contentId = contentIds[index]
     const translation = storedTranslations.get(contentId)
 
-    if (!translation) return item
-
-    const newItem = {...item}
-    fields.forEach(field => {
-      const translatedValue = translation[field]
-      if (translatedValue) {
-        ;(newItem as any)[field] = translatedValue
-      }
-    })
-
-    return newItem
-  })
-}
-
-/**
- * Apply stored translations to a list of items
- * Falls back to original content if translation missing
- */
-export async function applyTranslations<T extends {id: string}>(
-  items: T[],
-  type: ContentType,
-  language: string,
-  fieldMappings: {source: keyof T; target: keyof T}[]
-): Promise<T[]> {
-  // Don't skip English - source content may be in German/French and need English translation
-  if (items.length === 0) {
-    return items
-  }
-
-  // Get all translations in one query
-  const contentIds = items.map(item => {
-    const source = (item as any).source || "db"
-    return `${type}-${source}-${item.id}`
-  })
-  const translations = await getStoredTranslationsBatch(
-    contentIds,
-    language,
-    type
-  )
-
-  // Apply translations, falling back to original
-  return items.map(item => {
-    const source = (item as any).source || "db"
-    const translation = translations.get(`${type}-${source}-${item.id}`)
     if (!translation) {
       return item
     }
 
-    const result = {...item}
-    for (const mapping of fieldMappings) {
-      const translatedValue =
-        translation[mapping.source as keyof TranslationFields]
-      if (translatedValue) {
-        ;(result as any)[mapping.target] = translatedValue
-      }
-    }
-
-    return result
-  })
-}
-
-/**
- * Apply translations to items, generating them if missing
- * Now supports translating TO English (from German/French sources)
- */
-async function translateAndApply<T extends {id: string}>(
-  items: T[],
-  type: ContentType,
-  language: string,
-  fields: (keyof T & keyof TranslationFields)[]
-): Promise<T[]> {
-  if (items.length === 0) {
-    return items
-  }
-
-  // 1. Get existing translations
-  const contentIds = items.map(item => {
-    const source = (item as any).source || "db"
-    return `${type}-${source}-${item.id}`
-  })
-
-  const storedTranslations = await getStoredTranslationsBatch(
-    contentIds,
-    language,
-    type
-  )
-
-  // 2. Translate missing items
-  const itemsToTranslate: {index: number; contentId: string; item: T}[] = []
-
-  items.forEach((item, index) => {
-    const contentId = contentIds[index]
-    if (!storedTranslations.has(contentId)) {
-      itemsToTranslate.push({index, contentId, item})
-    }
-  })
-
-  if (itemsToTranslate.length > 0) {
-    // Translate in parallel chunks to avoid overwhelming the API
-    const chunkSize = 5
-    for (let i = 0; i < itemsToTranslate.length; i += chunkSize) {
-      const chunk = itemsToTranslate.slice(i, i + chunkSize)
-      await Promise.all(
-        chunk.map(async ({contentId, item}) => {
-          const fieldsToTranslate: TranslationFields = {}
-          let hasContent = false
-
-          fields.forEach(field => {
-            const value = (item as any)[field]
-            if (typeof value === "string" && value.trim().length > 0) {
-              fieldsToTranslate[field] = value
-              hasContent = true
-            }
-          })
-
-          if (hasContent) {
-            try {
-              const translated = await translateFields(
-                fieldsToTranslate,
-                language as SupportedLanguage
-              )
-              await storeTranslation(contentId, language, type, translated)
-              storedTranslations.set(contentId, translated)
-            } catch (error) {
-              console.error(`Failed to translate ${contentId}:`, error)
-            }
-          }
-        })
-      )
-    }
-  }
-
-  // 3. Apply translations
-  return items.map((item, index) => {
-    const contentId = contentIds[index]
-    const translation = storedTranslations.get(contentId)
-
-    if (!translation) return item
-
     const newItem = {...item}
     fields.forEach(field => {
-      const translatedValue = translation[field]
+      const translatedValue = translation[field as keyof TranslationFields]
       if (translatedValue) {
         ;(newItem as any)[field] = translatedValue
       }
@@ -708,276 +205,107 @@ async function translateAndApply<T extends {id: string}>(
   })
 }
 
-// Legacy compatibility - keeping old translationService object
+/**
+ * Legacy compatibility - translationService object
+ * Used by existing API routes
+ */
 export const translationService = {
-  async translateBatch(
-    texts: string[],
-    targetLanguage: "de" | "en" | "fr" | "it"
-  ): Promise<string[]> {
-    if (targetLanguage === "en") return texts
-
-    const results: string[] = []
-    for (const text of texts) {
-      const translated = await translateText(text, targetLanguage, "en")
-      results.push(translated.translation || text)
-    }
-    return results
-  },
-
+  /**
+   * Translate jobs using Supabase translations only
+   */
   async translateJobs(jobs: any[], targetLanguage: string): Promise<any[]> {
-    // Always attempt translation - source content may be in German/French
-    // and need translation to English or any other language
     if (!targetLanguage || jobs.length === 0) return jobs
 
-    // First try: Apply stored translations from database
-    const translatedJobs = await applyStoredTranslationsWithGoogleFallback(
+    return applyStoredTranslations(
       jobs,
       "job",
-      targetLanguage as SupportedLanguage,
+      targetLanguage,
       ["title", "description"]
     )
-    return translatedJobs
   },
 
+  /**
+   * Translate deals using Supabase translations only
+   */
   async translateDeals(deals: any[], targetLanguage: string): Promise<any[]> {
-    // Always attempt translation - source content may be in any language
     if (!targetLanguage || deals.length === 0) return deals
 
-    // First try: Apply stored translations from database with Google fallback
-    return applyStoredTranslationsWithGoogleFallback(
+    return applyStoredTranslations(
       deals,
       "deal",
-      targetLanguage as SupportedLanguage,
+      targetLanguage,
       ["title", "description"]
     )
   },
-}
 
-/**
- * Apply stored translations with Google Translate API fallback
- * 1. First checks DB for stored translations
- * 2. For missing translations, uses Google Translate API in real-time
- * 3. Stores new translations in DB for future use
- */
-async function applyStoredTranslationsWithGoogleFallback<
-  T extends {id: string}
->(
-  items: T[],
-  type: ContentType,
-  language: SupportedLanguage,
-  fields: (keyof T & keyof TranslationFields)[]
-): Promise<T[]> {
-  if (items.length === 0) {
-    return items
-  }
+  /**
+   * Translate blogs using Supabase translations only
+   */
+  async translateBlogs(blogs: any[], targetLanguage: string): Promise<any[]> {
+    if (!targetLanguage || blogs.length === 0) return blogs
 
-  // Build content IDs
-  const contentIds = items.map(item => {
-    const source = (item as any).source || "db"
-    return `${type}-${source}-${item.id}`
-  })
-
-  // 1. Get existing translations from DB
-  const storedTranslations = await getStoredTranslationsBatch(
-    contentIds,
-    language,
-    type
-  )
-
-  // 2. Identify items missing translations OR items with wrong language content
-  const itemsNeedingTranslation: {
-    index: number
-    contentId: string
-    item: T
-    textsToTranslate: string[]
-    fieldNames: string[]
-    detectedSourceLang?: SupportedLanguage
-  }[] = []
-
-  items.forEach((item, index) => {
-    const contentId = contentIds[index]
-    const stored = storedTranslations.get(contentId)
-
-    // Check if translation exists and has content
-    const hasStored = stored && hasValidTranslation(stored, fields)
-
-    // For English target: verify the stored content is actually English
-    // This fixes cases where German/French content was incorrectly stored as "English"
-    let needsTranslation = !hasStored
-    let detectedSourceLang: SupportedLanguage | undefined
-
-    if (hasStored && language === "en") {
-      // Check if the stored "English" translation is actually in another language
-      const storedText = fields
-        .map(f => stored[f as keyof TranslationFields])
-        .filter(v => typeof v === "string")
-        .join(" ")
-
-      detectedSourceLang = detectLanguage(storedText)
-
-      if (detectedSourceLang !== "en") {
-        console.log(
-          `[Translation] ⚠️ Stored "English" translation for ${contentId} is actually ${detectedSourceLang}, will translate`
-        )
-        needsTranslation = true
-      }
-    }
-
-    if (needsTranslation) {
-      const textsToTranslate: string[] = []
-      const fieldNames: string[] = []
-
-      // Use stored content if available (for wrong-language fix), otherwise use item content
-      fields.forEach(field => {
-        const storedValue = stored?.[field as keyof TranslationFields]
-        const itemValue = (item as any)[field]
-        const value = hasStored && storedValue ? storedValue : itemValue
-
-        if (typeof value === "string" && value.trim().length > 0) {
-          textsToTranslate.push(value)
-          fieldNames.push(field as string)
-        }
-      })
-
-      if (textsToTranslate.length > 0) {
-        itemsNeedingTranslation.push({
-          index,
-          contentId,
-          item,
-          textsToTranslate,
-          fieldNames,
-          detectedSourceLang,
-        })
-      }
-    }
-  })
-
-  // 3. If items need translation, use Google Translate API
-  if (itemsNeedingTranslation.length > 0) {
-    console.log(
-      `[Translation] 🔄 ${itemsNeedingTranslation.length} items need Google Translate for ${language}`
+    return applyStoredTranslations(
+      blogs,
+      "blog",
+      targetLanguage,
+      ["title", "description", "excerpt", "content"]
     )
+  },
 
-    // Group texts by source language for more accurate translation
-    const textsBySourceLang = new Map<
-      SupportedLanguage | undefined,
-      {
-        texts: string[]
-        mappings: {itemIdx: number; fieldIdx: number}[]
+  /**
+   * Translate categories using Supabase translations only
+   */
+  async translateCategories(categories: any[], targetLanguage: string): Promise<any[]> {
+    if (!targetLanguage || categories.length === 0) return categories
+
+    // Categories use 'name' instead of 'title'
+    const contentIds = categories.map(cat => buildContentId("category", cat.id))
+    const translations = await getStoredTranslationsBatch(contentIds, targetLanguage, "category")
+
+    return categories.map((cat, index) => {
+      const translation = translations.get(contentIds[index])
+      if (!translation) return cat
+
+      return {
+        ...cat,
+        name: translation.name || cat.name,
+        description: translation.description || cat.description,
       }
-    >()
-
-    itemsNeedingTranslation.forEach((item, itemIdx) => {
-      const sourceLang = item.detectedSourceLang
-
-      if (!textsBySourceLang.has(sourceLang)) {
-        textsBySourceLang.set(sourceLang, {texts: [], mappings: []})
-      }
-
-      const group = textsBySourceLang.get(sourceLang)!
-      item.textsToTranslate.forEach((text, fieldIdx) => {
-        group.texts.push(text)
-        group.mappings.push({itemIdx, fieldIdx})
-      })
     })
+  },
 
-    // Batch translate each source language group
-    const translatedByItem = new Map<number, TranslationFields>()
+  /**
+   * Translate a single item (job, deal, blog)
+   */
+  async translateSingle(
+    item: any,
+    type: ContentType,
+    targetLanguage: string
+  ): Promise<any> {
+    if (!targetLanguage || !item) return item
 
-    try {
-      for (const [sourceLang, {texts, mappings}] of textsBySourceLang) {
-        console.log(
-          `[Translation] Translating ${texts.length} texts from ${
-            sourceLang || "auto"
-          } to ${language}`
-        )
+    const contentId = buildContentId(type, item.id, item.source)
+    const translation = await getStoredTranslation(contentId, targetLanguage, type)
 
-        const googleResult = await googleTranslateBatch(
-          texts,
-          language as GoogleSupportedLanguage,
-          sourceLang as GoogleSupportedLanguage | undefined
-        )
-
-        if (googleResult.success && googleResult.translations) {
-          googleResult.translations.forEach((translatedText, i) => {
-            const {itemIdx, fieldIdx} = mappings[i]
-            const itemInfo = itemsNeedingTranslation[itemIdx]
-            const fieldName = itemInfo.fieldNames[fieldIdx]
-
-            if (!translatedByItem.has(itemIdx)) {
-              translatedByItem.set(itemIdx, {})
-            }
-            translatedByItem.get(itemIdx)![
-              fieldName as keyof TranslationFields
-            ] = translatedText
-          })
-        } else {
-          console.error(
-            `[Translation] ✗ Google Translate failed for ${sourceLang}:`,
-            googleResult.error
-          )
-        }
-      }
-
-      if (translatedByItem.size > 0) {
-        // Store new translations in DB and update the map
-        for (const [itemIdx, translated] of translatedByItem) {
-          const itemInfo = itemsNeedingTranslation[itemIdx]
-
-          // Store in DB for future use (fire and forget)
-          storeTranslation(
-            itemInfo.contentId,
-            language,
-            type,
-            translated
-          ).catch(err => {
-            console.error(
-              `[Translation] Failed to store translation for ${itemInfo.contentId}:`,
-              err
-            )
-          })
-
-          // Update the stored translations map
-          storedTranslations.set(itemInfo.contentId, translated)
-        }
-
-        console.log(
-          `[Translation] ✓ Google Translate completed for ${translatedByItem.size} items`
-        )
-      }
-    } catch (error) {
-      console.error(`[Translation] ✗ Google Translate error:`, error)
+    if (!translation) {
+      return item
     }
-  }
 
-  // 4. Apply all translations (DB + newly translated)
-  return items.map((item, index) => {
-    const contentId = contentIds[index]
-    const translation = storedTranslations.get(contentId)
+    // Apply translation fields based on type
+    const result = {...item}
+    
+    if (translation.title) result.title = translation.title
+    if (translation.description) result.description = translation.description
+    if (translation.content) result.content = translation.content
+    if (translation.excerpt) result.excerpt = translation.excerpt
+    if (translation.name) result.name = translation.name
+    if (translation.location) result.location = translation.location
 
-    if (!translation) return item
-
-    const newItem = {...item}
-    fields.forEach(field => {
-      const translatedValue = translation[field]
-      if (translatedValue) {
-        ;(newItem as any)[field] = translatedValue
-      }
-    })
-
-    return newItem
-  })
+    return result
+  },
 }
 
-/**
- * Check if a translation has valid content for the specified fields
- */
-function hasValidTranslation(
-  translation: TranslationFields,
-  fields: (string | symbol | number)[]
-): boolean {
-  return fields.some(field => {
-    const value = translation[field as keyof TranslationFields]
-    return typeof value === "string" && value.trim().length > 0
-  })
+// Re-export for backwards compatibility
+export {
+  ALL_LANGUAGES,
 }

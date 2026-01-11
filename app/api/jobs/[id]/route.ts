@@ -3,9 +3,7 @@ import {NextRequest, NextResponse} from "next/server"
 import type {OfferUpdate} from "@/lib/types/database"
 import {
   getStoredTranslation,
-  storeTranslation,
-  ContentType,
-  SupportedLanguage,
+  buildContentId,
 } from "@/lib/services/translation-service"
 
 
@@ -82,82 +80,31 @@ export async function GET(
       page_url: request.url,
     })
 
-    // Apply translation if locale is different from original content
-    // Support all 4 languages: en, de, fr, it
-    /*
+    // Apply Supabase translation if available for requested locale
+    let translatedJob = job
     const supportedLocales = ["en", "de", "fr", "it"]
 
     if (supportedLocales.includes(locale)) {
       try {
-        // Use simple content_id format: job-{id} to match stored translations
-        const contentId = `job-${id}`
+        // Build content_id matching the format used in translations table
+        const contentId = buildContentId("job", id, job.source || "db")
 
-        // Try to get stored translation for requested locale
-        let translation = await getStoredTranslation(
-          contentId,
-          locale,
-          "job" as ContentType
-        )
+        // Try to get stored translation from Supabase
+        const translation = await getStoredTranslation(contentId, locale, "job")
 
-        // If no translation exists for this locale, create one
-        if (!translation) {
-          try {
-            console.log(
-              `[Jobs API] Translating job ${id} to ${locale} (auto-detect source)...`
-            )
-
-            const { translateJob } = await import(
-              "@/lib/services/google-translate"
-            )
-
-            // Translate both title and description
-            // Pass undefined for sourceLanguage to let Google auto-detect
-            const translated = await translateJob(
-              job.title || "",
-              job.description || "",
-              locale as SupportedLanguage,
-              undefined
-            )
-
-            const newTranslation = {
-              title: translated.title,
-              description: translated.description,
-            }
-
-            // Store for future use
-            // Only store if we actually got a translation (simple check: title exists)
-            if (newTranslation.title) {
-              await storeTranslation(contentId, locale, "job", newTranslation)
-              console.log(`[Jobs API] ✓ Translated job ${id} to ${locale}`)
-
-              // Apply the new translation
-              translatedJob = {
-                ...job,
-                title: newTranslation.title,
-                description: newTranslation.description,
-              }
-            }
-          } catch (err) {
-            console.error(`[Jobs API] Failed to translate job ${id}:`, err)
-          }
-        } else {
-          // Apply existing translation
+        if (translation) {
           translatedJob = {
             ...job,
             title: translation.title || job.title,
             description: translation.description || job.description,
           }
+          console.log(`[Jobs API] Applied ${locale} translation for job ${id}`)
         }
       } catch (err) {
-        console.error(
-          `[Jobs API] Error applying translation for job ${id}:`,
-          err
-        )
+        console.error(`[Jobs API] Error applying translation for job ${id}:`, err)
       }
     }
-    */
 
-    const translatedJob = job
     return NextResponse.json({job: translatedJob})
   } catch (error) {
     console.error("API Error:", error)

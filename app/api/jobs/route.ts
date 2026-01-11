@@ -9,11 +9,8 @@ import {withRateLimit} from "@/lib/utils/rate-limiter"
 import {sanitizeSnippet} from "@/lib/utils/text"
 import {
   getStoredTranslationsBatch,
-  storeTranslation,
-  autoTranslateToAllLanguages,
   ContentType,
 } from "@/lib/services/translation-service"
-import {translateText, SupportedLanguage} from "@/lib/services/lingva-translate"
 
 // Deduplicate external jobs by composite key: title + company + location (+ external_id when present)
 function normalizeText(v: unknown): string {
@@ -311,8 +308,8 @@ async function handler(request: NextRequest) {
           }
         })
 
-        // Apply translations for the requested language
-        // This now works for ALL languages including English (for jobs originally in German/French)
+        // Apply Supabase translations for the requested language
+        // All translations are pre-stored - no external API calls needed
         let translatedJobs = combined
         if (combined.length > 0) {
           try {
@@ -321,7 +318,7 @@ async function handler(request: NextRequest) {
               j => `job-${j.source || "db"}-${j.id}`
             )
             console.log(
-              `[Jobs API] Checking translations for lang=${lang}, count=${contentIds.length}. Sample ID: ${contentIds[0]}`
+              `[Jobs API] Fetching translations for lang=${lang}, count=${contentIds.length}`
             )
 
             const translations = await getStoredTranslationsBatch(
@@ -330,62 +327,8 @@ async function handler(request: NextRequest) {
               "job" as ContentType
             )
             console.log(
-              `[Jobs API] Found ${translations.size} translations for ${lang}`
+              `[Jobs API] Found ${translations.size}/${contentIds.length} translations for ${lang}`
             )
-
-            // Find jobs that need translation (not in DB for this language)
-            const jobsNeedingTranslation = combined.filter(job => {
-              const contentId = `job-${job.source || "db"}-${job.id}`
-              return !translations.has(contentId)
-            })
-
-            // Translate and store missing translations (async, don't block response)
-            if (jobsNeedingTranslation.length > 0) {
-              console.log(
-                `[Jobs API] Translating ${jobsNeedingTranslation.length} jobs to ${lang}...`
-              )
-              // Translate in background (don't await to not block response)
-              ;(async () => {
-                for (const job of jobsNeedingTranslation.slice(0, 10)) {
-                  // Limit to 10 per request
-                  try {
-                    const contentId = `job-${job.source || "db"}-${job.id}`
-
-                    // Detect source language and translate to target language
-                    // For English target, we auto-detect source; for others, assume English source
-                    const sourceLang = lang === "en" ? "auto" : "en"
-
-                    // Translate title and description
-                    const titleResult = await translateText(
-                      job.title || "",
-                      lang as SupportedLanguage,
-                      sourceLang as any
-                    )
-                    const descResult = await translateText(
-                      (job.description || "").substring(0, 1000),
-                      lang as SupportedLanguage,
-                      sourceLang as any
-                    )
-
-                    await storeTranslation(contentId, lang, "job", {
-                      title: titleResult.translation || job.title,
-                      description: descResult.translation || job.description,
-                    })
-
-                    // Small delay to avoid rate limiting
-                    await new Promise(r => setTimeout(r, 200))
-                  } catch (err) {
-                    console.error(
-                      `[Jobs API] Failed to translate job ${job.id}:`,
-                      err
-                    )
-                  }
-                }
-                console.log(
-                  `[Jobs API] Background translation completed for ${lang}`
-                )
-              })()
-            }
 
             // Apply translations, falling back to original if not found
             translatedJobs = combined.map(job => {
@@ -404,10 +347,6 @@ async function handler(request: NextRequest) {
               }
               return job
             })
-
-            console.log(
-              `[Jobs API] Applied ${translations.size} translations for lang=${lang}`
-            )
           } catch (error) {
             console.error("[Jobs API] Translation error:", error)
             // Continue with original content on error

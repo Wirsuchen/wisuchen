@@ -3,22 +3,21 @@
 /**
  * Jobs Page - Real Jobs from RapidAPI
  * Fetches live job data from multiple RapidAPI sources
- * Uses database translations when locale is not English
- * Auto-translates any content that's in the wrong language
+ * Translations are applied server-side from Supabase database
+ * When user changes locale, jobs are refetched with appropriate translations
  */
 
-import { useEffect, useState, useMemo, useCallback, useRef } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useJobs, type Job } from '@/hooks/use-jobs'
 import { PageLayout } from '@/components/layout/page-layout'
-import { Loader2, Search, MapPin, Briefcase, DollarSign, ExternalLink, Filter, RefreshCw, TrendingUp, Edit, Languages } from 'lucide-react'
+import { Loader2, Search, MapPin, Briefcase, DollarSign, ExternalLink, Filter, RefreshCw, TrendingUp, Edit } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/contexts/auth-context'
 import Link from 'next/link'
 import { useTranslation, useLocale } from '@/contexts/i18n-context'
-import { useAutoTranslateContent, useTranslatedText, useTranslatedJob } from '@/hooks/use-auto-translate-content'
 
 
 const sanitizeJobDescription = (text: string) => {
@@ -119,10 +118,6 @@ export default function JobsPage() {
   const { t } = useTranslation()
   const locale = useLocale() // Get current language for translations
 
-  // Auto-translate hook for client-side translation fallback
-  const { translateJobs, isTranslating: autoTranslating } = useAutoTranslateContent()
-  const [translatedJobs, setTranslatedJobs] = useState<Job[]>([])
-
   const { jobs, loading, error, search, refresh, pagination, meta } = useJobs()
 
   // Deduplicate jobs to remove duplicates from different sources
@@ -144,39 +139,8 @@ export default function JobsPage() {
     return deduped
   }, [jobs])
 
-  // Auto-translate jobs that are in wrong language
-  // Use refs to prevent re-running while translation is in progress and track locale
-  const isTranslatingJobsRef = useRef(false)
-  const lastTranslatedLocaleRef = useRef<string | null>(null)
-
-  useEffect(() => {
-    // Reset translation state when locale changes
-    if (lastTranslatedLocaleRef.current !== locale) {
-      setTranslatedJobs([])
-      isTranslatingJobsRef.current = false
-    }
-
-    if (uniqueJobs.length > 0 && !loading && !isTranslatingJobsRef.current) {
-      isTranslatingJobsRef.current = true
-      lastTranslatedLocaleRef.current = locale
-
-      console.log(`[JobsPage] Starting auto-translation for ${uniqueJobs.length} jobs to locale: ${locale}`)
-
-      translateJobs(uniqueJobs).then(translated => {
-        console.log(`[JobsPage] Translation complete, ${translated.filter((j, i) => j.title !== uniqueJobs[i]?.title).length} jobs translated`)
-        setTranslatedJobs(translated)
-        isTranslatingJobsRef.current = false
-      }).catch((err) => {
-        console.error('[JobsPage] Translation failed:', err)
-        isTranslatingJobsRef.current = false
-      })
-    } else if (uniqueJobs.length === 0) {
-      setTranslatedJobs([])
-    }
-  }, [uniqueJobs, loading, locale, translateJobs])
-
-  // Use translated jobs if available, otherwise use original
-  const displayJobs = translatedJobs.length > 0 ? translatedJobs : uniqueJobs
+  // Translations are now applied server-side via the API
+  // Jobs are already translated based on locale when fetched from the database
 
   // Load jobs on mount and when locale changes (to get translated content)
   // Also apply URL parameters on initial load
@@ -520,17 +484,11 @@ export default function JobsPage() {
         )}
 
         {/* Jobs List */}
-        {displayJobs.length > 0 && (
+        {/* Jobs List - Translations applied server-side based on locale */}
+        {uniqueJobs.length > 0 && (
           <>
-            {/* Auto-translate indicator */}
-            {autoTranslating && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-                <Languages className="h-4 w-4 animate-pulse" />
-                <span>{t('common.translating') || 'Translating content...'}</span>
-              </div>
-            )}
             <div className="space-y-4">
-              {displayJobs.map((job) => (
+              {uniqueJobs.map((job) => (
                 <JobCard
                   key={`${job.source}-${job.id}`}
                   job={job}
@@ -732,15 +690,10 @@ interface UserJobCardProps {
 function UserJobCard({ job }: UserJobCardProps) {
   const { t, tr } = useTranslation()
 
-  // Use client-side auto-translation for title and description at once
-  // Add source property required by useTranslatedJob hook
-  const { translatedJob } = useTranslatedJob({
-    ...job,
-    source: 'user-posted',
-    description: job.description ?? undefined
-  })
-  const title = translatedJob.title
-  const description = translatedJob.description
+  // Translations are fetched from Supabase via the API based on locale
+  // No client-side translation needed
+  const title = job.title
+  const description = job.description
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return t('jobs.notPublished')

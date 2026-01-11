@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useState, use, useRef } from "react"
+import React, { useEffect, useState, use } from "react"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { Button } from "@/components/ui/button"
@@ -20,7 +20,6 @@ import {
   Sparkles,
   ExternalLink,
   ArrowLeft,
-  Languages,
 } from "lucide-react"
 import Link from "next/link"
 import { formatEuroText } from "@/lib/utils"
@@ -30,9 +29,6 @@ import { fetchWithCache } from "@/lib/utils/client-cache"
 import { useAuth } from "@/contexts/auth-context"
 import { toast } from "@/hooks/use-toast"
 import { useTranslation, useI18n } from "@/contexts/i18n-context"
-import { TranslateButton } from "@/components/ui/translate-button"
-import { useTranslatedText } from "@/contexts/dynamic-translation-context"
-import { useAutoTranslateContent } from "@/hooks/use-auto-translate-content"
 
 const sanitizeJobDescription = (text: string) => {
   if (!text) return ""
@@ -57,9 +53,7 @@ function JobDetailContent({ params }: { params: Promise<{ id: string }> }) {
   const { user } = useAuth()
   const { t } = useTranslation()
   const canUseAI = !!(user && (user.isSubscribed || ['pro', 'premium'].includes(user.plan || '')))
-
-  // Auto-translate hook
-  const { translateJob, isTranslating: autoTranslating } = useAutoTranslateContent()
+  const { locale } = useI18n()
 
   type ExtJob = Job & {
     logo?: string
@@ -74,42 +68,9 @@ function JobDetailContent({ params }: { params: Promise<{ id: string }> }) {
   }
 
   const [job, setJob] = useState<ExtJob | null>(null)
-  const [translatedJob, setTranslatedJob] = useState<ExtJob | null>(null)
   const [relatedJobs, setRelatedJobs] = useState<Job[]>([])
   const [loadingRelated, setLoadingRelated] = useState(false)
   const [loadingJob, setLoadingJob] = useState(true)
-
-  // Ref to prevent re-running translation
-  const isTranslatingJobRef = useRef(false)
-
-  // Auto-translate job when loaded
-  useEffect(() => {
-    if (job && !loadingJob && !isTranslatingJobRef.current) {
-      isTranslatingJobRef.current = true
-      translateJob({
-        title: job.title,
-        description: job.description,
-        company: job.company,
-        location: job.location,
-      }).then(translated => {
-        if (translated.wasTranslated) {
-          setTranslatedJob({
-            ...job,
-            title: translated.title,
-            description: translated.description,
-          })
-        } else {
-          setTranslatedJob(null)
-        }
-        isTranslatingJobRef.current = false
-      }).catch(() => {
-        isTranslatingJobRef.current = false
-      })
-    }
-  }, [job?.id, loadingJob]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Use translated job if available
-  const displayJob = translatedJob || job
 
   // Load job either from sessionStorage (when coming from external search with source)
   // or from the database via /api/jobs/[id] (when opened from /saved or user-posted jobs)
@@ -143,9 +104,10 @@ function JobDetailContent({ params }: { params: Promise<{ id: string }> }) {
       }
 
       // Fallback: fetch from API using internal offer ID (supports saved and user-posted jobs)
+      // Include locale for Supabase translations
       setLoadingJob(true)
       try {
-        const res = await fetch(`/api/jobs/${encodeURIComponent(id)}`)
+        const res = await fetch(`/api/jobs/${encodeURIComponent(id)}?locale=${locale}`)
         if (!res.ok) {
           setJob(null)
           return
@@ -241,73 +203,34 @@ function JobDetailContent({ params }: { params: Promise<{ id: string }> }) {
     fetchSimilarJobs()
   }, [job])
 
-  // Auto-translate job when locale changes
-  const { locale } = useI18n()
-  const originalJobRef = React.useRef<{ title: string; description: string } | null>(null)
-  const lastTranslatedLocaleRef = React.useRef<string>('en')
-  const jobIdRef = React.useRef<string | null>(null)
-
+  // Refetch job when locale changes to get Supabase translations
+  const lastFetchedLocaleRef = React.useRef<string>(locale)
+  
   useEffect(() => {
-    if (!job) return
-
-    // Store original content when job ID changes
-    if (jobIdRef.current !== job.id) {
-      jobIdRef.current = job.id
-      originalJobRef.current = {
-        title: job.title,
-        description: job.description || ''
-      }
-      lastTranslatedLocaleRef.current = 'en' // Reset to English for new job
-    }
-
-    // Skip if locale hasn't changed
-    if (lastTranslatedLocaleRef.current === locale) return
-
-    // Update the last translated locale
-    lastTranslatedLocaleRef.current = locale
-
-    // If locale is English, restore original
-    if (locale === 'en') {
-      if (originalJobRef.current) {
-        setJob(prev => prev ? ({
-          ...prev,
-          title: originalJobRef.current!.title,
-          description: originalJobRef.current!.description
-        }) : null)
-      }
-      return
-    }
-
-    // Translate to target locale
-    const translateJob = async () => {
-      try {
-        const response = await fetch('/api/translate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contentType: 'job',
-            title: originalJobRef.current?.title || job.title,
-            description: originalJobRef.current?.description || job.description || '',
-            toLanguage: locale,
-            fromLanguage: 'en'
-          })
-        })
-
-        if (response.ok) {
-          const data = await response.json()
-          setJob(prev => prev ? ({
-            ...prev,
-            title: data.title || prev.title,
-            description: data.description || prev.description
-          }) : null)
+    if (lastFetchedLocaleRef.current !== locale && job) {
+      lastFetchedLocaleRef.current = locale
+      // Reload job with new locale
+      const loadWithLocale = async () => {
+        try {
+          const res = await fetch(`/api/jobs/${encodeURIComponent(job.id)}?locale=${locale}`)
+          if (res.ok) {
+            const data = await res.json()
+            const dbJob = data.job
+            if (dbJob) {
+              setJob(prev => prev ? ({
+                ...prev,
+                title: dbJob.title || prev.title,
+                description: dbJob.description || prev.description
+              }) : null)
+            }
+          }
+        } catch (error) {
+          console.error('Error refetching job for locale:', error)
         }
-      } catch (error) {
-        console.error('Auto-translation error:', error)
       }
+      loadWithLocale()
     }
-
-    translateJob()
-  }, [locale, job?.id]) // Only re-run when locale or job ID changes
+  }, [locale, job?.id])
 
   const handleImproveDescription = () => {
     setIsImproving(true)
@@ -408,8 +331,8 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
     )
   }
 
-  // Derive display fields from aggregator job (use translated if available)
-  const jobForDisplay = displayJob || job
+  // Use job directly (translations come from Supabase via API)
+  const jobForDisplay = job
   if (!jobForDisplay) return null
 
   const salaryText = jobForDisplay.salary?.text || (
@@ -441,13 +364,6 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
           <div className="lg:col-span-2">
             <Card>
               <CardHeader className="p-4 sm:p-6">
-                {/* Auto-translate indicator */}
-                {autoTranslating && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                    <Languages className="h-4 w-4 animate-pulse" />
-                    <span>{t('common.translating') || 'Translating...'}</span>
-                  </div>
-                )}
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                   <div className="flex items-start gap-3 sm:gap-4 min-w-0">
                     <img
@@ -456,14 +372,7 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
                       className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg object-cover flex-shrink-0"
                     />
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-start gap-2 flex-wrap">
-                        <CardTitle className="text-xl sm:text-2xl leading-tight">{jobForDisplay.title}</CardTitle>
-                        <TranslateButton
-                          text={jobForDisplay.title}
-                          onTranslate={(t) => setJob(prev => prev ? ({ ...prev, title: t }) : null)}
-                          className="text-gray-400 hover:text-blue-600 flex-shrink-0"
-                        />
-                      </div>
+                      <CardTitle className="text-xl sm:text-2xl leading-tight">{jobForDisplay.title}</CardTitle>
                       <CardDescription className="text-base sm:text-lg flex items-center mt-1 truncate">
                         <Building2 className="h-4 w-4 mr-1 flex-shrink-0" />
                         <span className="truncate">{jobForDisplay.company}</span>
@@ -566,15 +475,7 @@ Ready to make your mark in tech? Apply now and let's build something amazing tog
               <CardContent className="p-4 sm:p-6">
                 <div className="space-y-6">
                   <div>
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
-                      <h3 className="text-base sm:text-lg font-semibold">{t('jobs.detail.descriptionTitle')}</h3>
-                      <TranslateButton
-                        text={cleanedDescription}
-                        onTranslate={(t) => setJob(prev => prev ? ({ ...prev, description: t }) : null)}
-                        contentType="job_description"
-                        className="text-gray-400 hover:text-blue-600 flex-shrink-0"
-                      />
-                    </div>
+                    <h3 className="text-base sm:text-lg font-semibold mb-3">{t('jobs.detail.descriptionTitle')}</h3>
                     <div className="prose prose-sm max-w-none overflow-x-auto">
                       <pre className="whitespace-pre-wrap font-sans text-xs sm:text-sm leading-relaxed">{cleanedDescription}</pre>
                     </div>

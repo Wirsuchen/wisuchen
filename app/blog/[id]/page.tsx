@@ -1,35 +1,72 @@
 import type { Metadata } from "next"
+import { cookies } from "next/headers"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { BlogPost } from "@/components/blog/blog-post"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 
-async function getPost(param: string) {
+async function getPost(param: string, locale: string) {
   const supabase = await createClient()
+  
+  // Try to find by slug first
   const trySlug = await supabase
     .from('blog_posts')
     .select('id, title, slug, excerpt, content, featured_image_url, published_at, created_at, seo_title, seo_description, views_count, profiles:profiles(full_name), categories:categories(name)')
     .eq('slug', param)
     .eq('status', 'published')
     .maybeSingle()
-  if (trySlug.data) return trySlug.data
+  
+  let post = trySlug.data
 
-  const isUuid = /^[0-9a-fA-F-]{32,36}$/.test(param)
-  if (isUuid) {
-    const byId = await supabase
-      .from('blog_posts')
-      .select('id, title, slug, excerpt, content, featured_image_url, published_at, created_at, seo_title, seo_description, views_count, profiles:profiles(full_name), categories:categories(name)')
-      .eq('id', param)
-      .eq('status', 'published')
-      .maybeSingle()
-    if (byId.data) return byId.data
+  // If not found by slug, try by ID
+  if (!post) {
+    const isUuid = /^[0-9a-fA-F-]{32,36}$/.test(param)
+    if (isUuid) {
+      const byId = await supabase
+        .from('blog_posts')
+        .select('id, title, slug, excerpt, content, featured_image_url, published_at, created_at, seo_title, seo_description, views_count, profiles:profiles(full_name), categories:categories(name)')
+        .eq('id', param)
+        .eq('status', 'published')
+        .maybeSingle()
+      post = byId.data
+    }
   }
-  return null
+
+  if (!post) return null
+
+  // Fetch translation for current locale from Supabase
+  const contentId = `blog-${post.id}`
+  const { data: translationData } = await (supabase as any)
+    .from('translations')
+    .select('translations')
+    .eq('content_id', contentId)
+    .eq('language', locale)
+    .eq('type', 'blog')
+    .maybeSingle()
+
+  // Apply translation if available
+  if (translationData?.translations) {
+    const t = translationData.translations
+    return {
+      ...post,
+      title: t.title || post.title,
+      excerpt: t.excerpt || t.description || post.excerpt,
+      content: t.content || post.content,
+    }
+  }
+
+  return post
+}
+
+async function getLocale(): Promise<string> {
+  const cookieStore = await cookies()
+  return cookieStore.get('preferredLocale')?.value || 'en'
 }
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  const row = await getPost(params.id)
+  const locale = await getLocale()
+  const row = await getPost(params.id, locale)
   if (!row) {
     return { title: 'Post Not Found | WIRsuchen Blog', description: 'The requested blog post could not be found.' }
   }
@@ -54,7 +91,8 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
 }
 
 export default async function BlogPostPage({ params }: { params: { id: string } }) {
-  const row = await getPost(params.id)
+  const locale = await getLocale()
+  const row = await getPost(params.id, locale)
   if (!row) redirect('/blog')
 
   const contentText = (row.content || '').replace(/<[^>]+>/g, ' ').trim()

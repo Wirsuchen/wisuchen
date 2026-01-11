@@ -4,7 +4,6 @@ import { Geist } from "next/font/google"
 import "./globals.css"
 import { AuthProvider } from "@/contexts/auth-context"
 import { I18nProvider } from "@/contexts/i18n-context"
-import { DynamicTranslationProvider } from "@/contexts/dynamic-translation-context"
 import { CacheInitializer } from "@/components/cache-initializer"
 import { Toaster } from "@/components/ui/toaster"
 import { Suspense } from "react"
@@ -60,13 +59,11 @@ export default async function RootLayout({
       <body className="min-h-screen bg-background font-sans antialiased">
         <CacheInitializer />
         <I18nProvider>
-          <DynamicTranslationProvider>
-            <AuthProvider>
-              <Suspense fallback={null}>
-                {children}
-              </Suspense>
-            </AuthProvider>
-          </DynamicTranslationProvider>
+          <AuthProvider>
+            <Suspense fallback={null}>
+              {children}
+            </Suspense>
+          </AuthProvider>
         </I18nProvider>
         <Toaster />
       </body>
