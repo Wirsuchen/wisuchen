@@ -419,8 +419,8 @@ export default function JobsPage() {
               <Link
                 href="/jobs?country=de"
                 className={`inline-flex items-center rounded-full border px-3 py-1.5 text-sm transition-colors ${selectedCountry === 'de'
-                    ? 'bg-gray-900 text-white border-gray-900'
-                    : 'bg-white hover:bg-gray-50 border-gray-200'
+                  ? 'bg-gray-900 text-white border-gray-900'
+                  : 'bg-white hover:bg-gray-50 border-gray-200'
                   }`}
               >
                 <MapPin className="h-3.5 w-3.5 mr-1.5 text-red-500" />
@@ -429,8 +429,8 @@ export default function JobsPage() {
               <Link
                 href="/jobs?country=remote"
                 className={`inline-flex items-center rounded-full border px-3 py-1.5 text-sm transition-colors ${selectedCountry === 'remote'
-                    ? 'bg-gray-900 text-white border-gray-900'
-                    : 'bg-white hover:bg-gray-50 border-gray-200'
+                  ? 'bg-gray-900 text-white border-gray-900'
+                  : 'bg-white hover:bg-gray-50 border-gray-200'
                   }`}
               >
                 <MapPin className="h-3.5 w-3.5 mr-1.5 text-blue-500" />
@@ -439,8 +439,8 @@ export default function JobsPage() {
               <Link
                 href="/jobs?country=ch"
                 className={`inline-flex items-center rounded-full border px-3 py-1.5 text-sm transition-colors ${selectedCountry === 'ch'
-                    ? 'bg-gray-900 text-white border-gray-900'
-                    : 'bg-white hover:bg-gray-50 border-gray-200'
+                  ? 'bg-gray-900 text-white border-gray-900'
+                  : 'bg-white hover:bg-gray-50 border-gray-200'
                   }`}
               >
                 <MapPin className="h-3.5 w-3.5 mr-1.5 text-red-500" />
