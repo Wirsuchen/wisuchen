@@ -74,6 +74,7 @@ function JobDetailContent({ params }: { params: Promise<{ id: string }> }) {
 
   // Load job either from sessionStorage (when coming from external search with source)
   // or from the database via /api/jobs/[id] (when opened from /saved or user-posted jobs)
+  // ALWAYS fetch from API for non-English locales to get proper translations
   useEffect(() => {
     const id = routeId
     if (!id) {
@@ -86,7 +87,8 @@ function JobDetailContent({ params }: { params: Promise<{ id: string }> }) {
       const source = searchParams.get('source')
 
       // Try sessionStorage first when a source is provided (external search flow)
-      if (source) {
+      // BUT only use it for English locale - for other locales, always fetch from API for translations
+      if (source && locale === 'en') {
         try {
           const storageKey = `job:${source}:${id}`
           if (typeof window !== 'undefined') {
@@ -103,8 +105,8 @@ function JobDetailContent({ params }: { params: Promise<{ id: string }> }) {
         }
       }
 
-      // Fallback: fetch from API using internal offer ID (supports saved and user-posted jobs)
-      // Include locale for Supabase translations
+      // Fetch from API to get translations for the current locale
+      // This ensures German/French/Italian users see translated content
       setLoadingJob(true)
       try {
         const res = await fetch(`/api/jobs/${encodeURIComponent(id)}?locale=${locale}`)
@@ -163,7 +165,7 @@ function JobDetailContent({ params }: { params: Promise<{ id: string }> }) {
     }
 
     loadJob()
-  }, [routeId, searchParams])
+  }, [routeId, searchParams, locale])
 
   // Fetch similar jobs when job is loaded
   useEffect(() => {
@@ -207,7 +209,7 @@ function JobDetailContent({ params }: { params: Promise<{ id: string }> }) {
 
   // Refetch job when locale changes to get Supabase translations
   const lastFetchedLocaleRef = React.useRef<string>(locale)
-  
+
   useEffect(() => {
     if (lastFetchedLocaleRef.current !== locale && job) {
       lastFetchedLocaleRef.current = locale
