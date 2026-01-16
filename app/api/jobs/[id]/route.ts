@@ -3,7 +3,7 @@ import {NextRequest, NextResponse} from "next/server"
 import type {OfferUpdate} from "@/lib/types/database"
 import {
   getStoredTranslation,
-  buildContentId,
+  buildContentIdCandidates,
 } from "@/lib/services/translation-service"
 
 
@@ -86,28 +86,38 @@ export async function GET(
 
     if (supportedLocales.includes(locale)) {
       try {
-        // Build content_id matching the format used in translations table
-        // Different sources use different ID formats:
-        // - adzuna: uses offer.id (UUID)
-        // - rapidapi-*: uses external_id
-        // - db (user-posted): uses offer.id (UUID)
         const source = job.source || "db"
-        const idForTranslation = source.startsWith("rapidapi-") && job.external_id 
-          ? job.external_id 
-          : id
-        const contentId = buildContentId("job", idForTranslation, source)
 
-        // Try to get stored translation from Supabase
-        const translation = await getStoredTranslation(contentId, locale, "job")
-
-        if (translation) {
-          translatedJob = {
-            ...job,
-            title: translation.title || job.title,
-            description: translation.description || job.description,
-          }
-          console.log(`[Jobs API] Applied ${locale} translation for job ${id}`)
+        if (locale === "en") {
+          return NextResponse.json({job: translatedJob})
         }
+
+        const candidates = buildContentIdCandidates("job", source, [
+          id,
+          (job as any).external_id,
+          (job as any).externalId,
+        ])
+
+        let translation = null as Awaited<ReturnType<typeof getStoredTranslation>>
+        for (const contentId of candidates) {
+          translation = await getStoredTranslation(contentId, locale, "job")
+          if (translation) break
+        }
+
+        const translatedDescription = translation?.description
+        if (
+          typeof translatedDescription !== "string" ||
+          translatedDescription.trim().length === 0
+        ) {
+          return NextResponse.json({error: "Job not found"}, {status: 404})
+        }
+
+        translatedJob = {
+          ...job,
+          title: translation?.title || job.title,
+          description: translatedDescription,
+        }
+        console.log(`[Jobs API] Applied ${locale} translation for job ${id}`)
       } catch (err) {
         console.error(`[Jobs API] Error applying translation for job ${id}:`, err)
       }

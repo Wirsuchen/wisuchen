@@ -335,7 +335,7 @@ export class JobSyncService {
 
           if (countError) {
             console.error("Error in count_fully_translated_jobs RPC:", countError)
-          }
+        }
 
           // countResult is the BIGINT value directly
           const totalCount = typeof countResult === 'number' ? countResult : parseInt(countResult, 10) || 0
@@ -344,14 +344,14 @@ export class JobSyncService {
             `[JobSync] Found ${data?.length || 0} fully translated jobs (page ${page}, total: ${totalCount})`
           )
 
-          return {
+        return {
             jobs: data || [],
             total: totalCount,
             page,
             limit,
             totalPages: Math.ceil(totalCount / limit),
-          }
         }
+      }
       } catch (error) {
         console.error("Error in requireFullTranslation:", error)
         // Fall through to regular search
