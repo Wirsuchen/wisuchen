@@ -9,6 +9,7 @@ import {withRateLimit} from "@/lib/utils/rate-limiter"
 import {sanitizeSnippet} from "@/lib/utils/text"
 import {
   getStoredTranslationsBatch,
+  buildContentIdCandidates,
   ContentType,
 } from "@/lib/services/translation-service"
 
@@ -334,55 +335,59 @@ async function handler(request: NextRequest) {
         // Apply Supabase translations for the requested language
         // All translations are pre-stored - no external API calls needed
         let translatedJobs = combined
-        if (combined.length > 0) {
+        if (lang !== "en" && combined.length > 0) {
           try {
-            // Get content IDs for batch lookup
-            // Different sources use different ID formats:
-            // - adzuna: uses offer.id (UUID)
-            // - rapidapi-*: uses external_id
-            // - db (user-posted): uses offer.id (UUID)
-            const contentIds = combined.map(j => {
-              const source = j.source || "db"
-              // For adzuna and db jobs, use the database id (UUID)
-              // For rapidapi-* sources, use the external_id
-              let jobId: string
-              if (source === "adzuna" || source === "db" || !source) {
-                jobId = j.id
-              } else {
-                jobId = j.external_id || j.externalId || j.id
-              }
-              return `job-${source}-${jobId}`
+            const perJobContentIdCandidates = combined.map(job => {
+              const source = job.source || "db"
+              return buildContentIdCandidates("job", source, [
+                job.id,
+                (job as any).external_id,
+                (job as any).externalId,
+              ])
             })
+
+            const allCandidateIds = Array.from(
+              new Set(perJobContentIdCandidates.flat())
+            )
             console.log(
-              `[Jobs API] Fetching translations for lang=${lang}, count=${contentIds.length}`
+              `[Jobs API] Fetching translations for lang=${lang}, candidates=${allCandidateIds.length}, jobs=${combined.length}`
             )
 
             const translations = await getStoredTranslationsBatch(
-              contentIds,
+              allCandidateIds,
               lang,
               "job" as ContentType
             )
             console.log(
-              `[Jobs API] Found ${translations.size}/${contentIds.length} translations for ${lang}`
+              `[Jobs API] Found ${translations.size}/${allCandidateIds.length} translations for ${lang}`
             )
 
             // Apply translations, falling back to original if not found
-            translatedJobs = combined.map((job, index) => {
-              // Use the same content_id that was used for lookup
-              const contentId = contentIds[index]
-              const translation = translations.get(contentId)
-              if (translation) {
+            translatedJobs = combined
+              .map((job, index) => {
+                if (lang === "en") return job
+
+                const candidates = perJobContentIdCandidates[index] || []
+                const translation = candidates
+                  .map(id => translations.get(id))
+                  .find(Boolean)
+
+                const translatedDescription = translation?.description
+                if (
+                  typeof translatedDescription !== "string" ||
+                  translatedDescription.trim().length === 0
+                ) {
+                  return null
+                }
+
                 return {
                   ...job,
-                  title: translation.title || job.title,
-                  description: translation.description || job.description,
-                  short_description: translation.description
-                    ? sanitizeSnippet(translation.description)
-                    : job.short_description,
+                  title: translation?.title || job.title,
+                  description: translatedDescription,
+                  short_description: sanitizeSnippet(translatedDescription),
                 }
-              }
-              return job
-            })
+              })
+              .filter(Boolean)
           } catch (error) {
             console.error("[Jobs API] Translation error:", error)
             // Continue with original content on error

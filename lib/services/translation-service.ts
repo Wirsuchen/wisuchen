@@ -161,6 +161,37 @@ export function buildContentId(type: ContentType, id: string, source?: string): 
   return `${type}-${source || "db"}-${id}`
 }
 
+export function buildContentIdCandidates(
+  type: ContentType,
+  source: string | undefined,
+  ids: unknown[]
+): string[] {
+  const out: string[] = []
+  const seen = new Set<string>()
+
+  for (const raw of ids) {
+    const id =
+      typeof raw === "string" ? raw : typeof raw === "number" ? String(raw) : ""
+    if (!id) continue
+
+    const primary = buildContentId(type, id, source)
+    if (!seen.has(primary)) {
+      seen.add(primary)
+      out.push(primary)
+    }
+
+    if (type === "job") {
+      const legacy = `${type}-${id}`
+      if (!seen.has(legacy)) {
+        seen.add(legacy)
+        out.push(legacy)
+      }
+    }
+  }
+
+  return out
+}
+
 /**
  * Apply stored translations to items from Supabase database
  * Falls back to original content if translation is not available
